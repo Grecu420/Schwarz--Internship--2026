@@ -1,0 +1,14 @@
+syntax = "proto3";
+package userbase;
+
+option go_package = "main/proto";
+
+service UserService {
+    rpc Ping(Empty) returns (Pong);
+} 
+
+message Empty {}
+
+message Pong {
+    string message = 1;
+}
