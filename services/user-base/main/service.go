@@ -6,9 +6,8 @@ import (
 
 	"log"
 	"net"
-	"os"
+	"services/common"
 	"services/user-base/main/proto"
-	"strconv"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -31,24 +30,10 @@ func (u UserServiceImpl) EndpointName(context.Context, *proto.EndpointNameReques
 
 const defaultPort = 50051
 
-func getPort() (int, error) {
-	s, ok := os.LookupEnv("PORT")
-	if !ok {
-		return 0, fmt.Errorf("no port variable")
-	}
-
-	return strconv.Atoi(s)
-
-}
-
-func prepareDB() {
-
-}
-
 func main() {
 
 	var port int = defaultPort
-	p, err := getPort()
+	p, err := common.GetPort()
 	if err == nil {
 		port = p
 	}
