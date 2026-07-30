@@ -1,14 +1,38 @@
 syntax = "proto3";
 package userbase;
 
+import "google/protobuf/timestamp.proto";
+
+
 option go_package = "main/proto";
 
 service UserService {
     rpc Ping(Empty) returns (Pong);
+    rpc EndpointName(EndpointNameRequest) returns (EndpointNameResponse);
 } 
 
 message Empty {}
 
 message Pong {
     string message = 1;
+}
+
+
+message EndpointNameRequest {
+    User user = 1;
+}
+message EndpointNameResponse {
+
+}
+
+
+
+message User {
+  int64 id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string user_name = 4;
+  string email = 5;
+  string password = 6;
+  google.protobuf.Timestamp created_at = 7; 
 }
