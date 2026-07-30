@@ -1,0 +1,12 @@
+
+
+services:
+  user-base-service:
+    build:
+      context: ./user-base
+      dockerfile: Dockerfile
+    container_name: user-base-service
+    ports:
+      - "50051:50051"
+
+ 
