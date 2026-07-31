@@ -8,5 +8,14 @@ services:
     container_name: user-base-service
     ports:
       - "50051:50051"
+  friend-request-base-service:
+    build:
+      context: ./friend-request-base
+      dockerfile: Dockerfile
+    container_name: friend-request-base-service
+    ports:
+      - "50052:50052"
+
+  
 
  

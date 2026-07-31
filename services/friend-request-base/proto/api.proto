@@ -1,0 +1,14 @@
+syntax = "proto3";
+package friendrequestbase;
+
+option go_package = "main/proto";
+
+service FriendRequestService {
+    rpc Ping(Empty) returns (Pong);
+} 
+
+message Empty {}
+
+message Pong {
+    string message = 1;
+}
