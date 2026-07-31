@@ -1,9 +1,9 @@
 package main
 
 import (
+	"Schwarz--Internship--2026/services/friend-request-base/main/proto"
 	"context"
 	"fmt"
-	"friend-request-base/main/proto"
 	"log"
 	"net"
 	"os"
