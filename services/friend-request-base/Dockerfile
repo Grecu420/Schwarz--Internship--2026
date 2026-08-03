@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o service ./services/user-base/main/service.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o service ./services/friend-request-base/main/service.go
 
 # final stage
 FROM alpine:latest
@@ -17,6 +17,6 @@ WORKDIR /app
 
 COPY --from=builder /app/service .
 
-EXPOSE 50051
+EXPOSE 50052
 
 CMD ["./service"]

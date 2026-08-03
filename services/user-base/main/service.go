@@ -1,13 +1,13 @@
 package main
 
 import (
+	"Schwarz--Internship--2026/services/common"
+	"Schwarz--Internship--2026/services/user-base/main/proto"
 	"context"
 	"fmt"
 
 	"log"
 	"net"
-	"services/common"
-	"services/user-base/main/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
