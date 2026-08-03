@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Schwarz--Internship--2026/services/user-base/main/proto"
+	"Schwarz--Internship--2026/services/friend-request-base/main/proto"
 	"context"
 	"fmt"
 	"log"
@@ -12,17 +12,17 @@ import (
 	"google.golang.org/grpc"
 )
 
-type UserServiceImpl struct {
-	proto.UnimplementedUserServiceServer
+type FriendRequestServiceImpl struct {
+	proto.UnimplementedFriendRequestServiceServer
 }
 
 // Ping implements [proto.UserServiceServer].
-func (u UserServiceImpl) Ping(context.Context, *proto.Empty) (*proto.Pong, error) {
+func (f FriendRequestServiceImpl) Ping(context.Context, *proto.Empty) (*proto.Pong, error) {
 	fmt.Println("here")
 	return &proto.Pong{Message: "pong "}, nil
 }
 
-const defaultPort = 50051
+const defaultPort = 50052
 
 func getPort() (int, error) {
 	s, ok := os.LookupEnv("PORT")
@@ -42,14 +42,15 @@ func main() {
 		port = p
 	}
 	fmt.Println("Port: ", port)
-	lis, err := net.Listen("tcp", fmt.Sprintf("user-base-service:%d", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("friend-request-base-service:%d", port))
+	//lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	var opts []grpc.ServerOption
 
 	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterUserServiceServer(grpcServer, UserServiceImpl{})
+	proto.RegisterFriendRequestServiceServer(grpcServer, FriendRequestServiceImpl{})
 	grpcServer.Serve(lis)
 
 }

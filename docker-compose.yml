@@ -1,0 +1,20 @@
+
+services:
+  user-base-service:
+    build:
+      context: .
+      dockerfile: services/user-base/Dockerfile
+    container_name: user-base-service
+    ports:
+      - "50051:50051"
+  friend-request-base-service:
+    build:
+      context: .
+      dockerfile: services/friend-request-base/Dockerfile
+    container_name: friend-request-base-service
+    ports:
+      - "50052:50052"
+
+  
+
+ 
