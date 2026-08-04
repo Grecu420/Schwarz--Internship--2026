@@ -10,7 +10,8 @@ services:
     secrets:
       - db-password
     environment:
-      - POSTGRES_DB=example
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=database
       - POSTGRES_SERVICE=db
       - POSTGRES_PORT=5432
     depends_on:
@@ -33,6 +34,7 @@ services:
     secrets:
       - db-password
     volumes:
+      - ./services/db/init-scripts:/docker-entrypoint-initdb.d
       - db-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=database

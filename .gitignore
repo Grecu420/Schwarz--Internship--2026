@@ -5,3 +5,6 @@ services/user-base/main/proto
 
 # all generated proto files
 *.pb.go
+
+# todo files
+TODO

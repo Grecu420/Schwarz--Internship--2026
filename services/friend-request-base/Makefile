@@ -2,9 +2,10 @@
 
 all: clean build
 
+.PHONY: all clean build run
+
 clean: 
-	rm -r main/proto 
-	rm -r build
+	rm -rf main/proto build
 
 main/proto/api.pb.go: proto/api.proto
 	protoc 	--go_out=.  \
