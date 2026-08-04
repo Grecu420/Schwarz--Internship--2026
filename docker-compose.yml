@@ -34,7 +34,7 @@ services:
     secrets:
       - db-password
     volumes:
-      - ./services/db/init-scripts:/docker-entrypoint-initdb.d
+      - ./services/db/init_scripts:/docker-entrypoint-initdb.d
       - db-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=database
@@ -65,5 +65,5 @@ volumes:
 
 secrets:
   db-password:
-    file: db/password.txt
+    file: services/db/password.txt
  
