@@ -63,10 +63,11 @@ func TestCreateUser_Success(t *testing.T) {
 		).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
 
-	resUser, err := svc.CreateUser(context.Background(), reqUser)
+	res, err := svc.CreateUser(context.Background(), &proto.CreateUserRequest{User: reqUser})
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
+	resUser := res.User
 
 	// 1. Verify returned ID
 	if resUser.Id != expectedID {
@@ -122,10 +123,11 @@ func TestCreateUser_WithExistingCreatedAt(t *testing.T) {
 		).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
 
-	resUser, err := svc.CreateUser(context.Background(), reqUser)
+	res, err := svc.CreateUser(context.Background(), &proto.CreateUserRequest{User: reqUser})
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
+	resUser := res.User
 
 	if !resUser.CreatedAt.AsTime().Equal(customTime) {
 		t.Errorf("expected CreatedAt %v, got %v", customTime, resUser.CreatedAt.AsTime())
@@ -166,7 +168,7 @@ func TestCreateUser_DBError(t *testing.T) {
 		).
 		WillReturnError(errors.New("duplicate key value violates unique constraint"))
 
-	resUser, err := svc.CreateUser(context.Background(), reqUser)
+	res, err := svc.CreateUser(context.Background(), &proto.CreateUserRequest{User: reqUser})
 
 	// Assert error status
 	if err == nil {
@@ -182,8 +184,8 @@ func TestCreateUser_DBError(t *testing.T) {
 		t.Errorf("expected gRPC code Internal, got %v", st.Code())
 	}
 
-	if resUser != nil {
-		t.Errorf("expected nil user response on error, got %v", resUser)
+	if res != nil {
+		t.Errorf("expected nil user response on error, got %v", res)
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {

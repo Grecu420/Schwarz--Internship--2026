@@ -30,9 +30,10 @@ func (u UserServiceImpl) Ping(context.Context, *proto.Empty) (*proto.Pong, error
 	return &proto.Pong{Message: "pong "}, nil
 }
 
-func (u UserServiceImpl) CreateUser(c context.Context, user *proto.User) (*proto.User, error) {
+func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
 
 	// hash password
+	user := req.User
 	password := user.Password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -71,7 +72,7 @@ func (u UserServiceImpl) CreateUser(c context.Context, user *proto.User) (*proto
 	user.Id = id
 	user.Password = string(hashedPassword)
 
-	return user, nil
+	return &proto.CreateUserResponse{User: user}, nil
 }
 
 const defaultPort = 50051

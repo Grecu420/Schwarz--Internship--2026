@@ -8,7 +8,7 @@ option go_package = "main/proto";
 
 service UserService {
     rpc Ping(Empty) returns (Pong);
-    rpc CreateUser(User) returns (User);
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
 } 
 
 message Empty {}
@@ -26,4 +26,14 @@ message User {
   string email = 5;
   string password = 6;
   google.protobuf.Timestamp created_at = 7; 
+}
+
+message CreateUserRequest{
+    User user = 1;
+
+}
+
+message CreateUserResponse{
+    User user = 1;
+    
 }
