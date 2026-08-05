@@ -5,6 +5,7 @@ import (
 	"Schwarz--Internship--2026/services/user-base/main/proto"
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -40,6 +41,7 @@ func TestCreateUser_Success(t *testing.T) {
 	svc := main.UserServiceImpl{DB: db}
 
 	rawPassword := "supersecret123"
+
 	reqUser := &proto.User{
 		FirstName: "John",
 		LastName:  "Doe",
@@ -48,7 +50,9 @@ func TestCreateUser_Success(t *testing.T) {
 		Password:  rawPassword,
 	}
 
-	expectedID := int64(100)
+	req := &proto.CreateUserRequest{User: reqUser}
+
+	expectedID := int64(10)
 
 	// Expect the INSERT query.
 	// We use sqlmock.AnyArg() for password (bcrypt salt varies) and timestamp.
@@ -63,7 +67,7 @@ func TestCreateUser_Success(t *testing.T) {
 		).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
 
-	res, err := svc.CreateUser(context.Background(), &proto.CreateUserRequest{User: reqUser})
+	res, err := svc.CreateUser(context.Background(), req)
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
@@ -109,8 +113,8 @@ func TestCreateUser_WithExistingCreatedAt(t *testing.T) {
 		Password:  "password123",
 		CreatedAt: timestamppb.New(customTime),
 	}
-
-	expectedID := int64(101)
+	req := &proto.CreateUserRequest{User: reqUser}
+	expectedID := int64(10)
 
 	mock.ExpectQuery(`INSERT INTO users`).
 		WithArgs(
@@ -123,7 +127,7 @@ func TestCreateUser_WithExistingCreatedAt(t *testing.T) {
 		).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
 
-	res, err := svc.CreateUser(context.Background(), &proto.CreateUserRequest{User: reqUser})
+	res, err := svc.CreateUser(context.Background(), req)
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
@@ -155,6 +159,7 @@ func TestCreateUser_DBError(t *testing.T) {
 		Email:     "fail@example.com",
 		Password:  "somepassword",
 	}
+	req := &proto.CreateUserRequest{User: reqUser}
 
 	// Simulate database query error (e.g., unique constraint violation)
 	mock.ExpectQuery(`INSERT INTO users`).
@@ -168,7 +173,7 @@ func TestCreateUser_DBError(t *testing.T) {
 		).
 		WillReturnError(errors.New("duplicate key value violates unique constraint"))
 
-	res, err := svc.CreateUser(context.Background(), &proto.CreateUserRequest{User: reqUser})
+	res, err := svc.CreateUser(context.Background(), req)
 
 	// Assert error status
 	if err == nil {
@@ -190,5 +195,62 @@ func TestCreateUser_DBError(t *testing.T) {
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("unfulfilled sqlmock expectations: %s", err)
+	}
+}
+
+func TestCreateUser_NilUser(t *testing.T) {
+	service := main.UserServiceImpl{}
+	_, err := service.CreateUser(context.Background(), &proto.CreateUserRequest{User: nil})
+
+	if err == nil {
+		t.Fatal("expected error for nil user request, got nil")
+	}
+
+	st, ok := status.FromError(err)
+	if !ok || st.Code() != codes.Internal {
+		t.Errorf("expected gRPC status Internal, got %v", st.Code())
+	}
+}
+
+func TestCreateUser_LongPasswordTruncation(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to open sqlmock: %v", err)
+	}
+	defer db.Close()
+
+	service := main.UserServiceImpl{DB: db}
+
+	// 80-byte long password (> 72 bytes limit for bcrypt)
+	longPassword := strings.Repeat("abcd", 20)
+	reqUser := &proto.User{
+		FirstName: "Jane",
+		LastName:  "Smith",
+		UserName:  "janesmith",
+		Email:     "jane@example.com",
+		Password:  longPassword,
+	}
+	req := &proto.CreateUserRequest{User: reqUser}
+	expectedID := int64(10)
+	mock.ExpectQuery(`INSERT INTO users`).
+		WithArgs(
+			reqUser.FirstName,
+			reqUser.LastName,
+			reqUser.UserName,
+			reqUser.Email,
+			sqlmock.AnyArg(),
+			sqlmock.AnyArg(),
+		).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
+
+	res, err := service.CreateUser(context.Background(), req)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	// Verify bcrypt hash matches the first 72 bytes of the original password
+	err = bcrypt.CompareHashAndPassword([]byte(res.User.Password), []byte(longPassword[:72]))
+	if err != nil {
+		t.Errorf("password truncation test failed: %v", err)
 	}
 }

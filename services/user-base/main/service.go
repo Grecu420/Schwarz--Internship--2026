@@ -34,8 +34,21 @@ func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequ
 
 	// hash password
 	user := req.User
+	if user == nil {
+		log.Printf("Empty request")
+		return nil, status.Error(codes.Internal, "empty request")
+
+	}
+
 	password := user.Password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	bytePassword := []byte(password)
+
+	if len(bytePassword) > 72 {
+		// truncate password to 72 bytes
+		bytePassword = bytePassword[:72]
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword(bytePassword, bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("Error hashing password: %v", err)
 		return nil, status.Error(codes.Internal, "failed to process password")
