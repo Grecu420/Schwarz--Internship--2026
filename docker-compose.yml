@@ -1,5 +1,16 @@
 
 services:
+
+  api-rest-gateway:
+    build:
+      context: .
+      dockerfile: services/api-rest-gateway/Dockerfile
+    container_name: api-rest-gateway
+    ports:
+      - "50053:8080"
+    depends_on:
+      - user-base-service
+
   user-base-service:
     build:
       context: .
