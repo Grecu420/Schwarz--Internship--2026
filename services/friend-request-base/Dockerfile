@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o service ./services/friend-request-base/main/service.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o service ./services/friend-request-base/main/
 
 # final stage
 FROM alpine:latest

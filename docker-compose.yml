@@ -7,6 +7,7 @@ services:
     container_name: user-base-service
     ports:
       - "50051:50051"
+    
   friend-request-base-service:
     build:
       context: .
@@ -14,7 +15,54 @@ services:
     container_name: friend-request-base-service
     ports:
       - "50052:50052"
+    secrets:
+      - db-password
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=database
+      - POSTGRES_SERVICE=db
+      - POSTGRES_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
 
+  db:
+    image: postgres:16-alpine
+    restart: always
+    container_name: db
+    secrets:
+      - db-password
+    volumes:
+      - ./db/init-scripts:/docker-entrypoint-initdb.d
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=database
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    expose:
+      - 5432
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dbgate:
+    image: dbgate/dbgate
+    container_name: dbgate_ui
+    restart: always
+    ports:
+      - "8080:3000"
+    depends_on:
+      - db
+    volumes:
+      - dbgate_data:/root/.dbgate
   
+volumes:
+  db-data:
+  dbgate_data:
 
- 
+
+secrets:
+  db-password:
+    file: db/password.txt

@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS friend_requests (
+    id VARCHAR(36) PRIMARY KEY,
+    sender_id VARCHAR(36) NOT NULL,
+    receiver_id VARCHAR(36) NOT NULL,
+    status INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
