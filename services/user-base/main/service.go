@@ -39,6 +39,7 @@ func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequ
 		return nil, status.Error(codes.Internal, "empty request")
 
 	}
+	fmt.Println(user)
 
 	password := user.Password
 	bytePassword := []byte(password)
