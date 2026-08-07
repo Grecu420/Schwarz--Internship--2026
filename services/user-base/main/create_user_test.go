@@ -16,20 +16,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// TestPing tests the gRPC Ping endpoint
-func TestPing(t *testing.T) {
-	svc := main.UserServiceImpl{}
-
-	res, err := svc.Ping(context.Background(), &proto.Empty{})
-	if err != nil {
-		t.Fatalf("expected no error, got: %v", err)
-	}
-
-	if res == nil || res.Message != "pong " {
-		t.Errorf("expected message 'pong ', got %v", res)
-	}
-}
-
 // TestCreateUser_Success verifies user creation, password hashing, and ID assignment
 func TestCreateUser_Success(t *testing.T) {
 	db, mock, err := sqlmock.New()

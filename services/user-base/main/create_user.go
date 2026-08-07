@@ -4,7 +4,6 @@ import (
 	"Schwarz--Internship--2026/services/user-base/main/proto"
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"time"
 
@@ -17,12 +16,6 @@ import (
 type UserServiceImpl struct {
 	proto.UnimplementedUserServiceServer
 	DB *sql.DB
-}
-
-// Ping implements [proto.UserServiceServer].
-func (u UserServiceImpl) Ping(context.Context, *proto.Empty) (*proto.Pong, error) {
-	fmt.Println("here")
-	return &proto.Pong{Message: "pong "}, nil
 }
 
 func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
