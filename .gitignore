@@ -2,3 +2,13 @@ services/friend-request-base/build
 services/friend-request-base/main/proto
 services/user-base/build
 services/user-base/main/proto
+
+# all generated proto files
+*.pb.go
+*.pb.gw.go
+
+# todo files
+TODO
+
+#vscode
+.vscode
