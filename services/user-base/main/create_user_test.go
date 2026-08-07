@@ -16,227 +16,158 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// TestCreateUser_Success verifies user creation, password hashing, and ID assignment
-func TestCreateUser_Success(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("failed to initialize sqlmock: %v", err)
-	}
-	defer db.Close()
-
-	svc := main.UserServiceImpl{DB: db}
-
-	rawPassword := "supersecret123"
-
-	reqUser := &proto.User{
-		FirstName: "John",
-		LastName:  "Doe",
-		UserName:  "johndoe",
-		Email:     "john@example.com",
-		Password:  rawPassword,
-	}
-
-	req := &proto.CreateUserRequest{User: reqUser}
-
-	expectedID := int64(10)
-
-	// Expect the INSERT query.
-	// We use sqlmock.AnyArg() for password (bcrypt salt varies) and timestamp.
-	mock.ExpectQuery(`INSERT INTO users`).
-		WithArgs(
-			reqUser.FirstName,
-			reqUser.LastName,
-			reqUser.UserName,
-			reqUser.Email,
-			sqlmock.AnyArg(), // hashed password
-			sqlmock.AnyArg(), // created_at
-		).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
-
-	res, err := svc.CreateUser(context.Background(), req)
-	if err != nil {
-		t.Fatalf("expected no error, got: %v", err)
-	}
-	resUser := res.User
-
-	// 1. Verify returned ID
-	if resUser.Id != expectedID {
-		t.Errorf("expected ID %d, got %d", expectedID, resUser.Id)
-	}
-
-	// 2. Verify password was hashed correctly
-	err = bcrypt.CompareHashAndPassword([]byte(resUser.Password), []byte(rawPassword))
-	if err != nil {
-		t.Errorf("returned password is not a valid hash of original password: %v", err)
-	}
-
-	// 3. Verify CreatedAt timestamp was automatically generated
-	if resUser.CreatedAt == nil {
-		t.Error("expected CreatedAt to be populated, got nil")
-	}
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("unfulfilled sqlmock expectations: %s", err)
-	}
-}
-
-// TestCreateUser_WithExistingCreatedAt verifies behavior when CreatedAt is already supplied
-func TestCreateUser_WithExistingCreatedAt(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("failed to initialize sqlmock: %v", err)
-	}
-	defer db.Close()
-
-	svc := main.UserServiceImpl{DB: db}
-
+func TestCreateUser(t *testing.T) {
 	customTime := time.Date(2026, time.January, 15, 10, 0, 0, 0, time.UTC)
-	reqUser := &proto.User{
-		FirstName: "Jane",
-		LastName:  "Smith",
-		UserName:  "janesmith",
-		Email:     "jane@example.com",
-		Password:  "password123",
-		CreatedAt: timestamppb.New(customTime),
-	}
-	req := &proto.CreateUserRequest{User: reqUser}
+	longPassword := strings.Repeat("abcd", 20) // 80 bytes (> 72-byte limit)
 	expectedID := int64(10)
 
-	mock.ExpectQuery(`INSERT INTO users`).
-		WithArgs(
-			reqUser.FirstName,
-			reqUser.LastName,
-			reqUser.UserName,
-			reqUser.Email,
-			sqlmock.AnyArg(),
-			customTime,
-		).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
-
-	res, err := svc.CreateUser(context.Background(), req)
-	if err != nil {
-		t.Fatalf("expected no error, got: %v", err)
-	}
-	resUser := res.User
-
-	if !resUser.CreatedAt.AsTime().Equal(customTime) {
-		t.Errorf("expected CreatedAt %v, got %v", customTime, resUser.CreatedAt.AsTime())
+	// Base user generator
+	baseUser := func() *proto.User {
+		return &proto.User{
+			FirstName: "John",
+			LastName:  "Doe",
+			UserName:  "johndoe",
+			Email:     "john@example.com",
+			Password:  "supersecret123",
+		}
 	}
 
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("unfulfilled sqlmock expectations: %s", err)
-	}
-}
+	tests := []struct {
+		name         string
+		getUser      func() *proto.User
+		setupMock    func(mock sqlmock.Sqlmock, u *proto.User)
+		expectedCode codes.Code
+		validate     func(t *testing.T, res *proto.CreateUserResponse, reqUser *proto.User)
+	}{
+		{name: "Success",
+			getUser: baseUser,
+			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
+				mock.ExpectQuery(`INSERT INTO users`).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
+					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
+			},
+			expectedCode: codes.OK,
+			validate: func(t *testing.T, res *proto.CreateUserResponse, reqUser *proto.User) {
 
-// TestCreateUser_DBError verifies gRPC error handling on database failures
-func TestCreateUser_DBError(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("failed to initialize sqlmock: %v", err)
-	}
-	defer db.Close()
-
-	svc := main.UserServiceImpl{DB: db}
-
-	reqUser := &proto.User{
-		FirstName: "Fail",
-		LastName:  "User",
-		UserName:  "failuser",
-		Email:     "fail@example.com",
-		Password:  "somepassword",
-	}
-	req := &proto.CreateUserRequest{User: reqUser}
-
-	// Simulate database query error (e.g., unique constraint violation)
-	mock.ExpectQuery(`INSERT INTO users`).
-		WithArgs(
-			reqUser.FirstName,
-			reqUser.LastName,
-			reqUser.UserName,
-			reqUser.Email,
-			sqlmock.AnyArg(),
-			sqlmock.AnyArg(),
-		).
-		WillReturnError(errors.New("duplicate key value violates unique constraint"))
-
-	res, err := svc.CreateUser(context.Background(), req)
-
-	// Assert error status
-	if err == nil {
-		t.Fatalf("expected an error, got nil")
-	}
-
-	st, ok := status.FromError(err)
-	if !ok {
-		t.Fatalf("expected gRPC status error, got non-status error: %v", err)
-	}
-
-	if st.Code() != codes.Internal {
-		t.Errorf("expected gRPC code Internal, got %v", st.Code())
-	}
-
-	if res != nil {
-		t.Errorf("expected nil user response on error, got %v", res)
-	}
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("unfulfilled sqlmock expectations: %s", err)
-	}
-}
-
-func TestCreateUser_NilUser(t *testing.T) {
-	service := main.UserServiceImpl{}
-	_, err := service.CreateUser(context.Background(), &proto.CreateUserRequest{User: nil})
-
-	if err == nil {
-		t.Fatal("expected error for nil user request, got nil")
-	}
-
-	st, ok := status.FromError(err)
-	if !ok || st.Code() != codes.Internal {
-		t.Errorf("expected gRPC status Internal, got %v", st.Code())
-	}
-}
-
-func TestCreateUser_LongPasswordTruncation(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("failed to open sqlmock: %v", err)
-	}
-	defer db.Close()
-
-	service := main.UserServiceImpl{DB: db}
-
-	// 80-byte long password (> 72 bytes limit for bcrypt)
-	longPassword := strings.Repeat("abcd", 20)
-	reqUser := &proto.User{
-		FirstName: "Jane",
-		LastName:  "Smith",
-		UserName:  "janesmith",
-		Email:     "jane@example.com",
-		Password:  longPassword,
-	}
-	req := &proto.CreateUserRequest{User: reqUser}
-	expectedID := int64(10)
-	mock.ExpectQuery(`INSERT INTO users`).
-		WithArgs(
-			reqUser.FirstName,
-			reqUser.LastName,
-			reqUser.UserName,
-			reqUser.Email,
-			sqlmock.AnyArg(),
-			sqlmock.AnyArg(),
-		).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
-
-	res, err := service.CreateUser(context.Background(), req)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+				if res.User.FirstName != reqUser.FirstName {
+					t.Errorf("expected FirstName %s, got %s", reqUser.FirstName, res.User.FirstName)
+				}
+				if res.User.LastName != reqUser.LastName {
+					t.Errorf("expected LastName %s, got %s", reqUser.LastName, res.User.LastName)
+				}
+				if res.User.UserName != reqUser.UserName {
+					t.Errorf("expected UserName %s, got %s", reqUser.UserName, res.User.UserName)
+				}
+				if res.User.Email != reqUser.Email {
+					t.Errorf("expected Email %s, got %s", reqUser.Email, res.User.Email)
+				}
+				if res.User.Id != expectedID {
+					t.Errorf("expected ID %d, got %d", expectedID, res.User.Id)
+				}
+				if err := bcrypt.CompareHashAndPassword([]byte(res.User.Password), []byte(reqUser.Password)); err != nil {
+					t.Errorf("returned password is not a valid hash: %v", err)
+				}
+				if res.User.CreatedAt == nil {
+					t.Error("expected CreatedAt to be populated, got nil")
+				}
+			},
+		},
+		{name: "WithExistingCreatedAt",
+			getUser: func() *proto.User {
+				u := baseUser()
+				u.CreatedAt = timestamppb.New(customTime)
+				return u
+			},
+			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
+				mock.ExpectQuery(`INSERT INTO users`).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), customTime).
+					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
+			},
+			expectedCode: codes.OK,
+			validate: func(t *testing.T, res *proto.CreateUserResponse, reqUser *proto.User) {
+				if !res.User.CreatedAt.AsTime().Equal(customTime) {
+					t.Errorf("expected CreatedAt %v, got %v", customTime, res.User.CreatedAt.AsTime())
+				}
+			},
+		},
+		{name: "DBError",
+			getUser: baseUser,
+			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
+				mock.ExpectQuery(`INSERT INTO users`).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
+					WillReturnError(errors.New("duplicate key value violates unique constraint"))
+			},
+			expectedCode: codes.Internal,
+			validate: func(t *testing.T, res *proto.CreateUserResponse, reqUser *proto.User) {
+				if res != nil {
+					t.Errorf("expected nil user response on error, got %v", res)
+				}
+			},
+		},
+		{name: "NilUser",
+			getUser:      func() *proto.User { return nil },
+			setupMock:    func(mock sqlmock.Sqlmock, u *proto.User) {},
+			expectedCode: codes.Internal,
+		},
+		{name: "LongPasswordTruncation",
+			getUser: func() *proto.User {
+				u := baseUser()
+				u.Password = longPassword
+				return u
+			},
+			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
+				mock.ExpectQuery(`INSERT INTO users`).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
+					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
+			},
+			expectedCode: codes.OK,
+			validate: func(t *testing.T, res *proto.CreateUserResponse, reqUser *proto.User) {
+				err := bcrypt.CompareHashAndPassword([]byte(res.User.Password), []byte(longPassword[:72]))
+				if err != nil {
+					t.Errorf("password truncation test failed: %v", err)
+				}
+			},
+		},
 	}
 
-	// Verify bcrypt hash matches the first 72 bytes of the original password
-	err = bcrypt.CompareHashAndPassword([]byte(res.User.Password), []byte(longPassword[:72]))
-	if err != nil {
-		t.Errorf("password truncation test failed: %v", err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("failed to initialize sqlmock: %v", err)
+			}
+			defer db.Close()
+
+			reqUser := tt.getUser()
+			if tt.setupMock != nil {
+				tt.setupMock(mock, reqUser)
+			}
+
+			svc := main.UserServiceImpl{DB: db}
+			res, err := svc.CreateUser(context.Background(), &proto.CreateUserRequest{User: reqUser})
+
+			if tt.expectedCode != codes.OK {
+				if err == nil {
+					t.Fatalf("expected error, got nil")
+				}
+				st, ok := status.FromError(err)
+				if !ok {
+					t.Fatalf("expected gRPC status error, got non-status error: %v", err)
+				}
+				if st.Code() != tt.expectedCode {
+					t.Errorf("expected gRPC code %v, got %v", tt.expectedCode, st.Code())
+				}
+			} else if err != nil {
+				t.Fatalf("expected no error, got: %v", err)
+			}
+
+			if tt.validate != nil {
+				tt.validate(t, res, reqUser)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("unfulfilled sqlmock expectations: %s", err)
+			}
+		})
 	}
 }

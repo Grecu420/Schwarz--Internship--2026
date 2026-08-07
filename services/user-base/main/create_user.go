@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 
+	pbf "google.golang.org/protobuf/proto"
+
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,7 +23,7 @@ type UserServiceImpl struct {
 func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
 
 	// hash password
-	user := req.User
+	user := pbf.Clone(req.User).(*proto.User)
 	if user == nil {
 		log.Printf("Empty request")
 		return nil, status.Error(codes.Internal, "empty request")
