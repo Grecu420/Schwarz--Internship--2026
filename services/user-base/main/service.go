@@ -1,43 +1,24 @@
 package main
 
 import (
+	"Schwarz--Internship--2026/services/common"
+	"Schwarz--Internship--2026/services/common/database"
 	"Schwarz--Internship--2026/services/user-base/main/proto"
-	"context"
 	"fmt"
+
 	"log"
 	"net"
-	"os"
-	"strconv"
 
 	"google.golang.org/grpc"
 )
 
-type UserServiceImpl struct {
-	proto.UnimplementedUserServiceServer
-}
-
-// Ping implements [proto.UserServiceServer].
-func (u UserServiceImpl) Ping(context.Context, *proto.Empty) (*proto.Pong, error) {
-	fmt.Println("here")
-	return &proto.Pong{Message: "pong "}, nil
-}
-
 const defaultPort = 50051
-
-func getPort() (int, error) {
-	s, ok := os.LookupEnv("PORT")
-	if !ok {
-		return 0, fmt.Errorf("no port variable")
-	}
-
-	return strconv.Atoi(s)
-
-}
 
 func main() {
 
+	// listen to port
 	var port int = defaultPort
-	p, err := getPort()
+	p, err := common.GetPort()
 	if err == nil {
 		port = p
 	}
@@ -46,10 +27,20 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	var opts []grpc.ServerOption
 
+	// connect to database
+	db, err := database.Connect()
+	if err != nil {
+		log.Fatalf("Failed to open DB connection: %v", err)
+	}
+	defer db.Close()
+
+	// crete grpc server
+	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterUserServiceServer(grpcServer, UserServiceImpl{})
-	grpcServer.Serve(lis)
+	proto.RegisterUserServiceServer(grpcServer, UserServiceImpl{DB: db})
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("Failed to serve gRPC: %v", err)
+	}
 
 }
