@@ -7,11 +7,6 @@ import "common/google/api/annotations.proto";
 option go_package = "main/proto";
 
 service UserService {
-    rpc Ping(Empty) returns (Pong) {
-        option (google.api.http) = {
-            get: "/ping"
-        };
-    }
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse){
         option (google.api.http) = {
             post: "/createuser"
@@ -19,13 +14,6 @@ service UserService {
         };
     }
 } 
-
-message Empty {}
-
-message Pong {
-    string message = 1;
-}
-
 
 message User {
   int64 id = 1;

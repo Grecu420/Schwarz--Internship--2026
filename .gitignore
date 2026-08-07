@@ -11,5 +11,6 @@ services/user-base/main/proto
 TODO
 
 #vscode
-
 .vscode
+
+.DS_Store
