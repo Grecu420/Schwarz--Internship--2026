@@ -3,7 +3,6 @@ package main
 import (
 	"Schwarz--Internship--2026/services/friend-request-base/main/proto"
 
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -46,10 +45,7 @@ func Connect() (*sql.DB, error) {
 	return db, nil
 }
 
-func (f FriendRequestServiceImpl) Ping(context.Context, *proto.Empty) (*proto.Pong, error) {
-	fmt.Println("here")
-	return &proto.Pong{Message: "pong "}, nil
-}
+
 
 const defaultPort = 50052
 

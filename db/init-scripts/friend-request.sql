@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS friend_requests (
-    id VARCHAR(36) PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     sender_id VARCHAR(36) NOT NULL,
     receiver_id VARCHAR(36) NOT NULL,
     status INT NOT NULL DEFAULT 1,
