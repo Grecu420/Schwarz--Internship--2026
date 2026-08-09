@@ -16,14 +16,14 @@ import (
 
 func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
 
-	// hash password
-	user := pbf.Clone(req.User).(*proto.User)
-	if user == nil {
+	if req.GetUser() == nil {
 		log.Printf("Empty request")
-		return nil, status.Error(codes.Internal, "empty request")
+		return nil, status.Error(codes.InvalidArgument, "empty request")
 
 	}
+	user := pbf.Clone(req.User).(*proto.User)
 
+	// hash password
 	password := user.Password
 	bytePassword := []byte(password)
 
