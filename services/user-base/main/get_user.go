@@ -18,7 +18,7 @@ func (u UserServiceImpl) GetUser(ctx context.Context, req *proto.GetUserRequest)
 	query := `
 		SELECT first_name, last_name, user_name, email, hashed_password, created_at
 		FROM users
-		WHERE id == $1
+		WHERE id = $1
 	`
 	var created_at time.Time
 
