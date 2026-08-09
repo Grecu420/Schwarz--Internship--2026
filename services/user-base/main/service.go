@@ -4,6 +4,7 @@ import (
 	"Schwarz--Internship--2026/services/common"
 	"Schwarz--Internship--2026/services/common/database"
 	"Schwarz--Internship--2026/services/user-base/main/proto"
+	"database/sql"
 	"fmt"
 
 	"log"
@@ -13,6 +14,11 @@ import (
 )
 
 const defaultPort = 50051
+
+type UserServiceImpl struct {
+	proto.UnimplementedUserServiceServer
+	DB *sql.DB
+}
 
 func main() {
 

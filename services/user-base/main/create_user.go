@@ -3,7 +3,6 @@ package main
 import (
 	"Schwarz--Internship--2026/services/user-base/main/proto"
 	"context"
-	"database/sql"
 	"log"
 	"time"
 
@@ -14,11 +13,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
-
-type UserServiceImpl struct {
-	proto.UnimplementedUserServiceServer
-	DB *sql.DB
-}
 
 func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
 

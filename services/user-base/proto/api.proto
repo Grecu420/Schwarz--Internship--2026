@@ -13,6 +13,11 @@ service UserService {
             body: "*"
         };
     }
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+        option (google.api.http) = {
+            get: "/getuser/{id}"
+        };
+    }
 } 
 
 message User {
@@ -27,10 +32,16 @@ message User {
 
 message CreateUserRequest{
     User user = 1;
-
 }
 
 message CreateUserResponse{
     User user = 1;
-    
+}
+
+message GetUserRequest{
+    int64 id = 1;
+}
+
+message GetUserResponse{
+    User user = 1;
 }
