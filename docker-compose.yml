@@ -6,6 +6,9 @@ services:
       context: .
       dockerfile: services/api-rest-gateway/Dockerfile
     container_name: api-rest-gateway
+    environment:
+      - USER-BASE_ENDPOINT=user-base-service:50051
+      - FRIEND-REQUEST-BASE_ENDPOINT=friend-request-base-service:50052
     ports:
       - "50053:8080"
     depends_on:
