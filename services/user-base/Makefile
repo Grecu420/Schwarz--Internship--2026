@@ -8,19 +8,18 @@ clean:
 	rm -rf main/proto build
 
 proto: 
+	protoc 	--go_out=.  \
+    		--go-grpc_out=. \
+		 	proto/user-api.proto
+
+main/proto/user-api.pb.go: proto/user-api.proto
 	protoc 	-I=.. \
 			--go_out=.  \
     		--go-grpc_out=. \
-		 	user-base/proto/api.proto
-
-main/proto/api.pb.go: proto/api.proto
-	protoc 	-I=.. \
-			--go_out=.  \
-    		--go-grpc_out=. \
-		 	./user-base/proto/api.proto
+		 	./user-base/proto/user-api.proto
 
 
-build: main/service.go main/proto/api.pb.go
+build: main/service.go main/proto/user-api.pb.go
 	go build -o ./build/service ./main
 
 run: build/service
