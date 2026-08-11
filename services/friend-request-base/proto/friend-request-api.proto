@@ -2,18 +2,11 @@ syntax = "proto3";
 package friendrequestbase;
 
 import "google/protobuf/timestamp.proto";
-import "common/google/api/annotations.proto";
-
 
 option go_package = "main/proto";
 
 service FriendRequestService {
-    rpc FriendRequestEndpoint (CreateFriendRequestRequest) returns (CreateFriendRequestResponse){
-        option (google.api.http) = {
-            post: "/friendrequest"
-            body: "*"
-        };
-      }
+    rpc FriendRequestEndpoint (CreateFriendRequestRequest) returns (CreateFriendRequestResponse);
 } 
 
 message FriendRequest {

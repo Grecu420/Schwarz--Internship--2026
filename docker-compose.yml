@@ -13,6 +13,7 @@ services:
       - "50053:8080"
     depends_on:
       - user-base-service
+      - friend-request-base-service
 
   user-base-service:
     build:
