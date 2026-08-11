@@ -1,7 +1,7 @@
 up: docker-compose.yml
 	docker compose up -d --build
 
-down:
+down: docker-compose.yml
 	docker compose down
 
 
@@ -13,3 +13,16 @@ fresh:
 	docker compose down -v
 	docker compose build --no-cache
 	docker compose up -d
+
+
+
+# 
+SUBDIRS := user-base friend-request-base api-rest-gateway
+
+
+# clean and build all services
+# Loop over subdirectories as targets
+all: $(SUBDIRS)
+.PHONY: all clean $(SUBDIRS)
+$(SUBDIRS):
+	$(MAKE) -C services/$@

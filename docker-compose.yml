@@ -1,5 +1,20 @@
 
 services:
+
+  api-rest-gateway:
+    build:
+      context: .
+      dockerfile: services/api-rest-gateway/Dockerfile
+    container_name: api-rest-gateway
+    environment:
+      - USER-BASE_ENDPOINT=user-base-service:50051
+      - FRIEND-REQUEST-BASE_ENDPOINT=friend-request-base-service:50052
+    ports:
+      - "50053:8080"
+    depends_on:
+      - user-base-service
+      - friend-request-base-service
+
   user-base-service:
     build:
       context: .
@@ -64,7 +79,8 @@ services:
     ports:
       - "8080:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - dbgate_data:/root/.dbgate
   

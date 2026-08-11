@@ -9,8 +9,6 @@ service FriendRequestService {
     rpc FriendRequestEndpoint (CreateFriendRequestRequest) returns (CreateFriendRequestResponse);
 } 
 
-
-
 message FriendRequest {
   int64 id = 1;
   string sender_id = 2;
