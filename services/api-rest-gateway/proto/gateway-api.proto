@@ -10,13 +10,13 @@ option go_package = "main/proto";
 service GatewayService {
     rpc CreateUser(userbase.CreateUserRequest) returns (userbase.CreateUserResponse){
         option (google.api.http) = {
-            post: "/createuser"
+            post: "/user"
             body: "*"
         };
     }
     rpc CreateFriendRequestEndpoint (friendrequestbase.CreateFriendRequestRequest) returns (friendrequestbase.CreateFriendRequestResponse){
         option (google.api.http) = {
-            post: "/friendrequest"
+            post: "/friend-request"
             body: "*"
         };
       }
