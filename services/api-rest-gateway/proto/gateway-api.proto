@@ -21,5 +21,12 @@ service GatewayService {
         };
       }
 
+    rpc UpdateFriendRequestEndpoint (friendrequestbase.UpdateFriendRequestRequest) returns (friendrequestbase.UpdateFriendRequestResponse){
+        option (google.api.http) = {
+            patch: "/friend-request"
+            body: "*"
+        };
+    }
+
 
 } 

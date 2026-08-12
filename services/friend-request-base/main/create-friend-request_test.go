@@ -88,7 +88,7 @@ func TestFriendRequestEndpoint(t *testing.T) {
 
 			svc := main.FriendRequestServiceImpl{DB: db}
 
-			res, err := svc.FriendRequestEndpoint(context.Background(), tt.request)
+			res, err := svc.CreateFriendRequestEndpoint(context.Background(), tt.request)
 
 			if tt.wantCode == codes.OK {
 

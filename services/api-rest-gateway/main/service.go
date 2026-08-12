@@ -25,7 +25,11 @@ func (u GatewayServiceImpl) CreateUser(ctx context.Context, req *proto.CreateUse
 	return u.userService.CreateUser(ctx, req)
 }
 func (u GatewayServiceImpl) CreateFriendRequestEndpoint(ctx context.Context, req *proto.CreateFriendRequestRequest) (*proto.CreateFriendRequestResponse, error) {
-	return u.friendRequestService.FriendRequestEndpoint(ctx, req)
+	return u.friendRequestService.CreateFriendRequestEndpoint(ctx, req)
+}
+
+func (u GatewayServiceImpl) UpdateFriendRequestEndpoint(ctx context.Context, req *proto.UpdateFriendRequestRequest) (*proto.UpdateFriendRequestResponse, error) {
+	return u.friendRequestService.UpdateFriendRequestEndpoint(ctx, req)
 }
 
 func (u GatewayServiceImpl) Close() {
