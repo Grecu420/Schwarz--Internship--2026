@@ -10,7 +10,7 @@ import (
 	"Schwarz--Internship--2026/services/friend-request-base/main/proto"
 )
 
-func (f *FriendRequestServiceImpl) UpdateFriendRequestEndpoint(ctx context.Context, req *proto.UpdateFriendRequestRequest) (*proto.UpdateFriendRequestResponse, error) {
+func (f *FriendRequestServiceImpl) UpdateFriendRequest(ctx context.Context, req *proto.UpdateFriendRequestRequest) (*proto.UpdateFriendRequestResponse, error) {
 
 	if req == nil || req.FriendRequest == nil {
 		return nil, status.Error(codes.InvalidArgument, "request and friend_request are mandatory")

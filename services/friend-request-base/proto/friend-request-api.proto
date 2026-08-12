@@ -7,8 +7,8 @@ import "google/protobuf/field_mask.proto";
 option go_package = "main/proto";
 
 service FriendRequestService {
-    rpc CreateFriendRequestEndpoint (CreateFriendRequestRequest) returns (CreateFriendRequestResponse);
-    rpc UpdateFriendRequestEndpoint (UpdateFriendRequestRequest) returns (UpdateFriendRequestResponse);
+    rpc CreateFriendRequest (CreateFriendRequestRequest) returns (CreateFriendRequestResponse);
+    rpc UpdateFriendRequest (UpdateFriendRequestRequest) returns (UpdateFriendRequestResponse);
 }
 
 message FriendRequest {

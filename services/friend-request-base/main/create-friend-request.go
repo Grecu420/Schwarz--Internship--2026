@@ -10,7 +10,7 @@ import (
 	"Schwarz--Internship--2026/services/friend-request-base/main/proto"
 )
 
-func (f *FriendRequestServiceImpl) CreateFriendRequestEndpoint(ctx context.Context, req *proto.CreateFriendRequestRequest) (*proto.CreateFriendRequestResponse, error) {
+func (f *FriendRequestServiceImpl) CreateFriendRequest(ctx context.Context, req *proto.CreateFriendRequestRequest) (*proto.CreateFriendRequestResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request can't be nil")
 	}

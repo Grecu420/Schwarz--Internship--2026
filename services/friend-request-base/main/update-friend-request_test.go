@@ -137,7 +137,7 @@ func TestUpdateFriendRequest(t *testing.T) {
 
 			svc := FriendRequestServiceImpl{DB: db}
 
-			res, err := svc.UpdateFriendRequestEndpoint(context.Background(), tt.request)
+			res, err := svc.UpdateFriendRequest(context.Background(), tt.request)
 
 			if tt.wantCode == codes.OK {
 
