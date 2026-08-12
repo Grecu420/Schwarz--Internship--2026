@@ -7,6 +7,7 @@ option go_package = "main/proto";
 
 service UserService {
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) ;
 } 
 
 message User {
@@ -21,10 +22,16 @@ message User {
 
 message CreateUserRequest{
     User user = 1;
-
 }
 
 message CreateUserResponse{
     User user = 1;
-    
+}
+
+message GetUserRequest{
+    int64 id = 1;
+}
+
+message GetUserResponse{
+    User user = 1;
 }

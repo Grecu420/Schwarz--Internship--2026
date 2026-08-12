@@ -107,7 +107,7 @@ func TestCreateUser(t *testing.T) {
 		{name: "NilUser",
 			getUser:      func() *proto.User { return nil },
 			setupMock:    func(mock sqlmock.Sqlmock, u *proto.User) {},
-			expectedCode: codes.Internal,
+			expectedCode: codes.InvalidArgument,
 		},
 		{name: "LongPasswordTruncation",
 			getUser: func() *proto.User {
