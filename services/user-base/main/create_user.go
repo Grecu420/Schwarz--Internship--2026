@@ -4,7 +4,6 @@ import (
 	"Schwarz--Internship--2026/services/user-base/main/proto"
 	"context"
 	"log"
-	"time"
 
 	pbf "google.golang.org/protobuf/proto"
 
@@ -37,29 +36,14 @@ func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequ
 		log.Printf("Error hashing password: %v", err)
 		return nil, status.Error(codes.Internal, "failed to process password")
 	}
+	user.Password = string(hashedPassword)
 
 	// set current time
-	var createdAt time.Time
 	if user.CreatedAt == nil {
 		user.CreatedAt = timestamppb.Now()
 	}
-	createdAt = user.CreatedAt.AsTime()
 
-	// execute query + get new id
-	query := `
-		INSERT INTO users (id, first_name, last_name, user_name, email, hashed_password, created_at)
-		VALUES (DEFAULT, $1, $2, $3, $4, $5, $6)
-		RETURNING id
-	`
-	var id int64
-	err = u.DB.QueryRow(query,
-		user.FirstName,
-		user.LastName,
-		user.UserName,
-		user.Email,
-		string(hashedPassword),
-		createdAt).Scan(&id)
-
+	id, err := InsertUser(u.DB, user)
 	if err != nil {
 		log.Printf("Failed to insert user: %v", err)
 		return nil, status.Errorf(codes.Internal, "failed to save user to database: %v", err)
@@ -67,7 +51,6 @@ func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequ
 
 	// update user for return
 	user.Id = id
-	user.Password = string(hashedPassword)
 
 	return &proto.CreateUserResponse{User: user}, nil
 }
