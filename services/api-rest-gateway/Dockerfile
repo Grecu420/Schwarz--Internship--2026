@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o service ./services/api-rest-gateway/main/service.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o service ./services/api-rest-gateway/main/
 
 # final stage
 FROM alpine:latest
