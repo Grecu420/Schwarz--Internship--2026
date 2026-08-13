@@ -2,25 +2,26 @@ package main
 
 import (
 	"Schwarz--Internship--2026/services/user-base/main/proto"
+	"context"
 	"database/sql"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func SelectUser(db *sql.DB, id int64) (*proto.User, error) {
+func SelectUser(ctx context.Context, db *sql.DB, email string) (*proto.User, error) {
 
 	var resUser proto.User
-	resUser.Id = id
 
 	query := `
-		SELECT first_name, last_name, user_name, email, hashed_password, created_at
+		SELECT id, first_name, last_name, user_name, email, hashed_password, created_at
 		FROM users
-		WHERE id = $1
+		WHERE email = $1
 	`
 	var created_at time.Time
 
-	err := db.QueryRow(query, id).Scan(
+	err := db.QueryRowContext(ctx, query, email).Scan(
+		&resUser.Id,
 		&resUser.FirstName,
 		&resUser.LastName,
 		&resUser.UserName,
@@ -37,7 +38,7 @@ func SelectUser(db *sql.DB, id int64) (*proto.User, error) {
 	return &resUser, nil
 }
 
-func InsertUser(db *sql.DB, user *proto.User) (int64, error) {
+func InsertUser(ctx context.Context, db *sql.DB, user *proto.User) (int64, error) {
 	// execute query + get new id
 	query := `
 		INSERT INTO users (id, first_name, last_name, user_name, email, hashed_password, created_at)
@@ -45,7 +46,8 @@ func InsertUser(db *sql.DB, user *proto.User) (int64, error) {
 		RETURNING id
 	`
 	var id int64
-	err := db.QueryRow(query,
+	err := db.QueryRowContext(ctx,
+		query,
 		user.FirstName,
 		user.LastName,
 		user.UserName,

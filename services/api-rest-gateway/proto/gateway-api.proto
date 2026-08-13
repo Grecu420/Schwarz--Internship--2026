@@ -16,7 +16,7 @@ service GatewayService {
     }
     rpc GetUser(userbase.GetUserRequest) returns (userbase.GetUserResponse){
         option (google.api.http) = {
-            get: "/user/{id}"
+            get: "/user"
         };
     }
 

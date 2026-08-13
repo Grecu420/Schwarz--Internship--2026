@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
+func (u UserServiceImpl) CreateUser(ctx context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
 
 	if req.GetUser() == nil {
 		log.Printf("Empty request")
@@ -43,7 +43,7 @@ func (u UserServiceImpl) CreateUser(c context.Context, req *proto.CreateUserRequ
 		user.CreatedAt = timestamppb.Now()
 	}
 
-	id, err := InsertUser(u.DB, user)
+	id, err := InsertUser(ctx, u.DB, user)
 	if err != nil {
 		log.Printf("Failed to insert user: %v", err)
 		return nil, status.Errorf(codes.Internal, "failed to save user to database: %v", err)

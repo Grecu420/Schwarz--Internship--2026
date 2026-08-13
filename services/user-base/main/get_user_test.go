@@ -15,11 +15,13 @@ import (
 
 func TestGetUser(t *testing.T) {
 	customTime := time.Date(2026, time.January, 15, 10, 0, 0, 0, time.UTC)
-	targetID := int64(10)
+	targetEmail := "john@example.com"
 
 	baseRequest := &proto.GetUserRequest{
-		Id: targetID,
+		Email: targetEmail,
 	}
+
+	expectedSQL := `SELECT id, first_name, last_name, user_name, email, hashed_password, created_at FROM users WHERE email = \$1`
 
 	tests := []struct {
 		name         string
@@ -33,11 +35,11 @@ func TestGetUser(t *testing.T) {
 			request: baseRequest,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.GetUserRequest) {
 				rows := sqlmock.NewRows([]string{
-					"first_name", "last_name", "user_name", "email", "hashed_password", "created_at",
-				}).AddRow("John", "Doe", "johndoe", "john@example.com", "hashed_pass_123", customTime)
+					"id", "first_name", "last_name", "user_name", "email", "hashed_password", "created_at",
+				}).AddRow(10, "John", "Doe", "johndoe", "john@example.com", "hashed_pass_123", customTime)
 
-				mock.ExpectQuery(`SELECT first_name, last_name, user_name, email, hashed_password, created_at FROM users WHERE id = \$1`).
-					WithArgs(req.GetId()).
+				mock.ExpectQuery(expectedSQL).
+					WithArgs(req.GetEmail()).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -45,8 +47,8 @@ func TestGetUser(t *testing.T) {
 				if res == nil || res.User == nil {
 					t.Fatalf("expected non-nil user response, got nil")
 				}
-				if res.User.Id != req.GetId() {
-					t.Errorf("expected ID %d, got %d", req.GetId(), res.User.Id)
+				if res.User.Id != 10 {
+					t.Errorf("expected ID %d, got %d", 10, res.User.Id)
 				}
 				if res.User.FirstName != "John" {
 					t.Errorf("expected FirstName John, got %s", res.User.FirstName)
@@ -75,8 +77,8 @@ func TestGetUser(t *testing.T) {
 			name:    "UserNotFound",
 			request: baseRequest,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.GetUserRequest) {
-				mock.ExpectQuery(`SELECT first_name, last_name, user_name, email, hashed_password, created_at FROM users WHERE id = \$1`).
-					WithArgs(req.GetId()).
+				mock.ExpectQuery(expectedSQL).
+					WithArgs(req.GetEmail()).
 					WillReturnError(sql.ErrNoRows)
 			},
 			expectedCode: codes.NotFound,

@@ -13,20 +13,20 @@ import (
 
 func (u UserServiceImpl) GetUser(ctx context.Context, req *proto.GetUserRequest) (*proto.GetUserResponse, error) {
 
-	id := req.GetId()
-	if id == 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "missing id")
+	email := req.GetEmail()
+	if email == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "missing email")
 	}
 
-	resUser, err := SelectUser(u.DB, id)
+	resUser, err := SelectUser(ctx, u.DB, email)
 	if errors.Is(err, sql.ErrNoRows) {
-		log.Printf("Missing user %d: %v", id, err)
+		log.Printf("Missing user (email: %s): %v", email, err)
 		return nil, status.Errorf(codes.NotFound,
-			"failed to get user %d from database: %v", id, err)
+			"failed to get user (email: %s) from database: %v", email, err)
 	} else if err != nil {
-		log.Printf("Failed to get user %d: %v", id, err)
+		log.Printf("Failed to get user (email: %s): %v", email, err)
 		return nil, status.Errorf(codes.Internal,
-			"failed to get user %d from database: %v", id, err)
+			"failed to get user (email: %s) from database: %v", email, err)
 	}
 
 	return &proto.GetUserResponse{User: resUser}, nil
