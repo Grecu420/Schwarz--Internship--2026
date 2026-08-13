@@ -17,7 +17,7 @@ fresh:
 
 
 # 
-SUBDIRS := user-base friend-request-base api-rest-gateway
+SUBDIRS := user-base friend-request-base auth-base api-rest-gateway 
 
 
 # clean and build all services
