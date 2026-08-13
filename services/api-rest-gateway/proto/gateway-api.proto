@@ -14,18 +14,19 @@ service GatewayService {
             body: "*"
         };
     }
-    rpc GetUser(userbase.GetUserRequest) returns (userbase.GetUserResponse){
-        option (google.api.http) = {
-            get: "/user/{id}"
-        };
-    }
-
-    rpc CreateFriendRequestEndpoint (friendrequestbase.CreateFriendRequestRequest) returns (friendrequestbase.CreateFriendRequestResponse){
+    rpc CreateFriendRequest(friendrequestbase.CreateFriendRequestRequest) returns (friendrequestbase.CreateFriendRequestResponse){
         option (google.api.http) = {
             post: "/friend-request"
             body: "*"
         };
       }
+
+    rpc UpdateFriendRequest (friendrequestbase.UpdateFriendRequestRequest) returns (friendrequestbase.UpdateFriendRequestResponse){
+        option (google.api.http) = {
+            patch: "/friend-request"
+            body: "*"
+        };
+    }
 
 
 } 

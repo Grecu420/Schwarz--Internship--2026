@@ -1,23 +1,40 @@
 package main
 
 import (
-	"Schwarz--Internship--2026/services/api-rest-gateway/main/proto"
+	"Schwarz--Internship--2026/services/friend-request-base/main/proto"
 	"context"
 	"database/sql"
 	"fmt"
 	"strings"
 )
 
-func InsertFriendRequestInDB(ctx context.Context, db *sql.DB, id string, senderID string, receiverID string, status int32) error {
+func InsertFriendRequestInDB(ctx context.Context, db *sql.DB, senderID string, receiverID string, status int32) (int64, error) {
+	var generatedID int64
 
 	query := `
-		INSERT INTO friend_requests (id, sender_id, receiver_id, status)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO friend_requests (sender_id, receiver_id, status)
+		VALUES ($1, $2, $3)
+		RETURNING id
 	`
 
-	_, err := db.ExecContext(ctx, query, id, senderID, receiverID, status)
+	err := db.QueryRowContext(ctx, query, senderID, receiverID, status).Scan(&generatedID)
 
-	return err
+	return generatedID, err
+}
+
+func UpdateFriendRequestStatusInDB(ctx context.Context, db *sql.DB, id int64, newStatus proto.RequestStatus) (int64, error) {
+	query := `
+		UPDATE friend_requests
+		SET status = $1
+		WHERE id = $2
+	`
+
+	res, err := db.ExecContext(ctx, query, newStatus, id)
+	if err != nil {
+		return 0, err
+	}
+
+	return res.RowsAffected()
 }
 
 func SelectFriendListInDB(ctx context.Context, db *sql.DB, offsetID int64, page_size int64, senderID string, receiverID string, status proto.RequestStatus) {

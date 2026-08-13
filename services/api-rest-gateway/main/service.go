@@ -24,13 +24,12 @@ type GatewayServiceImpl struct {
 func (u GatewayServiceImpl) CreateUser(ctx context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
 	return u.userService.CreateUser(ctx, req)
 }
-
-func (u GatewayServiceImpl) GetUser(ctx context.Context, req *proto.GetUserRequest) (*proto.GetUserResponse, error) {
-	return u.userService.GetUser(ctx, req)
+func (u GatewayServiceImpl) CreateFriendRequest(ctx context.Context, req *proto.CreateFriendRequestRequest) (*proto.CreateFriendRequestResponse, error) {
+	return u.friendRequestService.CreateFriendRequest(ctx, req)
 }
 
-func (u GatewayServiceImpl) CreateFriendRequestEndpoint(ctx context.Context, req *proto.CreateFriendRequestRequest) (*proto.CreateFriendRequestResponse, error) {
-	return u.friendRequestService.FriendRequestEndpoint(ctx, req)
+func (u GatewayServiceImpl) UpdateFriendRequest(ctx context.Context, req *proto.UpdateFriendRequestRequest) (*proto.UpdateFriendRequestResponse, error) {
+	return u.friendRequestService.UpdateFriendRequest(ctx, req)
 }
 
 func (u GatewayServiceImpl) Close() {
