@@ -33,7 +33,7 @@ func getStatus(status string) proto.RequestStatus {
 	}
 }
 
-func hashFilter(senderId, receiverId string, status proto.RequestStatus) string {
+func HashFilter(senderId, receiverId string, status proto.RequestStatus) string {
 	h := fnv.New32a()
 	h.Write([]byte(senderId))
 	h.Write([]byte(receiverId))
@@ -55,7 +55,7 @@ func getPayload(nextPageToken string) (*TokenPayload, error) {
 
 }
 
-func buildNextPageToken(id int64, filterHash string) (string, error) {
+func BuildNextPageToken(id int64, filterHash string) (string, error) {
 
 	newToken := TokenPayload{
 		ID:         id,
@@ -100,7 +100,7 @@ func (f *FriendRequestServiceImpl) ListFriendRequests(ctx context.Context, req *
 
 	// 3. Compute filter hash
 	// This is to prevent filter from being changed after the first page is sent
-	filterHash := hashFilter(senderIdFilter, receiverIdFilter, statusFilter)
+	filterHash := HashFilter(senderIdFilter, receiverIdFilter, statusFilter)
 
 	// 4. Extract payload from nextPageToken
 	var offsetId int64
@@ -132,11 +132,14 @@ func (f *FriendRequestServiceImpl) ListFriendRequests(ctx context.Context, req *
 	if len(friendRequests) == int(pageSize)+1 {
 		last := friendRequests[len(friendRequests)-1]
 		newOffsetId := last.GetId()
-		nextPageToken, err = buildNextPageToken(newOffsetId, filterHash)
+		nextPageToken, err = BuildNextPageToken(newOffsetId, filterHash)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed nextPageToken creation: %v", err)
 		}
+
+		// cut to requested page size
+		friendRequests = friendRequests[:pageSize]
 	}
 
-	return &proto.ListFriendRequestsResponse{NextPageToken: nextPageToken, Requests: friendRequests[:pageSize]}, nil
+	return &proto.ListFriendRequestsResponse{NextPageToken: nextPageToken, Requests: friendRequests}, nil
 }
