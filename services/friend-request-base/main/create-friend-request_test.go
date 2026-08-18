@@ -13,7 +13,7 @@ import (
 	"Schwarz--Internship--2026/services/friend-request-base/main/proto"
 )
 
-func TestFriendRequestEndpoint(t *testing.T) {
+func TestCreateFriendRequest(t *testing.T) {
 
 	tests := []struct {
 		name        string
@@ -88,7 +88,7 @@ func TestFriendRequestEndpoint(t *testing.T) {
 
 			svc := main.FriendRequestServiceImpl{DB: db}
 
-			res, err := svc.FriendRequestEndpoint(context.Background(), tt.request)
+			res, err := svc.CreateFriendRequest(context.Background(), tt.request)
 
 			if tt.wantCode == codes.OK {
 

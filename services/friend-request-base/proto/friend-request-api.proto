@@ -2,33 +2,69 @@ syntax = "proto3";
 package friendrequestbase;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
 
 option go_package = "main/proto";
 
 service FriendRequestService {
-    rpc FriendRequestEndpoint (CreateFriendRequestRequest) returns (CreateFriendRequestResponse);
-} 
+  rpc CreateFriendRequest (CreateFriendRequestRequest) returns (CreateFriendRequestResponse);
+  rpc UpdateFriendRequest (UpdateFriendRequestRequest) returns (UpdateFriendRequestResponse);
+  rpc ListFriendRequests(ListFriendRequestsRequest) returns (ListFriendRequestsResponse);
+}
 
 message FriendRequest {
-  int64 id = 1;
-  string sender_id = 2;
-  string receiver_id = 3;   
-  RequestStatus status = 4;  // ENUM: 'pending', 'accepted', 'rejected'
-  google.protobuf.Timestamp created_at = 5;
+  int64                     id          = 1;
+  string                    sender_id   = 2;
+  string                    receiver_id = 3;
+  RequestStatus             status      = 4;  // ENUM: 'pending', 'accepted', 'rejected'
+  google.protobuf.Timestamp created_at  = 5;
 }
 
 enum RequestStatus {
-  STATUS_UNKNOWN = 0;
-  STATUS_PENDING = 1; // mapped to 1 in the db
+  STATUS_UNKNOWN  = 0;
+  STATUS_PENDING  = 1; // mapped to 1 in the db
   STATUS_ACCEPTED = 2; // mapped to 2 in the db
   STATUS_REJECTED = 3; // mapped to 3 in the db
 }
 
 message CreateFriendRequestRequest {
-  string sender_id = 1;
+  string sender_id   = 1;
   string receiver_id = 2;
 }
 
 message CreateFriendRequestResponse {
   FriendRequest request = 1;
+}
+
+message UpdateFriendRequestRequest
+{
+  FriendRequest             friend_request = 1;
+  google.protobuf.FieldMask field_mask     = 2;
+}
+
+message UpdateFriendRequestResponse
+{
+  FriendRequest friend_request = 1;
+}
+
+message ListFriendRequestsRequest
+{
+  string                                  nextPageToken = 1;
+  int64                                   pageSize      = 2;
+  repeated ListFriendRequestsFiltersOneOf filters       = 3;
+}
+
+message ListFriendRequestsResponse
+{
+  string                 nextPageToken = 1;
+  repeated FriendRequest requests      = 2;
+}
+
+message ListFriendRequestsFiltersOneOf {
+  oneof filter
+  {
+    string        receiver_id = 1;
+    string        sender_id   = 2;
+    RequestStatus status      = 3;
+  }
 }

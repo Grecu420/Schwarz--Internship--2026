@@ -10,7 +10,7 @@ import (
 	"Schwarz--Internship--2026/services/friend-request-base/main/proto"
 )
 
-func (f *FriendRequestServiceImpl) FriendRequestEndpoint(ctx context.Context, req *proto.CreateFriendRequestRequest) (*proto.CreateFriendRequestResponse, error) {
+func (f *FriendRequestServiceImpl) CreateFriendRequest(ctx context.Context, req *proto.CreateFriendRequestRequest) (*proto.CreateFriendRequestResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request can't be nil")
 	}
@@ -27,15 +27,8 @@ func (f *FriendRequestServiceImpl) FriendRequestEndpoint(ctx context.Context, re
 	}
 
 	var reqStatus int32 = 1
-	var generatedID int64
 
-	query := `
-		INSERT INTO friend_requests (sender_id, receiver_id, status)
-		VALUES ($1, $2, $3)
-		RETURNING id
-	`
-
-	err := f.DB.QueryRowContext(ctx, query, senderID, receiverID, reqStatus).Scan(&generatedID)
+	generatedID, err := InsertFriendRequestInDB(ctx, f.DB, senderID, receiverID, reqStatus)
 	if err != nil {
 		log.Printf("DB error when inserting the request (sender: %s, receiver: %s): %v", senderID, receiverID, err)
 		return nil, status.Error(codes.Internal, "an internal error occurred; please try again")

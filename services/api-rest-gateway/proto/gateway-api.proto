@@ -22,9 +22,16 @@ service GatewayService {
     };
   }
 
-  rpc CreateFriendRequestEndpoint (friendrequestbase.CreateFriendRequestRequest) returns (friendrequestbase.CreateFriendRequestResponse){
+  rpc CreateFriendRequest (friendrequestbase.CreateFriendRequestRequest) returns (friendrequestbase.CreateFriendRequestResponse){
     option (google.api.http) = {
       post: "/friend-request"
+      body: "*"
+    };
+  }
+
+  rpc UpdateFriendRequest (friendrequestbase.UpdateFriendRequestRequest) returns (friendrequestbase.UpdateFriendRequestResponse){
+    option (google.api.http) = {
+      patch: "/friend-request"
       body: "*"
     };
   }
