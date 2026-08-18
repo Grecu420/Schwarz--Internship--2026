@@ -3,26 +3,25 @@ package main
 import (
 	"Schwarz--Internship--2026/services/auth-base/main/proto"
 	"Schwarz--Internship--2026/services/common"
-	"Schwarz--Internship--2026/services/common/database"
-	"database/sql"
 	"fmt"
 
 	"log"
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const defaultPort = 50053
 
 type AuthServiceImpl struct {
 	proto.UnimplementedAuthServiceServer
-	DB *sql.DB
+	UserService proto.UserServiceClient
 }
 
 func main() {
 
-	// listen to port
+	// Listen to port
 	var port int = defaultPort
 	p, err := common.GetPort()
 	if err == nil {
@@ -34,17 +33,23 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	// connect to database
-	db, err := database.Connect()
+	// Connect to user-base endpoint
+	user_base_endpoint, err := common.GetRequiredEnv("USER-BASE_ENDPOINT")
 	if err != nil {
-		log.Fatalf("Failed to open DB connection: %v", err)
-	}
-	defer db.Close()
+		log.Fatalf("Failed to register gateway: %v", err)
 
-	// crete grpc server
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterAuthServiceServer(grpcServer, AuthServiceImpl{DB: db})
+	}
+	dialOpts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+
+	connUB, err := grpc.NewClient(user_base_endpoint, dialOpts...)
+	if err != nil {
+		log.Fatalf("failed to connect: %v", err)
+	}
+	defer connUB.Close()
+
+	// Create grpc server
+	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
+	proto.RegisterAuthServiceServer(grpcServer, AuthServiceImpl{UserService: proto.NewUserServiceClient(connUB)})
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve gRPC: %v", err)
 	}

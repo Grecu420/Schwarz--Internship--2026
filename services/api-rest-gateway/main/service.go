@@ -2,7 +2,7 @@ package main
 
 import (
 	"Schwarz--Internship--2026/services/api-rest-gateway/main/proto"
-	"Schwarz--Internship--2026/services/common"
+
 	"context"
 	"log"
 	"net"
@@ -12,70 +12,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
-
-type GatewayServiceImpl struct {
-	proto.UnimplementedGatewayServiceServer
-	userBaseConn          *grpc.ClientConn
-	userService           proto.UserServiceClient
-	friendRequestBaseConn *grpc.ClientConn
-	friendRequestService  proto.FriendRequestServiceClient
-}
-
-func (u GatewayServiceImpl) CreateUser(ctx context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
-	return u.userService.CreateUser(ctx, req)
-}
-
-func (u GatewayServiceImpl) GetUser(ctx context.Context, req *proto.GetUserRequest) (*proto.GetUserResponse, error) {
-	return u.userService.GetUser(ctx, req)
-}
-
-func (u GatewayServiceImpl) CreateFriendRequestEndpoint(ctx context.Context, req *proto.CreateFriendRequestRequest) (*proto.CreateFriendRequestResponse, error) {
-	return u.friendRequestService.FriendRequestEndpoint(ctx, req)
-}
-
-func (u GatewayServiceImpl) Close() {
-	u.userBaseConn.Close()
-	u.friendRequestBaseConn.Close()
-}
-
-func createGatewayServer() GatewayServiceImpl {
-
-	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
-
-	// get endpoints
-	user_base_endpoint, err := common.GetRequiredEnv("USER-BASE_ENDPOINT")
-	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
-
-	}
-	friend_request_base_endpoint, err := common.GetRequiredEnv("FRIEND-REQUEST-BASE_ENDPOINT")
-	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
-
-	}
-
-	// create clients
-	connUB, err := grpc.NewClient(user_base_endpoint, opts...)
-	if err != nil {
-		log.Fatalf("failed to connect: %v", err)
-	}
-	clientUB := proto.NewUserServiceClient(connUB)
-
-	connFRB, err := grpc.NewClient(friend_request_base_endpoint, opts...)
-	if err != nil {
-		log.Fatalf("failed to connect: %v", err)
-	}
-	clientFRB := proto.NewFriendRequestServiceClient(connFRB)
-
-	return GatewayServiceImpl{
-		userBaseConn:          connUB,
-		friendRequestBaseConn: connFRB,
-		userService:           clientUB,
-		friendRequestService:  clientFRB,
-	}
-}
 
 func main() {
 

@@ -17,5 +17,5 @@ message LoginRequest {
 
 
 message LoginResponse {
-  string JWT = 1;
+    string JWT = 1;
 }
