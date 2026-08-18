@@ -66,7 +66,7 @@ func (service AuthServiceImpl) Login(ctx context.Context, req *proto.LoginReques
 		return nil, err
 	}
 
-	// Compare passwordwith hashed password
+	// Compare password with hashed password
 	hashed_password := res.GetUser().GetPassword()
 	err = bcrypt.CompareHashAndPassword([]byte(hashed_password), []byte(password))
 	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
