@@ -5,18 +5,14 @@ import (
 	"context"
 )
 
-func (service GatewayServiceImpl) getFriendRequestServiceClient() proto.FriendRequestServiceClient {
-	return proto.NewFriendRequestServiceClient(service.friendRequestBaseConn)
-}
-
 func (service GatewayServiceImpl) CreateFriendRequest(ctx context.Context, req *proto.CreateFriendRequestRequest) (*proto.CreateFriendRequestResponse, error) {
-	return service.getFriendRequestServiceClient().CreateFriendRequest(ctx, req)
+	return service.friendRequestService.CreateFriendRequest(ctx, req)
 }
 
 func (service GatewayServiceImpl) UpdateFriendRequest(ctx context.Context, req *proto.UpdateFriendRequestRequest) (*proto.UpdateFriendRequestResponse, error) {
-	return service.getFriendRequestServiceClient().UpdateFriendRequest(ctx, req)
+	return service.friendRequestService.UpdateFriendRequest(ctx, req)
 }
 
 func (service GatewayServiceImpl) ListFriendRequests(ctx context.Context, req *proto.ListFriendRequestsRequest) (*proto.ListFriendRequestsResponse, error) {
-	return service.getFriendRequestServiceClient().ListFriendRequests(ctx, req)
+	return service.friendRequestService.ListFriendRequests(ctx, req)
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"Schwarz--Internship--2026/services/api-rest-gateway/main/proto"
 	"Schwarz--Internship--2026/services/common"
+	"fmt"
 
 	"context"
 	"log"
@@ -16,59 +17,22 @@ import (
 
 type GatewayServiceImpl struct {
 	proto.UnimplementedGatewayServiceServer
-	userBaseConn          *grpc.ClientConn
-	friendRequestBaseConn *grpc.ClientConn
-	authBaseConn          *grpc.ClientConn
+	userService          proto.UserServiceClient
+	friendRequestService proto.FriendRequestServiceClient
+	authService          proto.AuthServiceClient
 }
 
-func (service GatewayServiceImpl) Close() {
-	service.userBaseConn.Close()
-	service.friendRequestBaseConn.Close()
-	service.authBaseConn.Close()
-}
-
-func createGatewayServer() GatewayServiceImpl {
-
-	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	}
-
-	// get endpoints
-	user_base_endpoint, err := common.GetRequiredEnv("USER-BASE_ENDPOINT")
+func createConnection(envVar string, opts []grpc.DialOption) (*grpc.ClientConn, error) {
+	endpoint, err := common.GetRequiredEnv(envVar)
 	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
-
+		return nil, fmt.Errorf("Failed to register endpoint: %w", err)
 	}
-	friend_request_base_endpoint, err := common.GetRequiredEnv("FRIEND-REQUEST-BASE_ENDPOINT")
+	conn, err := grpc.NewClient(endpoint, opts...)
 	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
+		return nil, fmt.Errorf("Failed to connect: %w", err)
+	}
+	return conn, nil
 
-	}
-	auth_base_endpoint, err := common.GetRequiredEnv("AUTH-BASE_ENDPOINT")
-	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
-
-	}
-
-	// create clients
-	connUB, err := grpc.NewClient(user_base_endpoint, opts...)
-	if err != nil {
-		log.Fatalf("failed to connect: %v", err)
-	}
-	connFRB, err := grpc.NewClient(friend_request_base_endpoint, opts...)
-	if err != nil {
-		log.Fatalf("failed to connect: %v", err)
-	}
-	connAB, err := grpc.NewClient(auth_base_endpoint, opts...)
-	if err != nil {
-		log.Fatalf("failed to connect: %v", err)
-	}
-
-	return GatewayServiceImpl{
-		userBaseConn:          connUB,
-		friendRequestBaseConn: connFRB,
-		authBaseConn:          connAB,
-	}
 }
 
 func main() {
@@ -78,10 +42,36 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
-	server := createGatewayServer()
-	defer server.Close()
 
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+
+	connUB, err := createConnection("USER-BASE_ENDPOINT", opts)
+	if err != nil {
+		log.Fatalf("Failed to register gateway: %v", err)
+	}
+	defer connUB.Close()
+
+	connFRB, err := createConnection("FRIEND-REQUEST-BASE_ENDPOINT", opts)
+	if err != nil {
+		log.Fatalf("Failed to register gateway: %v", err)
+	}
+	defer connFRB.Close()
+
+	connAB, err := createConnection("AUTH-BASE_ENDPOINT", opts)
+	if err != nil {
+		log.Fatalf("Failed to register gateway: %v", err)
+	}
+	defer connAB.Close()
+
+	server := GatewayServiceImpl{
+		userService:          proto.NewUserServiceClient(connUB),
+		friendRequestService: proto.NewFriendRequestServiceClient(connFRB),
+		authService:          proto.NewAuthServiceClient(connAB),
+	}
+
+	grpcServer := grpc.NewServer()
 	proto.RegisterGatewayServiceServer(grpcServer, server)
 	go func() {
 		log.Println("gRPC server listening on :50051")
@@ -93,8 +83,6 @@ func main() {
 	// 2. Start gRPC-Gateway HTTP Proxy
 	ctx := context.Background()
 	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-
 	err = proto.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, "localhost:50051", opts)
 	if err != nil {
 		log.Fatalf("failed to register gateway: %v", err)

@@ -5,14 +5,10 @@ import (
 	"context"
 )
 
-func (service GatewayServiceImpl) getUserServiceClient() proto.UserServiceClient {
-	return proto.NewUserServiceClient(service.userBaseConn)
-}
-
 func (service GatewayServiceImpl) CreateUser(ctx context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
-	return service.getUserServiceClient().CreateUser(ctx, req)
+	return service.userService.CreateUser(ctx, req)
 }
 
 func (service GatewayServiceImpl) GetUser(ctx context.Context, req *proto.GetUserRequest) (*proto.GetUserResponse, error) {
-	return service.getUserServiceClient().GetUser(ctx, req)
+	return service.userService.GetUser(ctx, req)
 }

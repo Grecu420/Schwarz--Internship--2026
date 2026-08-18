@@ -5,10 +5,6 @@ import (
 	"context"
 )
 
-func (service GatewayServiceImpl) getAuthServiceClient() proto.AuthServiceClient {
-	return proto.NewAuthServiceClient(service.authBaseConn)
-}
-
 func (service GatewayServiceImpl) Login(ctx context.Context, req *proto.LoginRequest) (*proto.LoginResponse, error) {
-	return service.getAuthServiceClient().Login(ctx, req)
+	return service.authService.Login(ctx, req)
 }
