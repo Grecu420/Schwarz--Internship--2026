@@ -36,9 +36,9 @@ service GatewayService {
     };
   }
 
-  rpc ListFriendRequests(friendrequestbase.ListFriendRequestsRequest) returns (friendrequestbase.ListFriendRequestsResponse){
+  rpc ListFriendRequests (friendrequestbase.ListFriendRequestsRequest) returns (friendrequestbase.ListFriendRequestsResponse){
     option (google.api.http) = {
-      get: "/friend-request-list"
+      post: "/friend-request-list"
       body: "*"
     };
   }
