@@ -36,6 +36,14 @@ service GatewayService {
     };
   }
 
+  rpc ListFriendRequests(friendrequestbase.ListFriendRequestsRequest) returns (friendrequestbase.ListFriendRequestsResponse){
+    option (google.api.http) = {
+      get: "/friend-request-list"
+      body: "*"
+    };
+  }
+
+
   rpc Login(auth.LoginRequest) returns (auth.LoginResponse) {
     option (google.api.http) = {
       post: "/login"
