@@ -82,8 +82,6 @@ func SelectFriendListInDB(ctx context.Context, db *sql.DB, offsetID int64, page_
 	baseQuery += fmt.Sprintf(" ORDER BY id LIMIT $%d;", argNum)
 	args = append(args, page_size+1)
 
-	fmt.Println(baseQuery)
-
 	// Execute query
 	rows, err := db.QueryContext(ctx, baseQuery, args...)
 	if err != nil {
