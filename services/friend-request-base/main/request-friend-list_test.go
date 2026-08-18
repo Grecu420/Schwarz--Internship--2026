@@ -239,6 +239,25 @@ func TestListFriendRequests(t *testing.T) {
 			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListFriendRequestsRequest) {},
 			expectedCode: codes.InvalidArgument,
 		},
+		{name: "FilterMismatch_DuplicateFilter",
+			request: &proto.ListFriendRequestsRequest{
+				PageSize: 2,
+				Filters: []*proto.ListFriendRequestsFiltersOneOf{
+					{
+						Filter: &proto.ListFriendRequestsFiltersOneOf_SenderId{
+							SenderId: "user_a",
+						},
+					},
+					{
+						Filter: &proto.ListFriendRequestsFiltersOneOf_SenderId{
+							SenderId: "user_b",
+						},
+					},
+				},
+			},
+			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListFriendRequestsRequest) {},
+			expectedCode: codes.InvalidArgument,
+		},
 		{name: "DatabaseError",
 			request: baseRequest,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListFriendRequestsRequest) {

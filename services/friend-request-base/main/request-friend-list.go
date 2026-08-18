@@ -82,7 +82,7 @@ func (f *FriendRequestServiceImpl) ListFriendRequests(ctx context.Context, req *
 	}
 
 	// 2. Get filters
-	// Currently, filters later in the list override earlier ones
+	// Duplicate filters (filters that have the same field) cause an error
 	filters := req.GetFilters()
 	var statusFilter proto.RequestStatus
 	var senderIdFilter string
@@ -90,10 +90,19 @@ func (f *FriendRequestServiceImpl) ListFriendRequests(ctx context.Context, req *
 	for _, f := range filters {
 		switch f.GetFilter().(type) {
 		case *proto.ListFriendRequestsFiltersOneOf_ReceiverId:
+			if receiverIdFilter != "" {
+				return nil, status.Errorf(codes.InvalidArgument, "duplicate receiver_id filter")
+			}
 			receiverIdFilter = f.GetReceiverId()
 		case *proto.ListFriendRequestsFiltersOneOf_SenderId:
+			if senderIdFilter != "" {
+				return nil, status.Errorf(codes.InvalidArgument, "duplicate sender_id filter")
+			}
 			senderIdFilter = f.GetSenderId()
 		case *proto.ListFriendRequestsFiltersOneOf_Status:
+			if statusFilter != proto.RequestStatus_STATUS_UNKNOWN {
+				return nil, status.Errorf(codes.InvalidArgument, "duplicate status_id filter")
+			}
 			statusFilter = f.GetStatus()
 		}
 	}
