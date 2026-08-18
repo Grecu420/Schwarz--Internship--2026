@@ -63,7 +63,7 @@ func (service AuthServiceImpl) Login(ctx context.Context, req *proto.LoginReques
 	// Get user with email
 	res, err := service.UserService.GetUser(ctx, &proto.GetUserRequest{Email: email})
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.NotFound, "user not found: %v", err)
 	}
 
 	// Compare password with hashed password
