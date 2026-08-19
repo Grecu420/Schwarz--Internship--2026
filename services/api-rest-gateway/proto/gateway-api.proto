@@ -3,30 +3,51 @@ package gateway;
 
 import "user-base/proto/user-api.proto";
 import "friend-request-base/proto/friend-request-api.proto";
+import "auth-base/proto/auth-api.proto";
+
 import "common/google/api/annotations.proto";
 
 option go_package = "main/proto";
 
 service GatewayService {
-    rpc CreateUser(userbase.CreateUserRequest) returns (userbase.CreateUserResponse){
-        option (google.api.http) = {
-            post: "/user"
-            body: "*"
-        };
-    }
-    rpc CreateFriendRequest(friendrequestbase.CreateFriendRequestRequest) returns (friendrequestbase.CreateFriendRequestResponse){
-        option (google.api.http) = {
-            post: "/friend-request"
-            body: "*"
-        };
-      }
+  rpc CreateUser(userbase.CreateUserRequest) returns (userbase.CreateUserResponse){
+    option (google.api.http) = {
+      post: "/user"
+      body: "*"
+    };
+  }
+  
+  rpc GetUser(userbase.GetUserRequest) returns (userbase.GetUserResponse){
+    option (google.api.http) = {
+      get: "/user"
+    };
+  }
 
-    rpc UpdateFriendRequest (friendrequestbase.UpdateFriendRequestRequest) returns (friendrequestbase.UpdateFriendRequestResponse){
-        option (google.api.http) = {
-            patch: "/friend-request"
-            body: "*"
-        };
-    }
+  rpc CreateFriendRequest (friendrequestbase.CreateFriendRequestRequest) returns (friendrequestbase.CreateFriendRequestResponse){
+    option (google.api.http) = {
+      post: "/friend-request"
+      body: "*"
+    };
+  }
 
+  rpc UpdateFriendRequest (friendrequestbase.UpdateFriendRequestRequest) returns (friendrequestbase.UpdateFriendRequestResponse){
+    option (google.api.http) = {
+      patch: "/friend-request"
+      body: "*"
+    };
+  }
 
-} 
+  rpc ListFriendRequests (friendrequestbase.ListFriendRequestsRequest) returns (friendrequestbase.ListFriendRequestsResponse){
+    option (google.api.http) = {
+      post: "/friend-request-list"
+      body: "*"
+    };
+  }
+
+  rpc Login(auth.LoginRequest) returns (auth.LoginResponse) {
+    option (google.api.http) = {
+      post: "/login"
+      body: "*"
+    };
+  }
+}

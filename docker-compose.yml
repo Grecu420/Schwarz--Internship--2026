@@ -9,6 +9,7 @@ services:
     environment:
       - USER-BASE_ENDPOINT=user-base-service:50051
       - FRIEND-REQUEST-BASE_ENDPOINT=friend-request-base-service:50052
+      - AUTH-BASE_ENDPOINT=auth-base-service:50053
     ports:
       - "50053:8080"
     depends_on:
@@ -50,6 +51,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  auth-base-service:
+    build:
+      context: .
+      dockerfile: services/auth-base/Dockerfile
+    container_name: auth-base-service
+    environment:
+      - USER-BASE_ENDPOINT=user-base-service:50051
+    ports:
+      - "50055:50053"
+    depends_on:
+      - user-base-service
 
   db:
     image: postgres:16-alpine
