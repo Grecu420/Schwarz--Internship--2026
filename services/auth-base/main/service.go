@@ -20,7 +20,6 @@ type AuthServiceImpl struct {
 }
 
 func main() {
-
 	// Listen to port
 	var port int = defaultPort
 	p, err := common.GetPort()
