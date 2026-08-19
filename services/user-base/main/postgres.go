@@ -10,15 +10,14 @@ import (
 )
 
 func SelectUser(ctx context.Context, db *sql.DB, email string) (*proto.User, error) {
-
 	var resUser proto.User
+	var created_at time.Time
 
 	query := `
 		SELECT id, first_name, last_name, user_name, email, hashed_password, created_at
 		FROM users
 		WHERE email = $1
 	`
-	var created_at time.Time
 
 	err := db.QueryRowContext(ctx, query, email).Scan(
 		&resUser.Id,

@@ -12,12 +12,13 @@ import (
 )
 
 func (u UserServiceImpl) GetUser(ctx context.Context, req *proto.GetUserRequest) (*proto.GetUserResponse, error) {
-
+	// Get email
 	email := req.GetEmail()
 	if email == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "missing email")
 	}
 
+	// Get user from database
 	resUser, err := SelectUser(ctx, u.DB, email)
 	if errors.Is(err, sql.ErrNoRows) {
 		log.Printf("Missing user (email: %s): %v", email, err)

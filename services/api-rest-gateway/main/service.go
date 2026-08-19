@@ -36,7 +36,6 @@ func createConnection(envVar string, opts []grpc.DialOption) (*grpc.ClientConn, 
 }
 
 func main() {
-
 	// 1. Start gRPC Server
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {

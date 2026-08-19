@@ -45,7 +45,6 @@ func GenerateToken(userID int64, duration time.Duration, secretKey []byte) (stri
 }
 
 func (service AuthServiceImpl) Login(ctx context.Context, req *proto.LoginRequest) (*proto.LoginResponse, error) {
-
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request can't be nil")
 	}

@@ -7,14 +7,12 @@ option go_package = "main/proto";
 
 service AuthService {
     rpc Login(LoginRequest) returns (LoginResponse);
-
 } 
 
 message LoginRequest {
     string email = 1;
     string password = 2;
 }
-
 
 message LoginResponse {
     string JWT = 1;
