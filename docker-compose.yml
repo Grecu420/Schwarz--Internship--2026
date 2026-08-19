@@ -6,6 +6,8 @@ services:
       context: .
       dockerfile: services/api-rest-gateway/Dockerfile
     container_name: api-rest-gateway
+    secrets:
+      - auth-key
     environment:
       - USER-BASE_ENDPOINT=user-base-service:50051
       - FRIEND-REQUEST-BASE_ENDPOINT=friend-request-base-service:50052
@@ -57,6 +59,8 @@ services:
       context: .
       dockerfile: services/auth-base/Dockerfile
     container_name: auth-base-service
+    secrets:
+      - auth-key
     environment:
       - USER-BASE_ENDPOINT=user-base-service:50051
     ports:
@@ -105,3 +109,5 @@ volumes:
 secrets:
   db-password:
     file: db/password.txt
+  auth-key:
+    file: secrets/auth_key.txt

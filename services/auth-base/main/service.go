@@ -4,6 +4,7 @@ import (
 	"Schwarz--Internship--2026/services/auth-base/main/proto"
 	"Schwarz--Internship--2026/services/common"
 	"fmt"
+	"os"
 
 	"log"
 	"net"
@@ -17,9 +18,17 @@ const defaultPort = 50053
 type AuthServiceImpl struct {
 	proto.UnimplementedAuthServiceServer
 	UserService proto.UserServiceClient
+	Secret      []byte
 }
 
 func main() {
+
+	// get secret
+	secret, err := os.ReadFile("/run/secrets/auth-key")
+	if err != nil {
+		log.Fatalf("failed to read auth secret: %v", err)
+	}
+
 	// Listen to port
 	var port int = defaultPort
 	p, err := common.GetPort()
@@ -48,7 +57,7 @@ func main() {
 
 	// Create grpc server
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
-	proto.RegisterAuthServiceServer(grpcServer, AuthServiceImpl{UserService: proto.NewUserServiceClient(connUB)})
+	proto.RegisterAuthServiceServer(grpcServer, AuthServiceImpl{UserService: proto.NewUserServiceClient(connUB), Secret: secret})
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve gRPC: %v", err)
 	}
