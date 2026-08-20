@@ -40,7 +40,7 @@ func ParseToken(tokenStr string, secret []byte) (*LoginClaims, error) {
 
 	claims := LoginClaims{}
 
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &claims, func(token *jwt.Token) (interface{}, error) {
 		return secret, nil
 	})
 
