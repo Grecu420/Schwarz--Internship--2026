@@ -44,7 +44,7 @@ func main() {
 	// crete grpc server
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterUserServiceServer(grpcServer, UserServiceImpl{DB: db})
+	proto.RegisterUserServiceServer(grpcServer, &UserServiceImpl{DB: db})
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve gRPC: %v", err)
 	}

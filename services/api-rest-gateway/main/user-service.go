@@ -12,3 +12,7 @@ func (service GatewayServiceImpl) CreateUser(ctx context.Context, req *proto.Cre
 func (service GatewayServiceImpl) GetUser(ctx context.Context, req *proto.GetUserRequest) (*proto.GetUserResponse, error) {
 	return service.userService.GetUser(ctx, req)
 }
+
+func (service GatewayServiceImpl) ListUsers(ctx context.Context, req *proto.ListUsersRequest) (*proto.ListUsersResponse, error) {
+	return service.userService.ListUsers(ctx, req)
+}

@@ -50,4 +50,11 @@ service GatewayService {
       body: "*"
     };
   }
+
+  rpc ListUsers (userbase.ListUsersRequest) returns (userbase.ListUsersResponse) {
+    option (google.api.http) = {
+      post: "/list-users"
+      body: "*"
+    };
+  }
 }
