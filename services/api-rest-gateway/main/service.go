@@ -4,6 +4,7 @@ import (
 	"Schwarz--Internship--2026/services/api-rest-gateway/main/proto"
 	"Schwarz--Internship--2026/services/common"
 	"fmt"
+	"os"
 
 	"context"
 	"log"
@@ -36,7 +37,14 @@ func createConnection(envVar string, opts []grpc.DialOption) (*grpc.ClientConn, 
 }
 
 func main() {
-	// 1. Start gRPC Server
+
+	// Read auth secret
+	secret, err := os.ReadFile("/run/secrets/auth-key")
+	if err != nil {
+		log.Fatal("missing secret")
+	}
+
+	// Obtain connections
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -70,7 +78,11 @@ func main() {
 		authService:          proto.NewAuthServiceClient(connAB),
 	}
 
-	grpcServer := grpc.NewServer()
+	// Start gRPC Server
+	authInterceptor := authInterceptor{secret: secret}
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(authInterceptor.AuthInterceptor),
+	)
 	proto.RegisterGatewayServiceServer(grpcServer, server)
 	go func() {
 		log.Println("gRPC server listening on :50051")
@@ -79,7 +91,7 @@ func main() {
 		}
 	}()
 
-	// 2. Start gRPC-Gateway HTTP Proxy
+	// Start gRPC-Gateway HTTP Proxy
 	ctx := context.Background()
 	mux := runtime.NewServeMux()
 	err = proto.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, "localhost:50051", opts)

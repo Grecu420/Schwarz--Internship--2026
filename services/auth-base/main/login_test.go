@@ -3,12 +3,12 @@ package main_test
 import (
 	"Schwarz--Internship--2026/services/auth-base/main"
 	"Schwarz--Internship--2026/services/auth-base/main/proto"
+	"Schwarz--Internship--2026/services/common/auth"
 	"context"
 	"errors"
 	"testing"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -36,18 +36,14 @@ func TestGenerateToken(t *testing.T) {
 	userID := int64(100)
 	duration := 24 * time.Hour
 
-	tokenStr, err := main.GenerateToken(userID, duration, secret)
+	tokenStr, err := auth.GenerateToken(userID, duration, "auth-base-service", secret)
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
 	}
 
-	claims := &main.LoginClaims{}
+	claims, err := auth.ParseToken(tokenStr, secret)
 
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return secret, nil
-	})
-
-	if err != nil || !token.Valid {
+	if err != nil {
 		t.Fatalf("failed to parse generated token: %v", err)
 	}
 	if claims.UserID != userID {
@@ -99,12 +95,9 @@ func TestLogin(t *testing.T) {
 					t.Fatal("expected non-empty JWT token response")
 				}
 
-				claims := &main.LoginClaims{}
-				token, err := jwt.ParseWithClaims(res.JWT, claims, func(token *jwt.Token) (interface{}, error) {
-					return secret, nil
-				})
+				claims, err := auth.ParseToken(res.JWT, secret)
 
-				if err != nil || !token.Valid {
+				if err != nil {
 					t.Fatalf("returned JWT is invalid: %v", err)
 				}
 				if claims.UserID != userID {
@@ -166,6 +159,7 @@ func TestLogin(t *testing.T) {
 
 			svc := main.AuthServiceImpl{
 				UserService: mockSvc,
+				Secret:      secret,
 			}
 
 			res, err := svc.Login(context.Background(), tt.req)
