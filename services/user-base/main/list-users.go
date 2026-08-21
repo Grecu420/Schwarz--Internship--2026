@@ -77,7 +77,7 @@ func (s *UserServiceImpl) ListUsers(ctx context.Context, req *proto.ListUsersReq
 			if lastNameFilter != "" {
 				return nil, status.Errorf(codes.InvalidArgument, "duplicate last_name filter")
 			}
-			lastNameFilter = v.LastName.GetValue() // Idem
+			lastNameFilter = v.LastName.GetValue() 
 		}
 	}
 

@@ -20,12 +20,10 @@ func TestListUsers(t *testing.T) {
 		PageSize: 2,
 	}
 
-	// Helper tokens matching the HashFilter in user-base
 	emptyHash := main.HashFilter("", "")
 	validToken, _ := main.BuildNextPageToken(10, emptyHash)
 	mismatchedToken, _ := main.BuildNextPageToken(10, "mismatched_hash")
 
-	// Pre-computed hash for filtered token test
 	firstNameHash := main.HashFilter("Andrei", "")
 	filteredValidToken, _ := main.BuildNextPageToken(5, firstNameHash)
 
@@ -46,7 +44,7 @@ func TestListUsers(t *testing.T) {
 
 				query := `SELECT id, first_name, last_name, user_name, email FROM users ORDER BY id ASC LIMIT $1;`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
-					WithArgs(int64(3)). // PageSize + 1
+					WithArgs(int64(3)). 
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -76,7 +74,7 @@ func TestListUsers(t *testing.T) {
 
 				query := `SELECT id, first_name, last_name, user_name, email FROM users ORDER BY id ASC LIMIT $1;`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
-					WithArgs(int64(3)). // PageSize + 1
+					WithArgs(int64(3)).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -84,7 +82,7 @@ func TestListUsers(t *testing.T) {
 				if res == nil {
 					t.Fatalf("expected non-nil response, got nil")
 				}
-				if len(res.Users) != 2 { // It should slice off the extra record
+				if len(res.Users) != 2 { 
 					t.Errorf("expected 2 sliced users, got %d", len(res.Users))
 				}
 				if res.NextPageToken == "" {
@@ -203,7 +201,7 @@ func TestListUsers(t *testing.T) {
 						},
 					},
 				},
-				NextPageToken: validToken, // validToken a fost generat pt filtre goale
+				NextPageToken: validToken,
 			},
 			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListUsersRequest) {},
 			expectedCode: codes.InvalidArgument,
@@ -290,7 +288,7 @@ func TestListUsers(t *testing.T) {
 				tt.setupMock(mock, tt.request)
 			}
 
-			// NOTĂ: Asigură-te că folosești structura și pointerul corect pentru receiver-ul tău!
+			
 			svc := &main.UserServiceImpl{DB: db}
 			res, err := svc.ListUsers(context.Background(), tt.request)
 
