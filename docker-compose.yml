@@ -1,4 +1,3 @@
-
 services:
 
   api-rest-gateway:
@@ -68,6 +67,15 @@ services:
     depends_on:
       - user-base-service
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80" 
+    depends_on:
+      - api-rest-gateway 
+
   db:
     image: postgres:16-alpine
     restart: always
@@ -100,11 +108,10 @@ services:
         condition: service_healthy
     volumes:
       - dbgate_data:/root/.dbgate
-  
+
 volumes:
   db-data:
   dbgate_data:
-
 
 secrets:
   db-password:
