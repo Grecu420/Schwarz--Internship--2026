@@ -2,11 +2,11 @@
 // versions:
 //   protoc-gen-ts_proto  v2.12.0
 //   protoc               v7.35.1
-// source: proto/user-api.proto
+// source: user-api.proto
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import { Timestamp } from "../google/protobuf/timestamp";
+import { Timestamp } from "./google/protobuf/timestamp";
 
 export const protobufPackage = "userbase";
 
