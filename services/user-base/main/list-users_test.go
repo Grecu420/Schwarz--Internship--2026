@@ -15,7 +15,6 @@ import (
 )
 
 func TestListUsers(t *testing.T) {
-
 	baseRequest := &proto.ListUsersRequest{
 		PageSize: 2,
 	}
@@ -287,8 +286,6 @@ func TestListUsers(t *testing.T) {
 			if tt.setupMock != nil {
 				tt.setupMock(mock, tt.request)
 			}
-
-			
 			svc := &main.UserServiceImpl{DB: db}
 			res, err := svc.ListUsers(context.Background(), tt.request)
 

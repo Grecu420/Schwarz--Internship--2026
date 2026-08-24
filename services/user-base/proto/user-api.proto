@@ -40,7 +40,7 @@ message GetUserResponse{
 message ListUsersRequest{
     string nextPageToken = 1;
     int64 pageSize = 2;
-    repeated ListUsersFiltersOneOf filters= 3;
+    repeated ListUsersFiltersOneOf filters = 3;
 }
 
 message ListUsersResponse{   

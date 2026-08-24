@@ -52,7 +52,6 @@ func BuildNextPageToken(id int64, filterHash string) (string, error) {
 }
 
 func (s *UserServiceImpl) ListUsers(ctx context.Context, req *proto.ListUsersRequest) (*proto.ListUsersResponse, error) {
-
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request can't be nil")
 	}

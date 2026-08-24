@@ -69,7 +69,6 @@ func InsertUser(ctx context.Context, db *sql.DB, user *proto.User) (int64, error
 }
 
 func SelectUserListInDB(ctx context.Context, db *sql.DB, offsetID int64, pageSize int64, firstName string, lastName string) ([]*proto.User, error) {
-
 	baseQuery := `SELECT id, first_name, last_name, user_name, email FROM users`
 
 	var whereClauses []string
