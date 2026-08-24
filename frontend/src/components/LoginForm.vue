@@ -1,29 +1,6 @@
 <template>
-  <div class="register-container">
-    <form @submit.prevent="handleRegister" class="register-form">
-      <h2>Create an Account</h2>
-
-
-      <div class="form-group">
-        <label for="firstName">First Name</label>
-        <input id="firstName" v-model="formData.firstName" type="text" placeholder="John" />
-        <span class="error-text" v-if="v$.firstName.$error">First name is required (min 2 chars).</span>
-      </div>
-
-
-      <div class="form-group">
-        <label for="lastName">Last Name</label>
-        <input id="lastName" v-model="formData.lastName" type="text" placeholder="Doe" />
-        <span class="error-text" v-if="v$.lastName.$error">Last name is required (min 2 chars).</span>
-      </div>
-
-
-      <div class="form-group">
-        <label for="userName">Username</label>
-        <input id="userName" v-model="formData.userName" type="text" placeholder="johndoe123" />
-        <span class="error-text" v-if="v$.userName.$error">Username must be between 4 and 20 chars.</span>
-      </div>
-
+  <div class="login-container">
+    <form @submit.prevent="handleLogin" class="login-form">
 
       <div class="form-group">
         <label for="email">Email Address</label>
@@ -31,18 +8,15 @@
         <span class="error-text" v-if="v$.email.$error">Please enter a valid email address.</span>
       </div>
 
-
       <div class="form-group">
         <label for="password">Password</label>
         <input id="password" v-model="formData.password" type="password" placeholder="••••••••" />
         <span class="error-text" v-if="v$.password.$error">Password must be at least 8 characters.</span>
       </div>
 
-
       <button type="submit" class="submit-btn" :disabled="isLoading">
-        {{ isLoading ? 'Loading...' : 'Register' }}
+        {{ isLoading ? 'Loading...' : 'Login' }}
       </button>
-
 
       <p v-if="errorMessage" class="global-error">{{ errorMessage }}</p>
       <p v-if="successMessage" class="global-success">{{ successMessage }}</p>
@@ -53,23 +27,21 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
-import { required, email, minLength, maxLength } from '@vuelidate/validators'
+import { required, email, minLength } from '@vuelidate/validators'
+
+import { LoginRequest, LoginResponse } from '@/generated/proto/auth-api'
+import { useRouter } from 'vue-router';
+import api from '@/api';
 
 
-import { CreateUserRequest, User } from '../generated/proto/user-api'
+const router = useRouter();
 
 const formData = reactive({
-  firstName: '',
-  lastName: '',
-  userName: '',
   email: '',
   password: ''
 })
 
 const rules = {
-  firstName: { required, minLength: minLength(2) },
-  lastName: { required, minLength: minLength(2) },
-  userName: { required, minLength: minLength(4), maxLength: maxLength(20) },
   email: { required, email },
   password: { required, minLength: minLength(8) }
 }
@@ -79,8 +51,9 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 
-const handleRegister = async () => {
+const handleLogin = async () => {
 
+  // Validate before request
   const isFormValid = await v$.value.$validate()
   if (!isFormValid) return
 
@@ -90,32 +63,20 @@ const handleRegister = async () => {
 
   try {
 
-    const userPayload = User.create({
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      userName: formData.userName,
+    const loginRequest = LoginRequest.create({
       email: formData.email,
       password: formData.password
     })
+    // Send request
 
-    const requestObj = CreateUserRequest.create({ user: userPayload })
-    const jsonBody = CreateUserRequest.toJSON(requestObj)
+    const response = await api.post<LoginResponse>('/api/login', loginRequest);
+    const token = response.data.JWT;
 
-    const response = await fetch('/api/user', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(jsonBody)
-    })
+    localStorage.setItem('jwt_token', token);
 
-    if (!response.ok) {
-      throw new Error(`Server responded with status: ${response.status}`)
-    }
-
-    successMessage.value = 'User was successfully created!'
-    Object.assign(formData, { firstName: '', lastName: '', userName: '', email: '', password: '' })
-    v$.value.$reset()
+    successMessage.value = 'Successful login'
+    // Exit login page
+    router.push("/")
 
   } catch (error: any) {
     errorMessage.value = error.message || 'Error connecting to the server.'
@@ -126,7 +87,7 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-.register-container {
+.login-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -134,7 +95,7 @@ const handleRegister = async () => {
   font-family: Arial, sans-serif;
 }
 
-.register-form {
+.login-form {
   background: #f9f9f9;
   padding: 2rem;
   border-radius: 8px;
@@ -143,7 +104,7 @@ const handleRegister = async () => {
   max-width: 400px;
 }
 
-.register-form h2 {
+.login-form h2 {
   text-align: center;
   margin-bottom: 1.5rem;
   color: #333;
