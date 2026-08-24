@@ -30,19 +30,17 @@ const router = createRouter({
 })
 
 // Navigation Guard runs before every route transition
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, from) => {
   
 
   const token = localStorage.getItem("jwt_token")
 
   if (to.meta.requiresAuth && token === null) {
-    // Redirect unauthenticated users to login
-    next({ name: 'login' });
+    // Redirect unauthenticated users to login and save target URL
+    return { name: 'login' , query: { redirect: to.fullPath }}
   } else if (to.name === 'login' && token !== null) {
     // Prevent logged-in users from returning to login page
-    next({ name: 'main' });
-  } else {
-    next();
+    return { name: 'main' }
   }
 });
 

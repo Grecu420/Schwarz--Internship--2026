@@ -30,11 +30,12 @@ import { useVuelidate } from '@vuelidate/core'
 import { required, email, minLength } from '@vuelidate/validators'
 
 import { LoginRequest, LoginResponse } from '@/generated/proto/auth-api'
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
 
 
 const router = useRouter();
+const route = useRoute();
 
 const formData = reactive({
   email: '',
@@ -76,7 +77,8 @@ const handleLogin = async () => {
 
     successMessage.value = 'Successful login'
     // Exit login page
-    router.push("/")
+    const redirectPath = (route.query.redirect as string) || '/';
+    router.push(redirectPath);
 
   } catch (error: any) {
     errorMessage.value = error.message || 'Error connecting to the server.'
