@@ -30,6 +30,10 @@ func (m *mockUserService) CreateUser(ctx context.Context, in *proto.CreateUserRe
 	return nil, errors.New("unexpected CreateUser call")
 }
 
+func (m *mockUserService) ListUsers(ctx context.Context, in *proto.ListUsersRequest, opts ...grpc.CallOption) (*proto.ListUsersResponse, error) {
+	return nil, errors.New("unexpected ListUsers call")
+}
+
 var secret = []byte("123")
 
 func TestGenerateToken(t *testing.T) {
