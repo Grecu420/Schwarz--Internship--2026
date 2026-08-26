@@ -92,10 +92,7 @@ const handleLogin = async () => {
           errorMessage.value = 'Wrong password';
           break;
         default:
-          errorMessage.value =
-            error.response?.data?.message ||
-            error.message ||
-            'Error connecting to the server.';
+          errorMessage.value = 'Error connecting to the server.';
           break;
       }
     } else if (error instanceof Error) {
