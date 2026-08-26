@@ -19,7 +19,6 @@
       </button>
 
       <p v-if="errorMessage" class="global-error">{{ errorMessage }}</p>
-      <p v-if="successMessage" class="global-success">{{ successMessage }}</p>
     </form>
   </div>
 </template>
@@ -32,6 +31,7 @@ import { required, email, minLength } from '@vuelidate/validators'
 import { LoginRequest, LoginResponse } from '@/generated/proto/auth-api'
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
+import axios from 'axios';
 
 
 const router = useRouter();
@@ -50,7 +50,6 @@ const rules = {
 const v$ = useVuelidate(rules, formData)
 const isLoading = ref(false)
 const errorMessage = ref('')
-const successMessage = ref('')
 
 const handleLogin = async () => {
 
@@ -59,7 +58,6 @@ const handleLogin = async () => {
   if (!isFormValid) return
 
   errorMessage.value = ''
-  successMessage.value = ''
   isLoading.value = true
 
   try {
@@ -75,13 +73,36 @@ const handleLogin = async () => {
 
     localStorage.setItem('jwt_token', token);
 
-    successMessage.value = 'Successful login'
     // Exit login page
     const redirectPath = (route.query.redirect as string) || '/';
     router.push(redirectPath);
 
-  } catch (error: any) {
-    errorMessage.value = error.message || 'Error connecting to the server.'
+  } catch (error: unknown) {
+
+    if (axios.isAxiosError(error)) {
+      console.log(error.response)
+
+      const code = error.response?.data?.code;
+      console.log(code)
+      switch (code) {
+        case 5: // not found
+          errorMessage.value = 'User not found';
+          break;
+        case 7: // permission denied
+          errorMessage.value = 'Wrong password';
+          break;
+        default:
+          errorMessage.value =
+            error.response?.data?.message ||
+            error.message ||
+            'Error connecting to the server.';
+          break;
+      }
+    } else if (error instanceof Error) {
+      errorMessage.value = error.message;
+    } else {
+      errorMessage.value = 'An unexpected error occurred.';
+    }
   } finally {
     isLoading.value = false
   }
