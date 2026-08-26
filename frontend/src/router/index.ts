@@ -31,8 +31,6 @@ const router = createRouter({
 
 // Navigation Guard runs before every route transition
 router.beforeEach((to, from) => {
-  
-
   const token = localStorage.getItem("jwt_token")
 
   if (to.meta.requiresAuth && token === null) {

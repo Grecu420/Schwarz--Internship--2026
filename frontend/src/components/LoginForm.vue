@@ -5,13 +5,11 @@
       <div class="form-group">
         <label for="email">Email Address</label>
         <input id="email" v-model="formData.email" type="email" placeholder="john@example.com" />
-        <span class="error-text" v-if="v$.email.$error">Please enter a valid email address.</span>
       </div>
 
       <div class="form-group">
         <label for="password">Password</label>
         <input id="password" v-model="formData.password" type="password" placeholder="••••••••" />
-        <span class="error-text" v-if="v$.password.$error">Password must be at least 8 characters.</span>
       </div>
 
       <button type="submit" class="submit-btn" :disabled="isLoading">
@@ -25,9 +23,6 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { useVuelidate } from '@vuelidate/core'
-import { required, email, minLength } from '@vuelidate/validators'
-
 import { LoginRequest, LoginResponse } from '@/generated/proto/auth-api'
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
@@ -42,35 +37,22 @@ const formData = reactive({
   password: ''
 })
 
-const rules = {
-  email: { required, email },
-  password: { required, minLength: minLength(8) }
-}
-
-const v$ = useVuelidate(rules, formData)
 const isLoading = ref(false)
 const errorMessage = ref('')
 
 const handleLogin = async () => {
-
-  // Validate before request
-  const isFormValid = await v$.value.$validate()
-  if (!isFormValid) return
-
   errorMessage.value = ''
   isLoading.value = true
 
   try {
-
     const loginRequest = LoginRequest.create({
       email: formData.email,
       password: formData.password
     })
     // Send request
-
     const response = await api.post<LoginResponse>('/api/login', loginRequest);
     const token = response.data.JWT;
-
+    // Save token
     localStorage.setItem('jwt_token', token);
 
     // Exit login page
