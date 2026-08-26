@@ -86,10 +86,8 @@ const handleLogin = async () => {
       console.log(code)
       switch (code) {
         case 5: // not found
-          errorMessage.value = 'User not found';
-          break;
         case 7: // permission denied
-          errorMessage.value = 'Wrong password';
+          errorMessage.value = 'Wrong email or password';
           break;
         default:
           errorMessage.value = 'Error connecting to the server.';
