@@ -41,9 +41,9 @@ func TestListUsers(t *testing.T) {
 					AddRow(1, "Andrei", "Ivancu", "aivancu", "andrei@test.com").
 					AddRow(2, "Ion", "Popescu", "ipopescu", "ion@test.com")
 
-				query := `SELECT id, first_name, last_name, user_name, email FROM users ORDER BY id ASC LIMIT $1;`
+				query := `SELECT id, first_name, last_name, user_name, email FROM users ORDER BY id ASC LIMIT $1`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
-					WithArgs(int64(3)). 
+					WithArgs(int64(3)).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -71,7 +71,7 @@ func TestListUsers(t *testing.T) {
 					AddRow(2, "Ion", "Popescu", "ipopescu", "ion@test.com").
 					AddRow(3, "Maria", "Ionescu", "mionescu", "maria@test.com")
 
-				query := `SELECT id, first_name, last_name, user_name, email FROM users ORDER BY id ASC LIMIT $1;`
+				query := `SELECT id, first_name, last_name, user_name, email FROM users ORDER BY id ASC LIMIT $1`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(int64(3)).
 					WillReturnRows(rows)
@@ -81,7 +81,7 @@ func TestListUsers(t *testing.T) {
 				if res == nil {
 					t.Fatalf("expected non-nil response, got nil")
 				}
-				if len(res.Users) != 2 { 
+				if len(res.Users) != 2 {
 					t.Errorf("expected 2 sliced users, got %d", len(res.Users))
 				}
 				if res.NextPageToken == "" {
@@ -99,7 +99,7 @@ func TestListUsers(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "user_name", "email"}).
 					AddRow(15, "George", "Enescu", "genescu", "george@test.com")
 
-				query := `SELECT id, first_name, last_name, user_name, email FROM users WHERE id > $1 ORDER BY id ASC LIMIT $2;`
+				query := `SELECT id, first_name, last_name, user_name, email FROM users WHERE id > $1 ORDER BY id ASC LIMIT $2`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(int64(10), int64(3)).
 					WillReturnRows(rows)
@@ -134,7 +134,7 @@ func TestListUsers(t *testing.T) {
 					AddRow(1, "Andrei", "Ivancu", "aivancu", "andrei@test.com").
 					AddRow(4, "Andrei", "Tarkovsky", "atarkovsky", "tarkovsky@test.com")
 
-				query := `SELECT id, first_name, last_name, user_name, email FROM users WHERE first_name = $1 ORDER BY id ASC LIMIT $2;`
+				query := `SELECT id, first_name, last_name, user_name, email FROM users WHERE first_name = $1 ORDER BY id ASC LIMIT $2`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs("Andrei", int64(3)).
 					WillReturnRows(rows)
@@ -171,7 +171,7 @@ func TestListUsers(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "user_name", "email"}).
 					AddRow(6, "Andrei", "Popa", "apopa", "apopa@test.com")
 
-				query := `SELECT id, first_name, last_name, user_name, email FROM users WHERE first_name = $1 AND id > $2 ORDER BY id ASC LIMIT $3;`
+				query := `SELECT id, first_name, last_name, user_name, email FROM users WHERE first_name = $1 AND id > $2 ORDER BY id ASC LIMIT $3`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs("Andrei", int64(5), int64(3)).
 					WillReturnRows(rows)
@@ -229,7 +229,7 @@ func TestListUsers(t *testing.T) {
 			name:    "DatabaseError",
 			request: baseRequest,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListUsersRequest) {
-				query := `SELECT id, first_name, last_name, user_name, email FROM users ORDER BY id ASC LIMIT $1;`
+				query := `SELECT id, first_name, last_name, user_name, email FROM users ORDER BY id ASC LIMIT $1`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(int64(3)).
 					WillReturnError(errors.New("db query execution failed"))
