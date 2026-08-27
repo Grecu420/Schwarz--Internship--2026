@@ -34,6 +34,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
   user-base-service:
     build:
       context: .
