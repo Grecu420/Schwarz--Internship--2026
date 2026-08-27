@@ -10,12 +10,13 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "format": "prettier --write --experimental-cli src/",
-    "proto": "rm -rf src/generated && mkdir -p src/generated/proto && protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=outputServices=grpc-web,env=browser,outputClientImpl=true:./src/generated/proto -I=../services/user-base/proto ../services/user-base/proto/user-api.proto"
+    "proto": "rm -rf src/generated && mkdir -p src/generated/proto && protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=outputServices=grpc-web,env=browser,outputClientImpl=true:./src/generated/proto -I=../services/user-base/proto ../services/user-base/proto/user-api.proto && protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=outputServices=grpc-web,env=browser,outputClientImpl=true:./src/generated/proto -I=../services/auth-base/proto ../services/auth-base/proto/auth-api.proto"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.14.0",
     "@vuelidate/core": "^2.0.3",
     "@vuelidate/validators": "^2.0.4",
+    "axios": "^1.19.0",
     "grpc-web": "^2.0.2",
     "pinia": "^4.0.2",
     "vue": "^3.5.40",
