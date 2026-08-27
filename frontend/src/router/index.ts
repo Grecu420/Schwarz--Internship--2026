@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import RegisterView from '../views/RegisterView.vue'
+import RegisterView from '@/views/RegisterView.vue'
+import LoginView from '@/views/LoginView.vue'
+import MainView from '@/views/MainView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,10 +12,34 @@ const router = createRouter({
       component: RegisterView
     },
     {
+      path: '/login',
+      name: 'login',
+      component: LoginView
+    },
+    {
+      path: '/main',
+      name: 'main',
+      component: MainView,
+      meta: { requiresAuth: true } // Protect this route
+    },
+    {
       path: '/',
-      redirect: '/register'
+      redirect: '/main'
     }
   ]
 })
+
+// Navigation Guard runs before every route transition
+router.beforeEach((to, from) => {
+  const token = localStorage.getItem("jwt_token")
+
+  if (to.meta.requiresAuth && token === null) {
+    // Redirect unauthenticated users to login and save target URL
+    return { name: 'login' , query: { redirect: to.fullPath }}
+  } else if (to.name === 'login' && token !== null) {
+    // Prevent logged-in users from returning to login page
+    return { name: 'main' }
+  }
+});
 
 export default router
