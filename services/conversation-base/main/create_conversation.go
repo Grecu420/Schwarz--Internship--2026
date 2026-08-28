@@ -10,7 +10,6 @@ import (
 )
 
 func (service ConversationServiceImpl) CreateConversation(ctx context.Context, req *proto.CreateConversationRequest) (*proto.CreateConversationResponse, error) {
-
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}

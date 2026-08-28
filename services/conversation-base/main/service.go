@@ -20,7 +20,6 @@ type ConversationServiceImpl struct {
 const defaultPort = 50051
 
 func main() {
-
 	// listen to port
 	var port int = defaultPort
 	p, err := common.GetPort()

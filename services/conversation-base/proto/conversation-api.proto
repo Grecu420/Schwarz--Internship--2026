@@ -1,10 +1,19 @@
 syntax = "proto3";
 package conversation;
+import "google/protobuf/timestamp.proto";
 
 option go_package = "main/proto";
 
 service ConversationService {
   rpc CreateConversation(CreateConversationRequest) returns (CreateConversationResponse);
+}
+
+message Conversation {
+  int64                     id         = 1;
+  int64                     user1_id   = 2;
+  int64                     user2_id   = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
 }
 
 message CreateConversationRequest {

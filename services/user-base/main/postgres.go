@@ -57,23 +57,9 @@ func InsertUser(ctx context.Context, db *sql.DB, user *proto.User) (int64, error
 		Columns("id", "first_name", "last_name", "user_name", "email", "hashed_password", "created_at").
 		Values(sq.Expr("DEFAULT"), user.FirstName, user.LastName, user.UserName, user.Email, user.Password, user.CreatedAt.AsTime()).
 		Suffix("RETURNING id")
-	// query := `
-	// 	INSERT INTO users (id, first_name, last_name, user_name, email, hashed_password, created_at)
-	// 	VALUES (DEFAULT, $1, $2, $3, $4, $5, $6)
-	// 	RETURNING id
-	// `
+
 	var id int64
-	// err := db.QueryRowContext(ctx,
-	// 	query,
-	// 	user.FirstName,
-	// 	user.LastName,
-	// 	user.UserName,
-	// 	user.Email,
-	// 	user.Password,
-	// 	user.CreatedAt.AsTime()).Scan(&id)
-
 	err := ins.RunWith(db).QueryRowContext(ctx).Scan(&id)
-
 	if err != nil {
 		return 0, err
 	}
