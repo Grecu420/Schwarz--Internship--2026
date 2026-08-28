@@ -3,6 +3,7 @@ package main
 import (
 	"Schwarz--Internship--2026/services/conversation-base/main/proto"
 	"context"
+	"errors"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -24,6 +25,9 @@ func (service ConversationServiceImpl) CreateConversation(ctx context.Context, r
 	id, err := InsertConversation(ctx, service.DB, req.GetUser1Id(), req.GetUser2Id())
 
 	if err != nil {
+		if errors.Is(err, ErrConversationExists) {
+			return nil, status.Error(codes.AlreadyExists, "conversation already exists between these users")
+		}
 		return nil, status.Errorf(codes.Internal, "failed insert conversation to database: %v", err)
 	}
 	return &proto.CreateConversationResponse{Id: id}, nil
