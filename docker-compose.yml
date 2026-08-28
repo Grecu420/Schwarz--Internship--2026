@@ -11,6 +11,8 @@ services:
       - USER-BASE_ENDPOINT=user-base-service:50051
       - FRIEND-REQUEST-BASE_ENDPOINT=friend-request-base-service:50052
       - AUTH-BASE_ENDPOINT=auth-base-service:50053
+      - CONVERSATION-BASE_ENDPOINT=conversation-base-service:50051
+
     ports:
       - "50053:8080"
     depends_on:
