@@ -5,6 +5,7 @@ import "user-base/proto/user-api.proto";
 import "friend-request-base/proto/friend-request-api.proto";
 import "auth-base/proto/auth-api.proto";
 import "message-base/proto/message-api.proto";
+import "conversation-base/proto/conversation-api.proto";
 
 import "common/google/api/annotations.proto";
 
@@ -17,7 +18,7 @@ service GatewayService {
       body: "*"
     };
   }
-  
+
   rpc GetUser(userbase.GetUserRequest) returns (userbase.GetUserResponse){
     option (google.api.http) = {
       get: "/user"
@@ -34,7 +35,7 @@ service GatewayService {
   rpc UpdateFriendRequest (friendrequestbase.UpdateFriendRequestRequest) returns (friendrequestbase.UpdateFriendRequestResponse){
     option (google.api.http) = {
       patch: "/friend-request"
-      body: "*"
+      body : "*"
     };
   }
 
@@ -66,4 +67,10 @@ service GatewayService {
     };
   }
 
+  rpc CreateConversation (conversation.CreateConversationRequest) returns (conversation.CreateConversationResponse) {
+    option (google.api.http) = {
+      post: "/conversations"
+      body: "*"
+    };
+  }
 }

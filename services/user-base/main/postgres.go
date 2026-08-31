@@ -5,9 +5,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
+	"log/slog"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -20,13 +21,18 @@ func SelectUser(ctx context.Context, db *sql.DB, email string) (*proto.User, err
 	var resUser proto.User
 	var created_at time.Time
 
-	query := `
-		SELECT id, first_name, last_name, user_name, email, hashed_password, created_at
-		FROM users
-		WHERE email = $1
-	`
+	user := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).Select(
+		"id",
+		"first_name",
+		"last_name",
+		"user_name",
+		"email",
+		"hashed_password",
+		"created_at").
+		From("users").
+		Where(sq.Eq{"email": email})
 
-	err := db.QueryRowContext(ctx, query, email).Scan(
+	err := user.RunWith(db).QueryRowContext(ctx).Scan(
 		&resUser.Id,
 		&resUser.FirstName,
 		&resUser.LastName,
@@ -46,21 +52,14 @@ func SelectUser(ctx context.Context, db *sql.DB, email string) (*proto.User, err
 
 func InsertUser(ctx context.Context, db *sql.DB, user *proto.User) (int64, error) {
 	// execute query + get new id
-	query := `
-		INSERT INTO users (id, first_name, last_name, user_name, email, hashed_password, created_at)
-		VALUES (DEFAULT, $1, $2, $3, $4, $5, $6)
-		RETURNING id
-	`
-	var id int64
-	err := db.QueryRowContext(ctx,
-		query,
-		user.FirstName,
-		user.LastName,
-		user.UserName,
-		user.Email,
-		user.Password,
-		user.CreatedAt.AsTime()).Scan(&id)
 
+	ins := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).Insert("users").
+		Columns("id", "first_name", "last_name", "user_name", "email", "hashed_password", "created_at").
+		Values(sq.Expr("DEFAULT"), user.FirstName, user.LastName, user.UserName, user.Email, user.Password, user.CreatedAt.AsTime()).
+		Suffix("RETURNING id")
+
+	var id int64
+	err := ins.RunWith(db).QueryRowContext(ctx).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -69,38 +68,26 @@ func InsertUser(ctx context.Context, db *sql.DB, user *proto.User) (int64, error
 }
 
 func SelectUserListInDB(ctx context.Context, db *sql.DB, offsetID int64, pageSize int64, firstName string, lastName string) ([]*proto.User, error) {
-	baseQuery := `SELECT id, first_name, last_name, user_name, email FROM users`
 
-	var whereClauses []string
-	var args []any
-	argNum := 1
+	base := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).Select("id", "first_name", "last_name", "user_name", "email").From("users")
 
 	if firstName != "" {
-		whereClauses = append(whereClauses, fmt.Sprintf("first_name = $%d", argNum))
-		args = append(args, firstName)
-		argNum++
+		base = base.Where(sq.Eq{"first_name": firstName})
 	}
 
 	if lastName != "" {
-		whereClauses = append(whereClauses, fmt.Sprintf("last_name = $%d", argNum))
-		args = append(args, lastName)
-		argNum++
+		base = base.Where(sq.Eq{"last_name": lastName})
 	}
 
 	if offsetID > 0 {
-		whereClauses = append(whereClauses, fmt.Sprintf("id > $%d", argNum))
-		args = append(args, offsetID)
-		argNum++
+		base = base.Where(sq.Gt{"id": offsetID})
 	}
 
-	if len(whereClauses) > 0 {
-		baseQuery += " WHERE " + strings.Join(whereClauses, " AND ")
-	}
+	base = base.OrderBy("id ASC").Suffix("LIMIT ?", uint64(pageSize+1))
 
-	baseQuery += fmt.Sprintf(" ORDER BY id ASC LIMIT $%d;", argNum)
-	args = append(args, pageSize+1)
-
-	rows, err := db.QueryContext(ctx, baseQuery, args...)
+	query, args, _ := base.ToSql()
+	slog.Info("base", "query", query)
+	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("database query: %w", err)
 	}
