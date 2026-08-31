@@ -25,5 +25,10 @@ proto:
 			--go_out=.  \
 			--go-grpc_out=. \
 		 	auth-base/proto/auth-api.proto
+	protoc 	-I=.. \
+			--go_out=.  \
+			--go-grpc_out=. \
+		 	message-base/proto/message-api.proto
+
 
 
