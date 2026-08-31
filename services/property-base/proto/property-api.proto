@@ -1,0 +1,58 @@
+syntax = "proto3";
+package property;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+option go_package = "main/proto";
+
+service PropertyService {
+  rpc CreateProperty(CreatePropertyRequest) returns (CreatePropertyResponse);
+  rpc UpdateProperty(UpdatePropertyRequest) returns (UpdatePropertyResponse);
+  rpc DeleteProperty(DeletePropertyRequest) returns (DeletePropertyResponse);
+}
+
+message Property {
+  int64    id          = 1;
+  int64    user_id     = 2;
+  string   name        = 3;
+  string   description = 4;
+  string   address     = 5;
+  int64    price       = 6;
+  Location location    = 7;
+}
+
+message Location {
+  float lat  = 1;
+  float long = 2;
+}
+
+message CreatePropertyRequest {
+  int64    user_id     = 1;
+  string   name        = 2;
+  string   description = 3;
+  string   address     = 4;
+  int64    price       = 5;
+  Location location    = 6;
+}
+
+message CreatePropertyResponse {
+  Property property = 1;
+}
+
+message UpdatePropertyRequest{
+  Property                  property   = 1;
+  google.protobuf.FieldMask field_mask = 2;
+}
+
+message UpdatePropertyResponse {
+  Property property = 1;
+}
+
+message DeletePropertyRequest{
+  int64 id = 1;
+}
+
+message DeletePropertyResponse {
+
+}
