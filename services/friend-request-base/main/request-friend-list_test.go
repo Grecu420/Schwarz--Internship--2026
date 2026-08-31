@@ -42,7 +42,7 @@ func TestListFriendRequests(t *testing.T) {
 					AddRow(1, "user_a", "user_b", proto.RequestStatus_STATUS_PENDING, customTime).
 					AddRow(2, "user_c", "user_d", proto.RequestStatus_STATUS_ACCEPTED, customTime)
 
-				query := `SELECT "id", "sender_id", "receiver_id", "status", "created_at" FROM "friend_requests" WHERE id >= $1 ORDER BY id LIMIT $2;`
+				query := `SELECT id, sender_id, receiver_id, status, created_at FROM friend_requests WHERE id >= $1 ORDER BY id LIMIT $2`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(int64(0), int64(3)).
 					WillReturnRows(rows)
@@ -71,7 +71,7 @@ func TestListFriendRequests(t *testing.T) {
 					AddRow(2, "user_c", "user_d", proto.RequestStatus_STATUS_ACCEPTED, customTime).
 					AddRow(3, "user_e", "user_f", proto.RequestStatus_STATUS_PENDING, customTime)
 
-				query := `SELECT "id", "sender_id", "receiver_id", "status", "created_at" FROM "friend_requests" WHERE id >= $1 ORDER BY id LIMIT $2;`
+				query := `SELECT id, sender_id, receiver_id, status, created_at FROM friend_requests WHERE id >= $1 ORDER BY id LIMIT $2`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(int64(0), int64(3)).
 					WillReturnRows(rows)
@@ -98,7 +98,7 @@ func TestListFriendRequests(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "sender_id", "receiver_id", "status", "created_at"}).
 					AddRow(10, "user_x", "user_y", proto.RequestStatus_STATUS_PENDING, customTime)
 
-				query := `SELECT "id", "sender_id", "receiver_id", "status", "created_at" FROM "friend_requests" WHERE id >= $1 ORDER BY id LIMIT $2;`
+				query := `SELECT id, sender_id, receiver_id, status, created_at FROM friend_requests WHERE id >= $1 ORDER BY id LIMIT $2`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(int64(10), int64(3)).
 					WillReturnRows(rows)
@@ -132,7 +132,7 @@ func TestListFriendRequests(t *testing.T) {
 					AddRow(1, "user_a", "user_b", proto.RequestStatus_STATUS_PENDING, customTime).
 					AddRow(4, "user_a", "user_z", proto.RequestStatus_STATUS_ACCEPTED, customTime)
 
-				query := `SELECT "id", "sender_id", "receiver_id", "status", "created_at" FROM "friend_requests" WHERE sender_id = $1 AND id >= $2 ORDER BY id LIMIT $3;`
+				query := `SELECT id, sender_id, receiver_id, status, created_at FROM friend_requests WHERE sender_id = $1 AND id >= $2 ORDER BY id LIMIT $3`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs("user_a", int64(0), int64(3)).
 					WillReturnRows(rows)
@@ -167,7 +167,7 @@ func TestListFriendRequests(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "sender_id", "receiver_id", "status", "created_at"}).
 					AddRow(1, "user_a", "user_b", proto.RequestStatus_STATUS_PENDING, customTime)
 
-				query := `SELECT "id", "sender_id", "receiver_id", "status", "created_at" FROM "friend_requests" WHERE status = $1 AND id >= $2 ORDER BY id LIMIT $3;`
+				query := `SELECT id, sender_id, receiver_id, status, created_at FROM friend_requests WHERE status = $1 AND id >= $2 ORDER BY id LIMIT $3`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(proto.RequestStatus_STATUS_PENDING, int64(0), int64(3)).
 					WillReturnRows(rows)
@@ -206,7 +206,7 @@ func TestListFriendRequests(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "sender_id", "receiver_id", "status", "created_at"}).
 					AddRow(5, "user_a", "user_x", proto.RequestStatus_STATUS_PENDING, customTime)
 
-				query := `SELECT "id", "sender_id", "receiver_id", "status", "created_at" FROM "friend_requests" WHERE sender_id = $1 AND status = $2 AND id >= $3 ORDER BY id LIMIT $4;`
+				query := `SELECT id, sender_id, receiver_id, status, created_at FROM friend_requests WHERE sender_id = $1 AND status = $2 AND id >= $3 ORDER BY id LIMIT $4`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs("user_a", proto.RequestStatus_STATUS_PENDING, int64(5), int64(3)).
 					WillReturnRows(rows)
@@ -261,7 +261,7 @@ func TestListFriendRequests(t *testing.T) {
 		{name: "DatabaseError",
 			request: baseRequest,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListFriendRequestsRequest) {
-				query := `SELECT "id", "sender_id", "receiver_id", "status", "created_at" FROM "friend_requests" WHERE id >= $1 ORDER BY id LIMIT $2;`
+				query := `SELECT id, sender_id, receiver_id, status, created_at FROM friend_requests WHERE id >= $1 ORDER BY id LIMIT $2`
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(int64(0), int64(3)).
 					WillReturnError(errors.New("db query execution failed"))
