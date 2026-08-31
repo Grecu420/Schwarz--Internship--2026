@@ -54,11 +54,9 @@ func getPort() (int, error) {
 	}
 
 	return strconv.Atoi(s)
-
 }
 
 func main() {
-
 	dbConn, err := Connect()
 	if err != nil {
 		log.Fatalf("Error connecting to the database: %v", err)
@@ -89,5 +87,4 @@ func main() {
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-
 }

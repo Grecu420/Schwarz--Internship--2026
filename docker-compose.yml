@@ -73,7 +73,6 @@ services:
       db:
         condition: service_healthy
         
-
   auth-base-service:
     build:
       context: .

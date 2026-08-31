@@ -5,7 +5,6 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "main/proto";
 
-
 service MessageService {
     rpc CreateMessage (CreateMessageRequest) returns (CreateMessageResponse);
 }
