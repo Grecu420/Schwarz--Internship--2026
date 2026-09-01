@@ -55,6 +55,25 @@ services:
       db:
         condition: service_healthy
 
+
+  property-base-service:
+    build:
+      context: .
+      dockerfile: services/property-base/Dockerfile
+    container_name: property-base-service
+    ports:
+      - "50061:50051"
+    secrets:
+      - db-password
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=database
+      - POSTGRES_SERVICE=db
+      - POSTGRES_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+
   friend-request-base-service:
     build:
       context: .
@@ -97,7 +116,7 @@ services:
       - api-rest-gateway 
 
   db:
-    image: postgres:16-alpine
+    image: imresamu/postgis:16-3.4-alpine3.21
     restart: always
     container_name: db
     secrets:
