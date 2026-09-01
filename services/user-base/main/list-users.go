@@ -64,19 +64,19 @@ func (s *UserServiceImpl) ListUsers(ctx context.Context, req *proto.ListUsersReq
 	filters := req.GetFilters()
 	var firstNameFilter string
 	var lastNameFilter string
-    
+
 	for _, f := range filters {
 		switch v := f.GetFilter().(type) {
 		case *proto.ListUsersFiltersOneOf_FirstName:
 			if firstNameFilter != "" {
 				return nil, status.Errorf(codes.InvalidArgument, "duplicate first_name filter")
 			}
-			firstNameFilter = v.FirstName.GetValue() 
+			firstNameFilter = v.FirstName.GetValue()
 		case *proto.ListUsersFiltersOneOf_LastName:
 			if lastNameFilter != "" {
 				return nil, status.Errorf(codes.InvalidArgument, "duplicate last_name filter")
 			}
-			lastNameFilter = v.LastName.GetValue() 
+			lastNameFilter = v.LastName.GetValue()
 		}
 	}
 
@@ -101,8 +101,10 @@ func (s *UserServiceImpl) ListUsers(ctx context.Context, req *proto.ListUsersReq
 
 	var nextPageToken = ""
 	if len(users) == int(pageSize)+1 {
-		last := users[len(users)-1]
+		last := users[pageSize-1]
 		newOffsetId := last.GetId()
+
+		var err error
 		nextPageToken, err = BuildNextPageToken(newOffsetId, filterHash)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed nextPageToken creation: %v", err)
