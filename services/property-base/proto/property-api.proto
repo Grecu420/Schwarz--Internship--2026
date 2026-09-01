@@ -10,6 +10,7 @@ service PropertyService {
   rpc CreateProperty(CreatePropertyRequest) returns (CreatePropertyResponse);
   rpc UpdateProperty(UpdatePropertyRequest) returns (UpdatePropertyResponse);
   rpc DeleteProperty(DeletePropertyRequest) returns (DeletePropertyResponse);
+  rpc GetProperty   (GetPropertyRequest)    returns (GetPropertyResponse);
 }
 
 message Property {
@@ -56,3 +57,12 @@ message DeletePropertyRequest{
 message DeletePropertyResponse {
 
 }
+
+message GetPropertyRequest {
+  int64 id = 1;
+}
+
+message GetPropertyResponse {
+  Property property = 1;
+}
+

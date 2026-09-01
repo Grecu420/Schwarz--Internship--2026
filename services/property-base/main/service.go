@@ -41,7 +41,9 @@ func main() {
 	}
 	defer db.Close()
 
-	// crete grpc server
+	// TODO: add check to verify that user_id in request matches user_id in context
+
+	// create grpc server
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 	proto.RegisterPropertyServiceServer(grpcServer, &PropertyServiceImpl{DB: db})

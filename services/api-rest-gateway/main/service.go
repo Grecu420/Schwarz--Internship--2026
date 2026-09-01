@@ -22,6 +22,7 @@ type GatewayServiceImpl struct {
 	friendRequestService proto.FriendRequestServiceClient
 	authService          proto.AuthServiceClient
 	convService          proto.ConversationServiceClient
+	propService          proto.PropertyServiceClient
 }
 
 func createConnection(envVar string, opts []grpc.DialOption) (*grpc.ClientConn, error) {
@@ -79,11 +80,18 @@ func main() {
 	}
 	defer connAB.Close()
 
+	connPB, err := createConnection("PROPERTY-BASE_ENDPOINT", opts)
+	if err != nil {
+		log.Fatalf("Failed to register gateway: %v", err)
+	}
+	defer connPB.Close()
+
 	server := GatewayServiceImpl{
 		userService:          proto.NewUserServiceClient(connUB),
 		friendRequestService: proto.NewFriendRequestServiceClient(connFRB),
 		authService:          proto.NewAuthServiceClient(connAB),
-		convService:          proto.NewGatewayServiceClient(connCB),
+		convService:          proto.NewConversationServiceClient(connCB),
+		propService:          proto.NewPropertyServiceClient(connPB),
 	}
 
 	// Start gRPC Server
