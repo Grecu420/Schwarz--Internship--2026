@@ -4,6 +4,7 @@ package gateway;
 import "user-base/proto/user-api.proto";
 import "friend-request-base/proto/friend-request-api.proto";
 import "auth-base/proto/auth-api.proto";
+import "message-base/proto/message-api.proto";
 import "conversation-base/proto/conversation-api.proto";
 
 import "common/google/api/annotations.proto";
@@ -55,6 +56,13 @@ service GatewayService {
   rpc ListUsers (userbase.ListUsersRequest) returns (userbase.ListUsersResponse) {
     option (google.api.http) = {
       post: "/list-users"
+      body: "*"
+    };
+  }
+
+  rpc CreateMessage(messagebase.CreateMessageRequest) returns (messagebase.CreateMessageResponse){
+    option (google.api.http) = {
+      post: "/message"
       body: "*"
     };
   }

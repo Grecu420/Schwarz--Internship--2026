@@ -21,6 +21,7 @@ type GatewayServiceImpl struct {
 	userService          proto.UserServiceClient
 	friendRequestService proto.FriendRequestServiceClient
 	authService          proto.AuthServiceClient
+	messageService       proto.MessageServiceClient
 	convService          proto.ConversationServiceClient
 }
 
@@ -79,10 +80,17 @@ func main() {
 	}
 	defer connAB.Close()
 
+	connMB, err := createConnection("MESSAGE-BASE_ENDPOINT", opts)
+	if err != nil {
+		log.Fatalf("Failed to register gateway: %v", err)
+	}
+	defer connMB.Close()
+
 	server := GatewayServiceImpl{
 		userService:          proto.NewUserServiceClient(connUB),
 		friendRequestService: proto.NewFriendRequestServiceClient(connFRB),
 		authService:          proto.NewAuthServiceClient(connAB),
+		messageService:       proto.NewMessageServiceClient(connMB),
 		convService:          proto.NewGatewayServiceClient(connCB),
 	}
 

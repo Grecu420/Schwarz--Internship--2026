@@ -11,6 +11,7 @@ services:
       - USER-BASE_ENDPOINT=user-base-service:50051
       - FRIEND-REQUEST-BASE_ENDPOINT=friend-request-base-service:50052
       - AUTH-BASE_ENDPOINT=auth-base-service:50053
+      - MESSAGE-BASE_ENDPOINT=message-base-service:50054
       - CONVERSATION-BASE_ENDPOINT=conversation-base-service:50051
 
     ports:
@@ -18,6 +19,7 @@ services:
     depends_on:
       - user-base-service
       - friend-request-base-service
+      - message-base-service
 
   conversation-base-service:
     build:
@@ -73,6 +75,24 @@ services:
       db:
         condition: service_healthy
 
+  message-base-service:
+    build:
+      context: .
+      dockerfile: services/message-base/Dockerfile
+    container_name: message-base-service
+    ports:
+      - "50054:50054"
+    secrets:
+      - db-password
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=database
+      - POSTGRES_SERVICE=db
+      - POSTGRES_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+        
   auth-base-service:
     build:
       context: .

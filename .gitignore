@@ -2,6 +2,8 @@ services/friend-request-base/build
 services/friend-request-base/main/proto
 services/user-base/build
 services/user-base/main/proto
+services/message-base/build
+services/message-base/main/proto
 
 # all generated proto files
 *.pb.go
