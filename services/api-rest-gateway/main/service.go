@@ -57,48 +57,33 @@ func main() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	connUB, err := createConnection("USER-BASE_ENDPOINT", opts)
-	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
+	// Map backend services to environment variable keys
+	envMap := map[string]string{
+		"user":         "USER-BASE_ENDPOINT",
+		"conversation": "CONVERSATION-BASE_ENDPOINT",
+		"message":      "MESSAGE-BASE_ENDPOINT",
+		"friend":       "FRIEND-REQUEST-BASE_ENDPOINT",
+		"auth":         "AUTH-BASE_ENDPOINT",
+		"property":     "PROPERTY-BASE_ENDPOINT",
 	}
-	defer connUB.Close()
 
-	connCB, err := createConnection("CONVERSATION-BASE_ENDPOINT", opts)
-	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
+	conns := make(map[string]*grpc.ClientConn, len(envMap))
+	for key, env := range envMap {
+		conn, err := createConnection(env, opts)
+		if err != nil {
+			log.Fatalf("failed to dial service (%s): %v", env, err)
+		}
+		defer conn.Close()
+		conns[key] = conn
 	}
-	defer connCB.Close()
-
-	connFRB, err := createConnection("FRIEND-REQUEST-BASE_ENDPOINT", opts)
-	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
-	}
-	defer connFRB.Close()
-
-	connAB, err := createConnection("AUTH-BASE_ENDPOINT", opts)
-	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
-	}
-	defer connAB.Close()
-
-	connPB, err := createConnection("PROPERTY-BASE_ENDPOINT", opts)
-	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
-	}
-	defer connPB.Close()
-	connMB, err := createConnection("MESSAGE-BASE_ENDPOINT", opts)
-	if err != nil {
-		log.Fatalf("Failed to register gateway: %v", err)
-	}
-	defer connMB.Close()
 
 	server := GatewayServiceImpl{
-		userService:          proto.NewUserServiceClient(connUB),
-		friendRequestService: proto.NewFriendRequestServiceClient(connFRB),
-		authService:          proto.NewAuthServiceClient(connAB),
-		convService:          proto.NewConversationServiceClient(connCB),
-		propService:          proto.NewPropertyServiceClient(connPB),
-		messageService:       proto.NewMessageServiceClient(connMB),
+		authService:          proto.NewAuthServiceClient(conns["auth"]),
+		userService:          proto.NewUserServiceClient(conns["user"]),
+		friendRequestService: proto.NewFriendRequestServiceClient(conns["friend"]),
+		convService:          proto.NewConversationServiceClient(conns["conversation"]),
+		messageService:       proto.NewMessageServiceClient(conns["message"]),
+		propService:          proto.NewPropertyServiceClient(conns["property"]),
 	}
 
 	// Start gRPC Server
