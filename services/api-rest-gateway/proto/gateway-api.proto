@@ -6,6 +6,7 @@ import "friend-request-base/proto/friend-request-api.proto";
 import "auth-base/proto/auth-api.proto";
 import "message-base/proto/message-api.proto";
 import "conversation-base/proto/conversation-api.proto";
+import "property-base/proto/property-api.proto";
 
 import "common/google/api/annotations.proto";
 
@@ -71,6 +72,33 @@ service GatewayService {
     option (google.api.http) = {
       post: "/conversations"
       body: "*"
+    };
+  }
+
+
+  rpc CreateProperty (property.CreatePropertyRequest) returns (property.CreatePropertyResponse) {
+    option (google.api.http) = {
+      post: "/property"
+      body: "*"
+    };
+  }
+
+  rpc UpdateProperty (property.UpdatePropertyRequest) returns (property.UpdatePropertyResponse) {
+    option (google.api.http) = {
+      patch: "/property"
+      body: "*"
+    };
+  }
+
+  rpc DeleteProperty (property.DeletePropertyRequest) returns (property.DeletePropertyResponse) {
+    option (google.api.http) = {
+      delete: "/property"
+    };
+  }
+
+  rpc GetProperty (property.GetPropertyRequest) returns (property.GetPropertyResponse) {
+    option (google.api.http) = {
+      get: "/property"
     };
   }
 }
