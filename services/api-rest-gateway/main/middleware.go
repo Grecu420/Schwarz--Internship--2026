@@ -18,6 +18,7 @@ var publicMethods = map[string]bool{
 	"/gateway.GatewayService/Login":          true,
 	"/gateway.GatewayService/CreateUser":     true,
 	"/gateway.GatewayService/GetMessageList": true,
+	"/gateway.GatewayService/GetProperty":    true,
 	"/proto.UserService/GetUser":             true,
 	"/proto.UserService/CreateUser":          true,
 	"/userbase.UserService/Login":            true,
