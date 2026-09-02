@@ -67,6 +67,12 @@ service GatewayService {
     };
   }
 
+  rpc GetMessageList(messagebase.GetMessageListRequest) returns (messagebase.GetMessageListResponse) {
+    option (google.api.http) = {
+      get: "/message"
+    };
+  }
+
   rpc CreateConversation (conversation.CreateConversationRequest) returns (conversation.CreateConversationResponse) {
     option (google.api.http) = {
       post: "/conversations"
