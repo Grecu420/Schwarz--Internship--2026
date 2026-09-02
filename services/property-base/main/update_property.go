@@ -26,10 +26,12 @@ func (service PropertyServiceImpl) UpdateProperty(ctx context.Context, req *prot
 		return nil, status.Error(codes.InvalidArgument, "property id is mandatory")
 	}
 
+	// Create statement builder
 	build := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Update("properties").
 		Where(sq.Eq{"id": requestID})
 
+	// Set updated fields
 	hasValidFields := false
 	for _, path := range req.FieldMask.GetPaths() {
 		switch path {
@@ -58,7 +60,7 @@ func (service PropertyServiceImpl) UpdateProperty(ctx context.Context, req *prot
 	if !hasValidFields {
 		return nil, status.Error(codes.InvalidArgument, "no valid fields to update")
 	}
-
+	// Return updated property
 	build = build.Suffix("RETURNING id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat")
 
 	var returnProperty = proto.Property{Location: &proto.Location{}}

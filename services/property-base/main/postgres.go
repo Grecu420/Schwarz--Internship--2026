@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Schwarz--Internship--2026/services/property-base/main/proto"
 	"context"
 	"database/sql"
 	"errors"
@@ -45,4 +46,39 @@ func DeletePropertyInDB(ctx context.Context, db *sql.DB, id int64) error {
 	}
 	return nil
 
+}
+
+func SelectPropertyInDB(ctx context.Context, db *sql.DB, id int64) (*proto.Property, error) {
+
+	var property = &proto.Property{Location: &proto.Location{}}
+
+	build := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select(
+			"id",
+			"user_id",
+			"name",
+			"description",
+			"address",
+			"price",
+			"ST_X(location::geometry) AS lng",
+			"ST_Y(location::geometry) AS lat").
+		From("properties").
+		Where(sq.Eq{"id": id})
+
+	err := build.RunWith(db).QueryRowContext(ctx).Scan(
+		&property.Id,
+		&property.UserId,
+		&property.Name,
+		&property.Description,
+		&property.Address,
+		&property.Price,
+		&property.Location.Long,
+		&property.Location.Lat,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return property, nil
 }
