@@ -15,13 +15,14 @@ import (
 )
 
 var publicMethods = map[string]bool{
-	"/gateway.GatewayService/Login":      true,
-	"/gateway.GatewayService/CreateUser": true,
-	"/proto.UserService/GetUser":         true,
-	"/proto.UserService/CreateUser":      true,
-	"/userbase.UserService/Login":        true,
-	"/userbase.UserService/CreateUser":   true,
-	"/userbase.UserService/GetUser":      true,
+	"/gateway.GatewayService/Login":          true,
+	"/gateway.GatewayService/CreateUser":     true,
+	"/gateway.GatewayService/GetMessageList": true,
+	"/proto.UserService/GetUser":             true,
+	"/proto.UserService/CreateUser":          true,
+	"/userbase.UserService/Login":            true,
+	"/userbase.UserService/CreateUser":       true,
+	"/userbase.UserService/GetUser":          true,
 }
 
 type authInterceptor struct {
