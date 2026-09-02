@@ -9,6 +9,8 @@ import (
 )
 
 func (service PropertyServiceImpl) CreateProperty(ctx context.Context, req *proto.CreatePropertyRequest) (*proto.CreatePropertyResponse, error) {
+	// TODO: add check to see if user owns property
+
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}

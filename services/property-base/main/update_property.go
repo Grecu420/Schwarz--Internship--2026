@@ -12,6 +12,7 @@ import (
 )
 
 func (service PropertyServiceImpl) UpdateProperty(ctx context.Context, req *proto.UpdatePropertyRequest) (*proto.UpdatePropertyResponse, error) {
+	// TODO: add check to see if user owns property
 
 	if req == nil || req.Property == nil {
 		return nil, status.Error(codes.InvalidArgument, "request and property are mandatory")

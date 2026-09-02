@@ -10,6 +10,7 @@ import (
 )
 
 func (service PropertyServiceImpl) DeleteProperty(ctx context.Context, req *proto.DeletePropertyRequest) (*proto.DeletePropertyResponse, error) {
+	// TODO: add check to see if user owns property
 
 	if req.GetId() == 0 {
 		return nil, status.Error(codes.InvalidArgument, "missing id")
