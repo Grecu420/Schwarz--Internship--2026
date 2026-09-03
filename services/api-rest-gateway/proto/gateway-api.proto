@@ -22,7 +22,7 @@ service GatewayService {
 
   rpc GetUser(userbase.GetUserRequest) returns (userbase.GetUserResponse){
     option (google.api.http) = {
-      get: "/user"
+      get: "/user" // query on email
     };
   }
 
@@ -68,13 +68,18 @@ service GatewayService {
     };
   }
 
+  rpc ListMessages(messagebase.ListMessagesRequest) returns (messagebase.ListMessagesResponse) {
+    option (google.api.http) = {
+      get: "/message" // query on conversation_id
+    };
+  }
+
   rpc CreateConversation (conversation.CreateConversationRequest) returns (conversation.CreateConversationResponse) {
     option (google.api.http) = {
       post: "/conversations"
       body: "*"
     };
   }
-
 
   rpc CreateProperty (property.CreatePropertyRequest) returns (property.CreatePropertyResponse) {
     option (google.api.http) = {
@@ -86,19 +91,19 @@ service GatewayService {
   rpc UpdateProperty (property.UpdatePropertyRequest) returns (property.UpdatePropertyResponse) {
     option (google.api.http) = {
       patch: "/property"
-      body: "*"
+      body : "*"
     };
   }
 
   rpc DeleteProperty (property.DeletePropertyRequest) returns (property.DeletePropertyResponse) {
     option (google.api.http) = {
-      delete: "/property"
+      delete: "/property" // query on id
     };
   }
 
   rpc GetProperty (property.GetPropertyRequest) returns (property.GetPropertyResponse) {
     option (google.api.http) = {
-      get: "/property"
+      get: "/property"// query on id
     };
   }
 }
