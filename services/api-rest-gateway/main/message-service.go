@@ -9,6 +9,6 @@ func (service GatewayServiceImpl) CreateMessage(ctx context.Context, req *proto.
 	return service.messageService.CreateMessage(ctx, req)
 }
 
-func (service GatewayServiceImpl) GetMessageList(ctx context.Context, req *proto.GetMessageListRequest) (*proto.GetMessageListResponse, error) {
-	return service.messageService.GetMessageList(ctx, req)
+func (service GatewayServiceImpl) ListMessages(ctx context.Context, req *proto.ListMessagesRequest) (*proto.ListMessagesResponse, error) {
+	return service.messageService.ListMessages(ctx, req)
 }

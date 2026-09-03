@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (service MessageServiceImpl) GetMessageList(ctx context.Context, req *proto.GetMessageListRequest) (*proto.GetMessageListResponse, error) {
+func (service MessageServiceImpl) ListMessages(ctx context.Context, req *proto.ListMessagesRequest) (*proto.ListMessagesResponse, error) {
 
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request can't be nil")
@@ -24,5 +24,5 @@ func (service MessageServiceImpl) GetMessageList(ctx context.Context, req *proto
 		return nil, status.Errorf(codes.Internal, "failed db query: %v", err)
 	}
 
-	return &proto.GetMessageListResponse{Messages: messages}, nil
+	return &proto.ListMessagesResponse{Messages: messages}, nil
 }

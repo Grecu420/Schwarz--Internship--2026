@@ -7,7 +7,7 @@ option go_package = "main/proto";
 
 service MessageService {
   rpc CreateMessage (CreateMessageRequest) returns (CreateMessageResponse);
-  rpc GetMessageList (GetMessageListRequest) returns (GetMessageListResponse);
+  rpc ListMessages (ListMessagesRequest) returns (ListMessagesResponse);
 }
 
 message Message {
@@ -28,10 +28,10 @@ message CreateMessageResponse {
   Message message = 1;
 }
 
-message GetMessageListRequest {
+message ListMessagesRequest {
   int64 conversation_id = 1;
 }
 
-message GetMessageListResponse{
+message ListMessagesResponse{
   repeated Message messages = 1;
 }

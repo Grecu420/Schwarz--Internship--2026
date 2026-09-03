@@ -68,7 +68,7 @@ service GatewayService {
     };
   }
 
-  rpc GetMessageList(messagebase.GetMessageListRequest) returns (messagebase.GetMessageListResponse) {
+  rpc ListMessages(messagebase.ListMessagesRequest) returns (messagebase.ListMessagesResponse) {
     option (google.api.http) = {
       get: "/message" // query on conversation_id
     };

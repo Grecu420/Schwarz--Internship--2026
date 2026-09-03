@@ -65,4 +65,3 @@ message GetPropertyRequest {
 message GetPropertyResponse {
   Property property = 1;
 }
-
