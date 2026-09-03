@@ -8,3 +8,7 @@ import (
 func (service GatewayServiceImpl) CreateConversation(ctx context.Context, req *proto.CreateConversationRequest) (*proto.CreateConversationResponse, error) {
 	return service.convService.CreateConversation(ctx, req)
 }
+
+func (service GatewayServiceImpl) ListConversations(ctx context.Context, req *proto.ListConversationsRequest) (*proto.ListConversationsResponse, error) {
+	return service.convService.ListConversations(ctx, req)
+}

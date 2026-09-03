@@ -13,7 +13,7 @@ services:
       - FRIEND-REQUEST-BASE_ENDPOINT=friend-request-base-service:50052
       - AUTH-BASE_ENDPOINT=auth-base-service:50053
       - MESSAGE-BASE_ENDPOINT=message-base-service:50054
-      - CONVERSATION-BASE_ENDPOINT=conversation-base-service:50051
+      - CONVERSATION-BASE_ENDPOINT=conversation-base-service:50057
 
     ports:
       - "50053:8080"
@@ -21,6 +21,7 @@ services:
       - user-base-service
       - friend-request-base-service
       - message-base-service
+      - conversation-base-service
 
   conversation-base-service:
     build:
@@ -28,7 +29,7 @@ services:
       dockerfile: services/conversation-base/Dockerfile
     container_name: conversation-base-service
     ports:
-      - "50057:50051"
+      - "50057:50057"
     secrets:
       - db-password
     environment:

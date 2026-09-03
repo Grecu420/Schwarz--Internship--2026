@@ -17,7 +17,7 @@ type ConversationServiceImpl struct {
 	DB *sql.DB
 }
 
-const defaultPort = 50051
+const defaultPort = 50057
 
 func main() {
 	// listen to port

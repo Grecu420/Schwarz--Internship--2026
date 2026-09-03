@@ -81,6 +81,12 @@ service GatewayService {
     };
   }
 
+  rpc ListConversations (conversation.ListConversationsRequest) returns (conversation.ListConversationsResponse) {
+    option (google.api.http) = {
+      get: "/conversations"
+    };
+  }
+    
   rpc CreateProperty (property.CreatePropertyRequest) returns (property.CreatePropertyResponse) {
     option (google.api.http) = {
       post: "/property"
