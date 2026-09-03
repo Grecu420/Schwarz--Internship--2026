@@ -91,7 +91,7 @@ func main() {
 		friendRequestService: proto.NewFriendRequestServiceClient(connFRB),
 		authService:          proto.NewAuthServiceClient(connAB),
 		messageService:       proto.NewMessageServiceClient(connMB),
-		convService:          proto.NewGatewayServiceClient(connCB),
+		convService:          proto.NewConversationServiceClient(connCB),
 	}
 
 	// Start gRPC Server

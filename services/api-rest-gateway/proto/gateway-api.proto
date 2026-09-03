@@ -73,4 +73,10 @@ service GatewayService {
       body: "*"
     };
   }
+
+  rpc ListConversations (conversation.ListConversationsRequest) returns (conversation.ListConversationsResponse) {
+    option (google.api.http) = {
+      get: "/conversations"
+    }; 
+  }
 }
