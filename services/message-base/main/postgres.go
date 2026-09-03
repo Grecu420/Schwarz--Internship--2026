@@ -34,8 +34,8 @@ func SelectMessages(ctx context.Context, db *sql.DB, conversationID int64) ([]*p
 	sel := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id", "conversation_id", "sender_id", "content", "created_at").
 		From("messages").
-		Where(sq.Eq{"conversation_id": conversationID})
-
+		Where(sq.Eq{"conversation_id": conversationID}).
+		OrderBy("created_at DESC")
 	rows, err := sel.RunWith(db).QueryContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("database query: %w", err)
