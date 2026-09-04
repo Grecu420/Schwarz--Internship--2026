@@ -75,7 +75,6 @@ service GatewayService {
     };
   }
 
-
   rpc CreateProperty (property.CreatePropertyRequest) returns (property.CreatePropertyResponse) {
     option (google.api.http) = {
       post: "/property"
@@ -86,7 +85,7 @@ service GatewayService {
   rpc UpdateProperty (property.UpdatePropertyRequest) returns (property.UpdatePropertyResponse) {
     option (google.api.http) = {
       patch: "/property"
-      body: "*"
+      body : "*"
     };
   }
 
@@ -99,6 +98,12 @@ service GatewayService {
   rpc GetProperty (property.GetPropertyRequest) returns (property.GetPropertyResponse) {
     option (google.api.http) = {
       get: "/property"
+    };
+  }
+
+  rpc ListProperties (property.ListPropertiesRequest) returns (property.ListPropertiesResponse) {
+    option (google.api.http) = {
+      get: "/propertyList"
     };
   }
 }
