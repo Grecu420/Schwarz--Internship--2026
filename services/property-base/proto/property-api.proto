@@ -11,6 +11,7 @@ service PropertyService {
   rpc UpdateProperty(UpdatePropertyRequest) returns (UpdatePropertyResponse);
   rpc DeleteProperty(DeletePropertyRequest) returns (DeletePropertyResponse);
   rpc GetProperty   (GetPropertyRequest)    returns (GetPropertyResponse);
+  rpc ListProperties(ListPropertiesRequest) returns (ListPropertiesResponse);
 }
 
 message Property {
@@ -66,3 +67,13 @@ message GetPropertyResponse {
   Property property = 1;
 }
 
+message ListPropertiesRequest {
+  string nextPageToken = 1;
+  int64  pageSize      = 2;
+  int64  owner_id      = 3;
+}
+
+message ListPropertiesResponse {
+  string            nextPageToken = 1;
+  repeated Property properties    = 2;
+}
