@@ -14,8 +14,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func TestGetMessageList(t *testing.T) {
-	baseRequest := &proto.GetMessageListRequest{
+func TestListMessages(t *testing.T) {
+	baseRequest := &proto.ListMessagesRequest{
 		ConversationId: 1,
 	}
 
@@ -25,15 +25,15 @@ func TestGetMessageList(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		request      *proto.GetMessageListRequest
-		setupMock    func(mock sqlmock.Sqlmock, req *proto.GetMessageListRequest)
+		request      *proto.ListMessagesRequest
+		setupMock    func(mock sqlmock.Sqlmock, req *proto.ListMessagesRequest)
 		expectedCode codes.Code
-		validate     func(t *testing.T, res *proto.GetMessageListResponse, req *proto.GetMessageListRequest)
+		validate     func(t *testing.T, res *proto.ListMessagesResponse, req *proto.ListMessagesRequest)
 	}{
 		{
 			name:    "Success",
 			request: baseRequest,
-			setupMock: func(mock sqlmock.Sqlmock, req *proto.GetMessageListRequest) {
+			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListMessagesRequest) {
 				rows := sqlmock.NewRows([]string{"id", "conversation_id", "sender_id", "content", "created_at"}).
 					AddRow(100, 1, 2, "First message", now).
 					AddRow(101, 1, 3, "Second message", now)
@@ -43,7 +43,7 @@ func TestGetMessageList(t *testing.T) {
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
-			validate: func(t *testing.T, res *proto.GetMessageListResponse, req *proto.GetMessageListRequest) {
+			validate: func(t *testing.T, res *proto.ListMessagesResponse, req *proto.ListMessagesRequest) {
 				if res == nil {
 					t.Fatalf("expected non-nil response, got nil")
 				}
@@ -61,7 +61,7 @@ func TestGetMessageList(t *testing.T) {
 		{
 			name:    "SuccessEmptyList",
 			request: baseRequest,
-			setupMock: func(mock sqlmock.Sqlmock, req *proto.GetMessageListRequest) {
+			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListMessagesRequest) {
 				rows := sqlmock.NewRows([]string{"id", "conversation_id", "sender_id", "content", "created_at"})
 
 				mock.ExpectQuery(expectedSQL).
@@ -69,7 +69,7 @@ func TestGetMessageList(t *testing.T) {
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
-			validate: func(t *testing.T, res *proto.GetMessageListResponse, req *proto.GetMessageListRequest) {
+			validate: func(t *testing.T, res *proto.ListMessagesResponse, req *proto.ListMessagesRequest) {
 				if res == nil {
 					t.Fatalf("expected non-nil response, got nil")
 				}
@@ -81,27 +81,27 @@ func TestGetMessageList(t *testing.T) {
 		{
 			name:         "NilRequest",
 			request:      nil,
-			setupMock:    func(mock sqlmock.Sqlmock, req *proto.GetMessageListRequest) {},
+			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListMessagesRequest) {},
 			expectedCode: codes.InvalidArgument,
 		},
 		{
 			name: "ZeroConversationId",
-			request: &proto.GetMessageListRequest{
+			request: &proto.ListMessagesRequest{
 				ConversationId: 0,
 			},
-			setupMock:    func(mock sqlmock.Sqlmock, req *proto.GetMessageListRequest) {},
+			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListMessagesRequest) {},
 			expectedCode: codes.InvalidArgument,
 		},
 		{
 			name:    "InternalDatabaseError",
 			request: baseRequest,
-			setupMock: func(mock sqlmock.Sqlmock, req *proto.GetMessageListRequest) {
+			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListMessagesRequest) {
 				mock.ExpectQuery(expectedSQL).
 					WithArgs(req.GetConversationId()).
 					WillReturnError(errors.New("database query error"))
 			},
 			expectedCode: codes.Internal,
-			validate: func(t *testing.T, res *proto.GetMessageListResponse, req *proto.GetMessageListRequest) {
+			validate: func(t *testing.T, res *proto.ListMessagesResponse, req *proto.ListMessagesRequest) {
 				if res != nil {
 					t.Errorf("expected nil response on error, got %v", res)
 				}
@@ -122,7 +122,7 @@ func TestGetMessageList(t *testing.T) {
 			}
 
 			svc := main.MessageServiceImpl{DB: db}
-			res, err := svc.GetMessageList(context.Background(), tt.request)
+			res, err := svc.ListMessages(context.Background(), tt.request)
 
 			if tt.expectedCode != codes.OK {
 				if err == nil {

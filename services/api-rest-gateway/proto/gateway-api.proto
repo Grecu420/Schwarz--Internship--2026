@@ -109,7 +109,7 @@ service GatewayService {
 
   rpc GetProperty (property.GetPropertyRequest) returns (property.GetPropertyResponse) {
     option (google.api.http) = {
-      get: "/property"
+      get: "/property" // query on id
     };
   }
 
