@@ -104,7 +104,7 @@ func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, pag
 
 	// Append ordering and limit
 	base = base.OrderBy("id ASC").
-		Limit(uint64(page_size + 1))
+		Suffix("LIMIT ?", uint64(page_size+1))
 
 	// Execute query
 	rows, err := base.RunWith(db).QueryContext(ctx)
