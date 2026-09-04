@@ -6,6 +6,7 @@ option go_package = "main/proto";
 
 service ConversationService {
   rpc CreateConversation(CreateConversationRequest) returns (CreateConversationResponse);
+  rpc ListConversations (ListConversationsRequest) returns (ListConversationsResponse);
 }
 
 message Conversation {
@@ -23,4 +24,12 @@ message CreateConversationRequest {
 
 message CreateConversationResponse {
   int64 id = 1;
+}
+
+message ListConversationsRequest {
+  int64 user_id = 1;
+}
+
+message ListConversationsResponse {
+  repeated Conversation conversations = 1;
 }
