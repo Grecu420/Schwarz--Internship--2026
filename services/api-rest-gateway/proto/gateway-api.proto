@@ -115,7 +115,8 @@ service GatewayService {
 
   rpc ListProperties (property.ListPropertiesRequest) returns (property.ListPropertiesResponse) {
     option (google.api.http) = {
-      get: "/propertyList"
+      post: "/propertyList"
+      body: "*"
     };
   }
 }

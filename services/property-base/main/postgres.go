@@ -139,5 +139,4 @@ func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, pag
 	}
 
 	return properties, nil
-
 }

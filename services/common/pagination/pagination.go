@@ -28,7 +28,6 @@ func HashFilters(values ...any) string {
 }
 
 func BuildNextPageToken(id int64, filterHash string) (string, error) {
-
 	newToken := TokenPayload{
 		ID:         id,
 		FilterHash: filterHash,
