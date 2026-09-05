@@ -170,6 +170,36 @@ services:
     volumes:
       - dbgate_data:/root/.dbgate
 
+  email-base-service:
+    build:
+      context: .
+      dockerfile: services/email-base/Dockerfile
+    container_name: email-base-service
+    environment:
+      FROM: "your-email@gmail.com"
+      SMTP_HOST: "smtp.gmail.com"
+      SMTP_PORT: "587"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+    secrets:
+      - email_password
+    depends_on:
+      - rabbit-mq
+
+  rabbit-mq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672" # for AMQP
+      - "15672:15672" # for management UI
+    volumes:
+      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions \"/etc/rabbitmq/definitions.json\""
+
 volumes:
   db-data:
   dbgate_data:
@@ -179,3 +209,5 @@ secrets:
     file: db/password.txt
   auth-key:
     file: secrets/auth_key.txt
+  email_password:
+    file: secrets/email_password.txt
