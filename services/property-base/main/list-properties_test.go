@@ -15,12 +15,19 @@ import (
 )
 
 func TestListProperties(t *testing.T) {
-	const query = `SELECT id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat 
+	const query_p2 = `SELECT id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat 
 					FROM properties 
 					WHERE user_id = $1 
 					AND id >= $2 
 					ORDER BY id ASC 
-					LIMIT $3`
+					LIMIT 3`
+
+	const query_default = `SELECT id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat 
+					FROM properties 
+					WHERE user_id = $1 
+					AND id >= $2 
+					ORDER BY id ASC 
+					LIMIT 11`
 
 	baseRequest := &proto.ListPropertiesRequest{
 		OwnerId:  100,
@@ -50,8 +57,8 @@ func TestListProperties(t *testing.T) {
 					AddRow(1, 100, "Sunset Villa", "Cozy house", "123 Main St", 250000, 12.34, 56.78).
 					AddRow(2, 100, "Ocean Apartment", "Beachfront view", "456 Beach Rd", 400000, 12.35, 56.79)
 
-				mock.ExpectQuery(regexp.QuoteMeta(query)).
-					WithArgs(int64(100), int64(0), uint64(3)).
+				mock.ExpectQuery(regexp.QuoteMeta(query_p2)).
+					WithArgs(int64(100), int64(0)).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -78,8 +85,8 @@ func TestListProperties(t *testing.T) {
 					AddRow(2, 100, "Ocean Apartment", "Beachfront view", "456 Beach Rd", 400000, 12.35, 56.79).
 					AddRow(3, 100, "Mountain Cabin", "Quiet place", "789 Forest Ln", 150000, 12.36, 56.80)
 
-				mock.ExpectQuery(regexp.QuoteMeta(query)).
-					WithArgs(int64(100), int64(0), uint64(3)).
+				mock.ExpectQuery(regexp.QuoteMeta(query_p2)).
+					WithArgs(int64(100), int64(0)).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -105,8 +112,8 @@ func TestListProperties(t *testing.T) {
 				rows := sqlmock.NewRows(columns).
 					AddRow(10, 100, "Downtown Loft", "Modern design", "101 City Center", 500000, 12.37, 56.81)
 
-				mock.ExpectQuery(regexp.QuoteMeta(query)).
-					WithArgs(int64(100), int64(10), uint64(3)).
+				mock.ExpectQuery(regexp.QuoteMeta(query_p2)).
+					WithArgs(int64(100), int64(10)).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -143,8 +150,17 @@ func TestListProperties(t *testing.T) {
 				OwnerId:  100,
 				PageSize: 0,
 			},
-			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
-			expectedCode: codes.InvalidArgument,
+			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {
+				rows := sqlmock.NewRows(columns).
+					AddRow(1, 100, "Sunset Villa", "Cozy house", "123 Main St", 250000, 12.34, 56.78).
+					AddRow(2, 100, "Ocean Apartment", "Beachfront view", "456 Beach Rd", 400000, 12.35, 56.79).
+					AddRow(3, 100, "Mountain Cabin", "Quiet place", "789 Forest Ln", 150000, 12.36, 56.80)
+
+				mock.ExpectQuery(regexp.QuoteMeta(query_default)).
+					WithArgs(int64(100), int64(0)).
+					WillReturnRows(rows)
+			},
+			expectedCode: codes.OK,
 		},
 		{name: "MalformedNextPageToken",
 			request: &proto.ListPropertiesRequest{
@@ -167,8 +183,8 @@ func TestListProperties(t *testing.T) {
 		{name: "DatabaseError",
 			request: baseRequest,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {
-				mock.ExpectQuery(regexp.QuoteMeta(query)).
-					WithArgs(int64(100), int64(0), uint64(3)).
+				mock.ExpectQuery(regexp.QuoteMeta(query_p2)).
+					WithArgs(int64(100), int64(0)).
 					WillReturnError(errors.New("db query execution failed"))
 			},
 			expectedCode: codes.Internal,

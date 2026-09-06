@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const DEFAULT_PAGE_SIZE = 10
+
 type TokenPayload struct {
 	ID         int64  `json:"id"`
 	FilterHash string `json:"hash"`
@@ -48,7 +50,7 @@ func Paginate[T Identifiable](
 	fetchFunc func(offsetId int64, limit int64) ([]T, error),
 ) ([]T, string, error) {
 	if pageSize <= 0 {
-		return nil, "", status.Errorf(codes.InvalidArgument, "invalid page size: %v", pageSize)
+		pageSize = DEFAULT_PAGE_SIZE
 	}
 
 	// Parse token to obtain offset
