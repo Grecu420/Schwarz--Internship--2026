@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func TestGetMessageList(t *testing.T) {
+func TestListMessages(t *testing.T) {
 	baseRequest := &proto.ListMessagesRequest{
 		ConversationId: 1,
 	}
