@@ -26,6 +26,19 @@ service GatewayService {
     };
   }
 
+  rpc UpdateUser(userbase.UpdateUserRequest) returns (userbase.UpdateUserResponse){
+    option (google.api.http) = {
+      patch: "/user"
+      body: "*"
+    };
+  }
+
+  rpc DeleteUser(userbase.DeleteUserRequest) returns (userbase.DeleteUserResponse){
+    option (google.api.http) = {
+      delete: "/user" // query on id
+    };
+  }
+
   rpc CreateFriendRequest (friendrequestbase.CreateFriendRequestRequest) returns (friendrequestbase.CreateFriendRequestResponse){
     option (google.api.http) = {
       post: "/friend-request"

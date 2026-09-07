@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"time"
+	"errors"
 
 	sq "github.com/Masterminds/squirrel"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -107,4 +108,28 @@ func SelectUserListInDB(ctx context.Context, db *sql.DB, offsetID int64, pageSiz
 	}
 
 	return users, nil
+}
+
+var NoRowsDeleted = errors.New("no rows deleted")
+
+func DeleteUserInDB(ctx context.Context, db *sql.DB, id int64) error {
+	del := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Delete("users").
+		Where(sq.Eq{"id": id})
+
+	res, err := del.RunWith(db).ExecContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	r, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	
+	if r == 0 {
+		return NoRowsDeleted
+	}
+	
+	return nil
 }
