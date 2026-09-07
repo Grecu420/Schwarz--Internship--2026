@@ -23,10 +23,10 @@ type EmailConfig struct {
 }
 
 func sendEmail(p rabbitmq.EmailMessage, c *EmailConfig) error {
-	auth := smtp.PlainAuth("", c.from, c.password, c.smtpHost)
+	// auth = smtp.PlainAuth("", c.from, c.password, c.smtpHost)
 	msg := fmt.Appendf(nil, "To: %s\r\nSubject: %s\r\n\r\n%s", p.To, p.Subject, p.Body)
 
-	return smtp.SendMail(c.smtpHost+":"+c.smtpPort, auth, c.from, []string{p.To}, msg)
+	return smtp.SendMail(c.smtpHost+":"+c.smtpPort, nil, c.from, []string{p.To}, msg)
 }
 
 func readEmailConfig() (*EmailConfig, error) {
@@ -113,14 +113,14 @@ func main() {
 		fmt.Println(payload.Subject)
 		fmt.Println(payload.Body)
 
-		// if err := sendEmail(payload, emailConf); err != nil {
-		// 	log.Printf("Email send failed to %s: %v", payload.To, err)
+		if err := sendEmail(payload, emailConf); err != nil {
+			log.Printf("Email send failed to %s: %v", payload.To, err)
 
-		// 	// Release message (equivalent to Nack with requeue=true)
-		// 	// so it can be picked up by another worker or retried.
-		// 	_ = receiver.ReleaseMessage(ctx, msg)
-		// 	continue
-		// }
+			// Release message (equivalent to Nack with requeue=true)
+			// so it can be picked up by another worker or retried.
+			_ = receiver.ReleaseMessage(ctx, msg)
+			continue
+		}
 
 		log.Printf("Email successfully sent to %s", payload.To)
 
