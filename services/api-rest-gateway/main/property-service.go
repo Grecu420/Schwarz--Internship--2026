@@ -20,3 +20,7 @@ func (service GatewayServiceImpl) DeleteProperty(ctx context.Context, req *proto
 func (service GatewayServiceImpl) GetProperty(ctx context.Context, req *proto.GetPropertyRequest) (*proto.GetPropertyResponse, error) {
 	return service.propService.GetProperty(ctx, req)
 }
+
+func (service GatewayServiceImpl) ListProperties(ctx context.Context, req *proto.ListPropertiesRequest) (*proto.ListPropertiesResponse, error) {
+	return service.propService.ListProperties(ctx, req)
+}

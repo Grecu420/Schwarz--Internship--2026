@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 )
@@ -81,4 +82,61 @@ func SelectPropertyInDB(ctx context.Context, db *sql.DB, id int64) (*proto.Prope
 	}
 
 	return property, nil
+}
+
+func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, page_size int64, userID int64) ([]*proto.Property, error) {
+	// Build query
+	base := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select(
+			"id",
+			"user_id",
+			"name",
+			"description",
+			"address",
+			"price",
+			"ST_X(location::geometry) AS lng",
+			"ST_Y(location::geometry) AS lat").
+		From("properties").
+		Where(sq.Eq{"user_id": userID})
+
+	// Add filter for offset (starting ID)
+	base = base.Where(sq.GtOrEq{"id": offsetID})
+
+	// Append ordering and limit
+	base = base.OrderBy("id ASC").
+		Limit(uint64(page_size + 1))
+
+	// Execute query
+	rows, err := base.RunWith(db).QueryContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("database query: %w", err)
+	}
+	defer rows.Close()
+
+	// Scan rows
+	var properties []*proto.Property
+	for rows.Next() {
+		var property = &proto.Property{Location: &proto.Location{}}
+
+		if err := rows.Scan(
+			&property.Id,
+			&property.UserId,
+			&property.Name,
+			&property.Description,
+			&property.Address,
+			&property.Price,
+			&property.Location.Long,
+			&property.Location.Lat,
+		); err != nil {
+			return nil, fmt.Errorf("scan property: %w", err)
+		}
+
+		properties = append(properties, property)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error reading database rows: %w", err)
+	}
+
+	return properties, nil
 }
