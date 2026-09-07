@@ -2,7 +2,7 @@ package main
 
 import (
 	"Schwarz--Internship--2026/services/common"
-	"Schwarz--Internship--2026/services/common/email"
+	"Schwarz--Internship--2026/services/common/rabbitmq"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -22,7 +22,7 @@ type EmailConfig struct {
 	smtpPort string
 }
 
-func sendEmail(p email.EmailMessage, c *EmailConfig) error {
+func sendEmail(p rabbitmq.EmailMessage, c *EmailConfig) error {
 	auth := smtp.PlainAuth("", c.from, c.password, c.smtpHost)
 	msg := fmt.Appendf(nil, "To: %s\r\nSubject: %s\r\n\r\n%s", p.To, p.Subject, p.Body)
 
@@ -59,13 +59,13 @@ func main() {
 	rabbitmq_url, err := common.GetRequiredEnv("RABBITMQ_URL")
 	if err != nil {
 		log.Fatalf("Failed to register url: %v", err)
-
 	}
 
 	emailConf, err := readEmailConfig()
 	if err != nil {
 		log.Fatalf("Failed to read config: %v", err)
 	}
+	fmt.Println(emailConf)
 
 	ctx := context.Background()
 
@@ -83,8 +83,7 @@ func main() {
 	}
 
 	// 3. Create a Receiver attached to the target queue
-	// Note: The queue "email_queue" must already exist on the broker.
-	receiver, err := session.NewReceiver(ctx, "email_queue", nil)
+	receiver, err := session.NewReceiver(ctx, "email_queue", &amqp.ReceiverOptions{Durability: amqp.DurabilityConfiguration})
 	if err != nil {
 		log.Fatalf("Failed to create receiver: %v", err)
 	}
@@ -101,7 +100,7 @@ func main() {
 			continue
 		}
 
-		var payload email.EmailMessage
+		var payload rabbitmq.EmailMessage
 		// GetData() returns the primary payload of the AMQP 1.0 message
 		if err := json.Unmarshal(msg.GetData(), &payload); err != nil {
 			log.Printf("Malformed message payload: %v", err)
@@ -111,15 +110,17 @@ func main() {
 			_ = receiver.RejectMessage(ctx, msg, nil)
 			continue
 		}
+		fmt.Println(payload.Subject)
+		fmt.Println(payload.Body)
 
-		if err := sendEmail(payload, emailConf); err != nil {
-			log.Printf("Email send failed to %s: %v", payload.To, err)
+		// if err := sendEmail(payload, emailConf); err != nil {
+		// 	log.Printf("Email send failed to %s: %v", payload.To, err)
 
-			// Release message (equivalent to Nack with requeue=true)
-			// so it can be picked up by another worker or retried.
-			_ = receiver.ReleaseMessage(ctx, msg)
-			continue
-		}
+		// 	// Release message (equivalent to Nack with requeue=true)
+		// 	// so it can be picked up by another worker or retried.
+		// 	_ = receiver.ReleaseMessage(ctx, msg)
+		// 	continue
+		// }
 
 		log.Printf("Email successfully sent to %s", payload.To)
 

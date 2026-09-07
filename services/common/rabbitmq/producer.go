@@ -1,4 +1,4 @@
-package email
+package rabbitmq
 
 import (
 	"context"
@@ -20,7 +20,7 @@ type Producer struct {
 	sender  *amqp.Sender
 }
 
-// NewProducer initializes a long-lived AMQP 1.0 connection and sender.
+// NewProducer initializes a connection and sender.
 func NewProducer(ctx context.Context, amqpURL, queueName string) (*Producer, error) {
 	conn, err := amqp.Dial(ctx, amqpURL, nil)
 	if err != nil {
@@ -33,7 +33,10 @@ func NewProducer(ctx context.Context, amqpURL, queueName string) (*Producer, err
 		return nil, fmt.Errorf("failed to open AMQP session: %w", err)
 	}
 
-	sender, err := session.NewSender(ctx, queueName, nil)
+	sender, err := session.NewSender(ctx, queueName,
+		&amqp.SenderOptions{
+			Durability: amqp.DurabilityConfiguration,
+		})
 	if err != nil {
 		_ = session.Close(ctx)
 		_ = conn.Close()
@@ -47,7 +50,7 @@ func NewProducer(ctx context.Context, amqpURL, queueName string) (*Producer, err
 	}, nil
 }
 
-// Publish serializes and sends an email payload to the queue. Safe for concurrent use.
+// Publish sends an email payload to the queue.
 func (p *Producer) Publish(ctx context.Context, payload EmailMessage) error {
 	data, err := json.Marshal(payload)
 	if err != nil {
@@ -66,7 +69,7 @@ func (p *Producer) Publish(ctx context.Context, payload EmailMessage) error {
 	return nil
 }
 
-// Close gracefully closes the sender, session, and connection.
+// Close the sender, session, and connection.
 func (p *Producer) Close(ctx context.Context) error {
 	_ = p.sender.Close(ctx)
 	_ = p.session.Close(ctx)

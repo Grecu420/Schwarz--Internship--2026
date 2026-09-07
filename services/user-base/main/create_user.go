@@ -1,9 +1,12 @@
 package main
 
 import (
+	"Schwarz--Internship--2026/services/common/rabbitmq"
 	"Schwarz--Internship--2026/services/user-base/main/proto"
 	"context"
+	"fmt"
 	"log"
+	"log/slog"
 
 	pbf "google.golang.org/protobuf/proto"
 
@@ -13,7 +16,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (u UserServiceImpl) CreateUser(ctx context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
+func (service UserServiceImpl) CreateUser(ctx context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
 
 	if req.GetUser() == nil {
 		log.Printf("Empty request")
@@ -43,7 +46,7 @@ func (u UserServiceImpl) CreateUser(ctx context.Context, req *proto.CreateUserRe
 		user.CreatedAt = timestamppb.Now()
 	}
 
-	id, err := InsertUser(ctx, u.DB, user)
+	id, err := InsertUser(ctx, service.DB, user)
 	if err != nil {
 		log.Printf("Failed to insert user: %v", err)
 		return nil, status.Errorf(codes.Internal, "failed to save user to database: %v", err)
@@ -51,6 +54,21 @@ func (u UserServiceImpl) CreateUser(ctx context.Context, req *proto.CreateUserRe
 
 	// update user for return
 	user.Id = id
+
+	// send email message to queue
+	if service.EmailProd != nil {
+
+		email := rabbitmq.EmailMessage{
+			To:      user.Email,
+			Subject: "Account created",
+			Body:    fmt.Sprintf("First Name: %s\nLast Name: %s\n", user.FirstName, user.LastName),
+		}
+		err = service.EmailProd.Publish(ctx, email)
+
+		if err != nil {
+			slog.Error("failed to publish email", "error", err)
+		}
+	}
 
 	return &proto.CreateUserResponse{User: user}, nil
 }
