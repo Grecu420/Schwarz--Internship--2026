@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (u UserServiceImpl) GetUser(ctx context.Context, req *proto.GetUserRequest) (*proto.GetUserResponse, error) {
+func (service UserServiceImpl) GetUser(ctx context.Context, req *proto.GetUserRequest) (*proto.GetUserResponse, error) {
 	// Get email
 	email := req.GetEmail()
 	if email == "" {
@@ -19,7 +19,7 @@ func (u UserServiceImpl) GetUser(ctx context.Context, req *proto.GetUserRequest)
 	}
 
 	// Get user from database
-	resUser, err := SelectUser(ctx, u.DB, email)
+	resUser, err := SelectUser(ctx, service.DB, email)
 	if errors.Is(err, sql.ErrNoRows) {
 		log.Printf("Missing user (email: %s): %v", email, err)
 		return nil, status.Errorf(codes.NotFound,

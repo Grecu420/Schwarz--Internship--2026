@@ -34,6 +34,14 @@ func (m *mockUserService) ListUsers(ctx context.Context, in *proto.ListUsersRequ
 	return nil, errors.New("unexpected ListUsers call")
 }
 
+func (m *mockUserService) DeleteUser(ctx context.Context, in *proto.DeleteUserRequest, opts ...grpc.CallOption) (*proto.DeleteUserResponse, error) {
+	return nil, errors.New("unexpected DeleteUsers call")
+}
+
+func (m *mockUserService) UpdateUser(ctx context.Context, in *proto.UpdateUserRequest, opts ...grpc.CallOption) (*proto.UpdateUserResponse, error) {
+	return nil, errors.New("unexpected UpdateUsers call")
+}
+
 var secret = []byte("123")
 
 func TestGenerateToken(t *testing.T) {

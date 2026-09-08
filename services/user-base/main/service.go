@@ -3,7 +3,9 @@ package main
 import (
 	"Schwarz--Internship--2026/services/common"
 	"Schwarz--Internship--2026/services/common/database"
+	"Schwarz--Internship--2026/services/common/rabbitmq"
 	"Schwarz--Internship--2026/services/user-base/main/proto"
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -17,7 +19,8 @@ const defaultPort = 50051
 
 type UserServiceImpl struct {
 	proto.UnimplementedUserServiceServer
-	DB *sql.DB
+	DB        *sql.DB
+	EmailProd *rabbitmq.Producer
 }
 
 func main() {
@@ -41,10 +44,23 @@ func main() {
 	}
 	defer db.Close()
 
+	// connect to email queue
+	rabbitmq_url, err := common.GetRequiredEnv("RABBITMQ_URL")
+	if err != nil {
+		log.Fatalf("Failed to register url: %v", err)
+	}
+	ctx := context.Background()
+
+	prod, err := rabbitmq.NewProducer(ctx, rabbitmq_url, "/queues/email_queue")
+	if err != nil {
+		log.Fatalf("Failed to create producer: %v", err)
+	}
+	defer prod.Close(ctx)
+
 	// crete grpc server
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterUserServiceServer(grpcServer, &UserServiceImpl{DB: db})
+	proto.RegisterUserServiceServer(grpcServer, &UserServiceImpl{DB: db, EmailProd: prod})
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve gRPC: %v", err)
 	}

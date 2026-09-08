@@ -55,10 +55,12 @@ services:
       - POSTGRES_DB=database
       - POSTGRES_SERVICE=db
       - POSTGRES_PORT=5432
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
     depends_on:
+      rabbit-mq:
+        condition: service_healthy
       db:
         condition: service_healthy
-
 
   property-base-service:
     build:
@@ -170,6 +172,46 @@ services:
     volumes:
       - dbgate_data:/root/.dbgate
 
+  email-base-service:
+    build:
+      context: .
+      dockerfile: services/email-base/Dockerfile
+    container_name: email-base-service
+    environment:
+      FROM: "your-email@gmail.com"
+      SMTP_HOST: "mailpit"
+      SMTP_PORT: "1025"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+    secrets:
+      - email-password
+    depends_on:
+      rabbit-mq:
+        condition: service_healthy
+
+  rabbit-mq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # for AMQP
+      - "15672:15672" # for management UI
+    volumes:
+      - ./rabbitmq/rabbitmq.config:/etc/rabbitmq/rabbitmq.config
+      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"  # SMTP port for receiving mail
+      - "8025:8025"  # Web UI port for viewing mail
+    environment:
+      MP_MAX_MESSAGES: 500  # Automatically purge old test emails
+
 volumes:
   db-data:
   dbgate_data:
@@ -179,3 +221,5 @@ secrets:
     file: db/password.txt
   auth-key:
     file: secrets/auth_key.txt
+  email-password:
+    file: secrets/email_password.txt

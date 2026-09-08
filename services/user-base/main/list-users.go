@@ -51,7 +51,7 @@ func BuildNextPageToken(id int64, filterHash string) (string, error) {
 	return nextPageToken, nil
 }
 
-func (s *UserServiceImpl) ListUsers(ctx context.Context, req *proto.ListUsersRequest) (*proto.ListUsersResponse, error) {
+func (service *UserServiceImpl) ListUsers(ctx context.Context, req *proto.ListUsersRequest) (*proto.ListUsersResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request can't be nil")
 	}
@@ -94,7 +94,7 @@ func (s *UserServiceImpl) ListUsers(ctx context.Context, req *proto.ListUsersReq
 		offsetId = payload.ID
 	}
 
-	users, err := SelectUserListInDB(ctx, s.DB, offsetId, pageSize, firstNameFilter, lastNameFilter)
+	users, err := SelectUserListInDB(ctx, service.DB, offsetId, pageSize, firstNameFilter, lastNameFilter)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed db query: %v", err)
 	}
