@@ -21,7 +21,8 @@ message User {
   string user_name = 4;
   string email = 5;
   string password = 6;
-  google.protobuf.Timestamp created_at = 7; 
+  string profile_image_url = 7;
+  google.protobuf.Timestamp created_at = 8; 
 }
 
 message CreateUserRequest{

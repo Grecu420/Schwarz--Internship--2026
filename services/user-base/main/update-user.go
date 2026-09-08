@@ -53,6 +53,9 @@ func (service UserServiceImpl) UpdateUser(ctx context.Context, req *proto.Update
 			}
 			build = build.Set("user_name", req.User.GetUserName())
 			hasValidFields = true
+		case "profile_image_url":
+            build = build.Set("profile_image_url", req.User.GetProfileImageUrl())
+            hasValidFields = true
 		default:
 			return nil, status.Errorf(codes.InvalidArgument, "invalid field path in field_mask: %s", path)
 		}
@@ -62,20 +65,21 @@ func (service UserServiceImpl) UpdateUser(ctx context.Context, req *proto.Update
 		return nil, status.Error(codes.InvalidArgument, "no valid fields to update")
 	}
 
-	build = build.Suffix("RETURNING id, first_name, last_name, user_name, email, hashed_password, created_at")
+	build = build.Suffix("RETURNING id, first_name, last_name, user_name, email, hashed_password, profile_image_url, created_at")
 
 	var returnUser proto.User
 	var createdAt time.Time
 
 	err := build.RunWith(service.DB).QueryRowContext(ctx).Scan(
-		&returnUser.Id,
-		&returnUser.FirstName,
-		&returnUser.LastName,
-		&returnUser.UserName,
-		&returnUser.Email,
-		&returnUser.Password,
-		&createdAt,
-	)
+        &returnUser.Id,
+        &returnUser.FirstName,
+        &returnUser.LastName,
+        &returnUser.UserName,
+        &returnUser.Email,
+        &returnUser.Password,
+        &returnUser.ProfileImageUrl, 
+        &createdAt,
+    )
 
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, status.Error(codes.NotFound, "user to update not found")
