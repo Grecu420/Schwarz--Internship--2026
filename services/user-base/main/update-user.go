@@ -36,12 +36,21 @@ func (service UserServiceImpl) UpdateUser(ctx context.Context, req *proto.Update
 	for _, path := range req.FieldMask.GetPaths() {
 		switch path {
 		case "first_name":
+			if req.User.GetFirstName() == "" {
+				return nil, status.Error(codes.InvalidArgument, "first_name is mandatory")
+			}
 			build = build.Set("first_name", req.User.GetFirstName())
 			hasValidFields = true
 		case "last_name":
+			if req.User.GetLastName() == "" {
+				return nil, status.Error(codes.InvalidArgument, "last_name is mandatory")
+			}
 			build = build.Set("last_name", req.User.GetLastName())
 			hasValidFields = true
 		case "user_name":
+			if req.User.GetUserName() == "" {
+				return nil, status.Error(codes.InvalidArgument, "username is mandatory")
+			}
 			build = build.Set("user_name", req.User.GetUserName())
 			hasValidFields = true
 		default:
