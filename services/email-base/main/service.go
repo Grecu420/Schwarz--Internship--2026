@@ -23,14 +23,16 @@ type EmailConfig struct {
 }
 
 func sendEmail(p rabbitmq.EmailMessage, c *EmailConfig) error {
-	// auth = smtp.PlainAuth("", c.from, c.password, c.smtpHost)
+	var auth smtp.Auth = nil
+	if c.smtpHost != "mailpit" {
+		auth = smtp.PlainAuth("", c.from, c.password, c.smtpHost)
+	}
 	msg := fmt.Appendf(nil, "To: %s\r\nSubject: %s\r\n\r\n%s", p.To, p.Subject, p.Body)
 
-	return smtp.SendMail(c.smtpHost+":"+c.smtpPort, nil, c.from, []string{p.To}, msg)
+	return smtp.SendMail(c.smtpHost+":"+c.smtpPort, auth, c.from, []string{p.To}, msg)
 }
 
 func readEmailConfig() (*EmailConfig, error) {
-
 	bin, err := os.ReadFile("/run/secrets/email-password")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read db password secret: %w", err)
@@ -51,25 +53,22 @@ func readEmailConfig() (*EmailConfig, error) {
 	}
 
 	return &EmailConfig{password: password, smtpHost: host, smtpPort: port, from: from}, nil
-
 }
 
 func main() {
-
-	rabbitmq_url, err := common.GetRequiredEnv("RABBITMQ_URL")
-	if err != nil {
-		log.Fatalf("Failed to register url: %v", err)
-	}
-
+	// Read config for connection to smtp server
 	emailConf, err := readEmailConfig()
 	if err != nil {
 		log.Fatalf("Failed to read config: %v", err)
 	}
 	fmt.Println(emailConf)
 
-	ctx := context.Background()
-
 	// 1. Connect to RabbitMQ using AMQP 1.0
+	rabbitmq_url, err := common.GetRequiredEnv("RABBITMQ_URL")
+	if err != nil {
+		log.Fatalf("Failed to register url: %v", err)
+	}
+	ctx := context.Background()
 	conn, err := amqp.Dial(ctx, rabbitmq_url, nil)
 	if err != nil {
 		log.Fatalf("Failed to connect to broker: %v", err)
