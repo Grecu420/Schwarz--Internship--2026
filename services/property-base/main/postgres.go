@@ -6,29 +6,19 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/lib/pq"
 )
 
 func InsertPropertyInDB(ctx context.Context, db *sql.DB, name string, description string, user_id int64, address string, price int, lng, lat float64, image_urls []string) (int64, error) {
-	var generatedID int64
-
-	log.Printf("name %s\n", name)
 	ins := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Insert("properties").
 		Columns("user_id", "name", "description", "address", "location", "price", "image_urls").
-		Values(user_id, name, description, address, sq.Expr("ST_MakePoint(?, ?)::geography", lng, lat), price, pq.Array(&image_urls)).
+		Values(user_id, name, description, address, sq.Expr("ST_MakePoint(?, ?)::geography", lng, lat), price, pq.Array(image_urls)).
 		Suffix("RETURNING id")
-
-	query, args, err := ins.ToSql()
-	log.Printf("query: %s\n", query)
-	for i, a := range args {
-		log.Printf("A%d: %s", i, a)
-	}
-
-	err = ins.RunWith(db).QueryRowContext(ctx).Scan(&generatedID)
+	var generatedID int64
+	err := ins.RunWith(db).QueryRowContext(ctx).Scan(&generatedID)
 
 	return generatedID, err
 }

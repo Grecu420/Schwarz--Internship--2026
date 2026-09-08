@@ -9,13 +9,14 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func TestGetProperty(t *testing.T) {
 	baseReq := &proto.GetPropertyRequest{Id: 10}
-	expectedSQL := `SELECT id, user_id, name, description, address, price, ST_X\(location::geometry\) AS lng, ST_Y\(location::geometry\) AS lat FROM properties WHERE id = \$1`
+	expectedSQL := `SELECT id, user_id, name, description, address, price, ST_X\(location::geometry\) AS lng, ST_Y\(location::geometry\) AS lat, image_urls FROM properties WHERE id = \$1`
 
 	tests := []struct {
 		name         string
@@ -29,8 +30,8 @@ func TestGetProperty(t *testing.T) {
 			request: baseReq,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.GetPropertyRequest) {
 				rows := sqlmock.NewRows([]string{
-					"id", "user_id", "name", "description", "address", "price", "lng", "lat",
-				}).AddRow(10, 1, "City Loft", "Downtown view", "456 Central Ave", 800, 10.5, 20.5)
+					"id", "user_id", "name", "description", "address", "price", "lng", "lat", "image_urls",
+				}).AddRow(10, 1, "City Loft", "Downtown view", "456 Central Ave", 800, 10.5, 20.5, pq.Array([]string{"main.png"}))
 
 				mock.ExpectQuery(expectedSQL).
 					WithArgs(req.GetId()).
