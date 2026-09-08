@@ -21,7 +21,6 @@ func TestGetUser(t *testing.T) {
         Email: targetEmail,
     }
 
-    // S-a adăugat profile_image_url în query-ul SQL așteptat
     expectedSQL := `SELECT id, first_name, last_name, user_name, email, hashed_password, profile_image_url, created_at FROM users WHERE email = \$1`
 
     tests := []struct {
@@ -35,7 +34,6 @@ func TestGetUser(t *testing.T) {
             name:    "Success",
             request: baseRequest,
             setupMock: func(mock sqlmock.Sqlmock, req *proto.GetUserRequest) {
-                // S-a adăugat coloana profile_image_url în definire și string-ul gol "" la AddRow
                 rows := sqlmock.NewRows([]string{
                     "id", "first_name", "last_name", "user_name", "email", "hashed_password", "profile_image_url", "created_at",
                 }).AddRow(10, "John", "Doe", "johndoe", "john@example.com", "hashed_pass_123", "", customTime)
