@@ -92,7 +92,6 @@ func main() {
 
 	// 4. Consume messages in a loop
 	for {
-		// Receive blocks until a message is available
 		msg, err := receiver.Receive(ctx, nil)
 		if err != nil {
 			log.Printf("Error receiving message: %v", err)
@@ -101,30 +100,26 @@ func main() {
 		}
 
 		var payload rabbitmq.EmailMessage
-		// GetData() returns the primary payload of the AMQP 1.0 message
 		if err := json.Unmarshal(msg.GetData(), &payload); err != nil {
 			log.Printf("Malformed message payload: %v", err)
 
-			// Reject message (drops it or sends to Dead Letter Queue if configured)
-			// The third argument is an optional *amqp.Error mapping.
+			// Reject message
 			_ = receiver.RejectMessage(ctx, msg, nil)
 			continue
 		}
-		fmt.Println(payload.Subject)
-		fmt.Println(payload.Body)
-
+		log.Printf("Subject: %s", payload.Subject)
+		log.Printf("Body :%s", payload.Body)
 		if err := sendEmail(payload, emailConf); err != nil {
 			log.Printf("Email send failed to %s: %v", payload.To, err)
 
-			// Release message (equivalent to Nack with requeue=true)
-			// so it can be picked up by another worker or retried.
-			_ = receiver.ReleaseMessage(ctx, msg)
+			// Reject message (Possible to release)
+			_ = receiver.RejectMessage(ctx, msg, nil)
 			continue
 		}
 
 		log.Printf("Email successfully sent to %s", payload.To)
 
-		// Accept the message (equivalent to Ack) to mark it as completed
+		// Accept the message
 		if err := receiver.AcceptMessage(ctx, msg); err != nil {
 			log.Printf("Failed to accept message: %v", err)
 		}
