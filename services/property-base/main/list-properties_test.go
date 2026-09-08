@@ -46,7 +46,6 @@ func TestListProperties(t *testing.T) {
 	columns := []string{"id", "user_id", "name", "description", "address", "price", "lng", "lat", "image_urls"}
 
 	values := [][]driver.Value{
-
 		{1, 100, "Sunset Villa", "Cozy house", "123 Main St", 250000, 12.34, 56.78, pq.Array([]string{"main.png"})},
 		{2, 100, "Ocean Apartment", "Beachfront view", "456 Beach Rd", 400000, 12.35, 56.79, pq.Array([]string{"main.png"})},
 		{3, 100, "Mountain Cabin", "Quiet place", "789 Forest Ln", 150000, 12.36, 56.80, pq.Array([]string{"main.png"})},
