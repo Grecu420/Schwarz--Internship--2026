@@ -16,7 +16,7 @@ func (service UserServiceImpl) DeleteUser(ctx context.Context, req *proto.Delete
 
 	err := DeleteUserInDB(ctx, service.DB, req.GetId())
 
-	if errors.Is(err, NoRowsDeleted) {
+	if errors.Is(err, errNoRowsDeleted) {
 		return nil, status.Error(codes.NotFound, "user not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "query error: %v", err)

@@ -110,7 +110,7 @@ func SelectUserListInDB(ctx context.Context, db *sql.DB, offsetID int64, pageSiz
 	return users, nil
 }
 
-var NoRowsDeleted = errors.New("no rows deleted")
+var errNoRowsDeleted = errors.New("no rows deleted")
 
 func DeleteUserInDB(ctx context.Context, db *sql.DB, id int64) error {
 	del := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
@@ -128,7 +128,7 @@ func DeleteUserInDB(ctx context.Context, db *sql.DB, id int64) error {
 	}
 	
 	if r == 0 {
-		return NoRowsDeleted
+		return errNoRowsDeleted
 	}
 	
 	return nil
