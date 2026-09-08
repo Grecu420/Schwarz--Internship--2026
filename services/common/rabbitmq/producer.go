@@ -35,7 +35,8 @@ func NewProducer(ctx context.Context, amqpURL, queueName string) (*Producer, err
 
 	sender, err := session.NewSender(ctx, queueName,
 		&amqp.SenderOptions{
-			Durability: amqp.DurabilityConfiguration,
+			Durability:   amqp.DurabilityConfiguration,
+			ExpiryPolicy: amqp.ExpiryPolicyNever,
 		})
 	if err != nil {
 		_ = session.Close(ctx)

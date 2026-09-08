@@ -82,7 +82,9 @@ func main() {
 	}
 
 	// 3. Create a Receiver attached to the target queue
-	receiver, err := session.NewReceiver(ctx, "email_queue", &amqp.ReceiverOptions{Durability: amqp.DurabilityConfiguration})
+	receiver, err := session.NewReceiver(ctx, "/queues/email_queue",
+		&amqp.ReceiverOptions{Durability: amqp.DurabilityConfiguration, ExpiryPolicy: amqp.ExpiryPolicyNever},
+	)
 	if err != nil {
 		log.Fatalf("Failed to create receiver: %v", err)
 	}

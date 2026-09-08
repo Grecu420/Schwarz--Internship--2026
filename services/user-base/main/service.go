@@ -51,7 +51,7 @@ func main() {
 	}
 	ctx := context.Background()
 
-	prod, err := rabbitmq.NewProducer(ctx, rabbitmq_url, "email_queue")
+	prod, err := rabbitmq.NewProducer(ctx, rabbitmq_url, "/queues/email_queue")
 	if err != nil {
 		log.Fatalf("Failed to create producer: %v", err)
 	}
