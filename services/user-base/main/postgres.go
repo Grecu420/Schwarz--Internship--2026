@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"time"
+	"errors"
 
 	sq "github.com/Masterminds/squirrel"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -22,24 +23,26 @@ func SelectUser(ctx context.Context, db *sql.DB, email string) (*proto.User, err
 	var created_at time.Time
 
 	user := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).Select(
-		"id",
-		"first_name",
-		"last_name",
-		"user_name",
-		"email",
-		"hashed_password",
-		"created_at").
-		From("users").
-		Where(sq.Eq{"email": email})
+        "id",
+        "first_name",
+        "last_name",
+        "user_name",
+        "email",
+        "hashed_password",
+        "profile_image_url", 
+        "created_at").
+        From("users").
+        Where(sq.Eq{"email": email})
 
-	err := user.RunWith(db).QueryRowContext(ctx).Scan(
-		&resUser.Id,
-		&resUser.FirstName,
-		&resUser.LastName,
-		&resUser.UserName,
-		&resUser.Email,
-		&resUser.Password,
-		&created_at)
+    err := user.RunWith(db).QueryRowContext(ctx).Scan(
+        &resUser.Id,
+        &resUser.FirstName,
+        &resUser.LastName,
+        &resUser.UserName,
+        &resUser.Email,
+        &resUser.Password,
+        &resUser.ProfileImageUrl, 
+        &created_at)
 
 	if err != nil {
 		return nil, err
@@ -68,43 +71,73 @@ func InsertUser(ctx context.Context, db *sql.DB, user *proto.User) (int64, error
 }
 
 func SelectUserListInDB(ctx context.Context, db *sql.DB, offsetID int64, pageSize int64, firstName string, lastName string) ([]*proto.User, error) {
+    base := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+        Select("id", "first_name", "last_name", "user_name", "email", "profile_image_url", "created_at").
+        From("users")
 
-	base := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).Select("id", "first_name", "last_name", "user_name", "email").From("users")
+    if firstName != "" {
+        base = base.Where(sq.Eq{"first_name": firstName})
+    }
 
-	if firstName != "" {
-		base = base.Where(sq.Eq{"first_name": firstName})
-	}
+    if lastName != "" {
+        base = base.Where(sq.Eq{"last_name": lastName})
+    }
 
-	if lastName != "" {
-		base = base.Where(sq.Eq{"last_name": lastName})
-	}
+    if offsetID > 0 {
+        base = base.Where(sq.Gt{"id": offsetID})
+    }
 
-	if offsetID > 0 {
-		base = base.Where(sq.Gt{"id": offsetID})
-	}
+    base = base.OrderBy("id ASC").Suffix("LIMIT ?", uint64(pageSize+1))
 
-	base = base.OrderBy("id ASC").Suffix("LIMIT ?", uint64(pageSize+1))
+    query, args, _ := base.ToSql()
+    slog.Info("base", "query", query)
+    rows, err := db.QueryContext(ctx, query, args...)
+    if err != nil {
+        return nil, fmt.Errorf("database query: %w", err)
+    }
+    defer rows.Close()
 
-	query, args, _ := base.ToSql()
-	slog.Info("base", "query", query)
-	rows, err := db.QueryContext(ctx, query, args...)
+    var users []*proto.User
+    for rows.Next() {
+        var u proto.User
+        var createdAt time.Time 
+
+        if err := rows.Scan(&u.Id, &u.FirstName, &u.LastName, &u.UserName, &u.Email, &u.ProfileImageUrl, &createdAt); err != nil {
+            return nil, fmt.Errorf("scan user: %w", err)
+        }
+
+        u.CreatedAt = timestamppb.New(createdAt)
+        
+        users = append(users, &u)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, fmt.Errorf("error reading database rows: %w", err)
+    }
+
+    return users, nil
+}
+
+var errNoRowsDeleted = errors.New("no rows deleted")
+
+func DeleteUserInDB(ctx context.Context, db *sql.DB, id int64) error {
+	del := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Delete("users").
+		Where(sq.Eq{"id": id})
+
+	res, err := del.RunWith(db).ExecContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("database query: %w", err)
-	}
-	defer rows.Close()
-
-	var users []*proto.User
-	for rows.Next() {
-		var u proto.User
-		if err := rows.Scan(&u.Id, &u.FirstName, &u.LastName, &u.UserName, &u.Email); err != nil {
-			return nil, fmt.Errorf("scan user: %w", err)
-		}
-		users = append(users, &u)
+		return err
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error reading database rows: %w", err)
+	r, err := res.RowsAffected()
+	if err != nil {
+		return err
 	}
-
-	return users, nil
+	
+	if r == 0 {
+		return errNoRowsDeleted
+	}
+	
+	return nil
 }

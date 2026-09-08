@@ -2,6 +2,7 @@ syntax = "proto3";
 package userbase;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
 
 option go_package = "main/proto";
 
@@ -9,6 +10,8 @@ service UserService {
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
     rpc GetUser(GetUserRequest) returns (GetUserResponse) ;
     rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
 } 
 
 message User {
@@ -18,7 +21,8 @@ message User {
   string user_name = 4;
   string email = 5;
   string password = 6;
-  google.protobuf.Timestamp created_at = 7; 
+  string profile_image_url = 7;
+  google.protobuf.Timestamp created_at = 8; 
 }
 
 message CreateUserRequest{
@@ -62,3 +66,21 @@ message FilterByFirstName {
 message FilterByLastName {
     string value = 1;
 }
+
+message UpdateUserRequest {
+    User user = 1;
+    google.protobuf.FieldMask field_mask = 2;
+}
+
+message UpdateUserResponse {
+    User user = 1;
+}
+
+message DeleteUserRequest {
+    int64 id = 1;
+}
+
+message DeleteUserResponse {
+
+}
+
