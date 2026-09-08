@@ -24,8 +24,18 @@ func (service PropertyServiceImpl) CreateProperty(ctx context.Context, req *prot
 	if req.GetName() == "" {
 		return nil, status.Error(codes.InvalidArgument, "property name missing")
 	}
+	if req.GetImageUrls() == nil || len(req.GetImageUrls()) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "main image missing")
+	}
 
-	id, err := InsertPropertyInDB(ctx, service.DB, req.GetName(), req.GetDescription(), req.GetUserId(), req.GetAddress(), int(req.GetPrice()), float64(req.Location.Long), float64(req.Location.Lat))
+	id, err := InsertPropertyInDB(ctx, service.DB,
+		req.GetName(),
+		req.GetDescription(),
+		req.GetUserId(),
+		req.GetAddress(),
+		int(req.GetPrice()),
+		float64(req.Location.Long), float64(req.Location.Lat),
+		req.GetImageUrls())
 
 	if err != nil {
 
@@ -40,5 +50,6 @@ func (service PropertyServiceImpl) CreateProperty(ctx context.Context, req *prot
 		Price:       req.Price,
 		Location:    req.Location,
 		UserId:      req.UserId,
+		ImageUrls:   req.ImageUrls,
 	}}, nil
 }
