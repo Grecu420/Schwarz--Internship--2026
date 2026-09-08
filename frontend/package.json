@@ -19,10 +19,12 @@
     "axios": "^1.19.0",
     "grpc-web": "^2.0.2",
     "pinia": "^4.0.2",
+    "sit-onyx": "^1.20.0",
     "vue": "^3.5.40",
     "vue-router": "^5.2.0"
   },
   "devDependencies": {
+    "@sit-onyx/icons": "^1.12.0",
     "@tsconfig/node24": "^24.0.4",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",

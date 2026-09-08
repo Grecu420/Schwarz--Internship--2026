@@ -15,13 +15,14 @@ service PropertyService {
 }
 
 message Property {
-  int64    id          = 1;
-  int64    user_id     = 2;
-  string   name        = 3;
-  string   description = 4;
-  string   address     = 5;
-  int64    price       = 6;
-  Location location    = 7;
+  int64           id          = 1;
+  int64           user_id     = 2;
+  string          name        = 3;
+  string          description = 4;
+  string          address     = 5;
+  int64           price       = 6;
+  Location        location    = 7;
+  repeated string image_urls  = 8;
 }
 
 message Location {
@@ -30,12 +31,13 @@ message Location {
 }
 
 message CreatePropertyRequest {
-  int64    user_id     = 1;
-  string   name        = 2;
-  string   description = 3;
-  string   address     = 4;
-  int64    price       = 5;
-  Location location    = 6;
+  int64           user_id     = 1;
+  string          name        = 2;
+  string          description = 3;
+  string          address     = 4;
+  int64           price       = 5;
+  Location        location    = 6;
+  repeated string image_urls  = 7;
 }
 
 message CreatePropertyResponse {

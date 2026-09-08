@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
@@ -22,7 +23,7 @@ func TestUpdateProperty(t *testing.T) {
 		FieldMask: &fieldmaskpb.FieldMask{Paths: []string{"name"}},
 	}
 
-	expectedSQL := `UPDATE properties SET name = \$1 WHERE id = \$2 RETURNING id, user_id, name, description, address, price, ST_X\(location::geometry\) AS lng, ST_Y\(location::geometry\) AS lat`
+	expectedSQL := `UPDATE properties SET name = \$1 WHERE id = \$2 RETURNING id, user_id, name, description, address, price, ST_X\(location::geometry\) AS lng, ST_Y\(location::geometry\) AS lat, image_urls`
 
 	tests := []struct {
 		name         string
@@ -36,8 +37,8 @@ func TestUpdateProperty(t *testing.T) {
 			request: baseReq,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.UpdatePropertyRequest) {
 				rows := sqlmock.NewRows([]string{
-					"id", "user_id", "name", "description", "address", "price", "lng", "lat",
-				}).AddRow(10, 1, "Updated Beach House", "Near coast", "789 Beach Rd", 2000, 30.1, 40.2)
+					"id", "user_id", "name", "description", "address", "price", "lng", "lat", "image_urls",
+				}).AddRow(10, 1, "Updated Beach House", "Near coast", "789 Beach Rd", 2000, 30.1, 40.2, pq.Array([]string{"main.png"}))
 
 				mock.ExpectQuery(expectedSQL).
 					WithArgs(req.Property.GetName(), req.Property.GetId()).

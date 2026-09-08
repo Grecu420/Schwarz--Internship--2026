@@ -21,7 +21,6 @@ func TestCreateUser(t *testing.T) {
 	longPassword := strings.Repeat("abcd", 20) // 80 bytes (> 72-byte limit)
 	expectedID := int64(10)
 
-	// Base user generator
 	baseUser := func() *proto.User {
 		return &proto.User{
 			FirstName: "John",
@@ -39,7 +38,8 @@ func TestCreateUser(t *testing.T) {
 		expectedCode codes.Code
 		validate     func(t *testing.T, res *proto.CreateUserResponse, reqUser *proto.User)
 	}{
-		{name: "Success",
+		{
+			name:    "Success",
 			getUser: baseUser,
 			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
 				mock.ExpectQuery(`INSERT INTO users`).
@@ -48,7 +48,6 @@ func TestCreateUser(t *testing.T) {
 			},
 			expectedCode: codes.OK,
 			validate: func(t *testing.T, res *proto.CreateUserResponse, reqUser *proto.User) {
-
 				if res.User.FirstName != reqUser.FirstName {
 					t.Errorf("expected FirstName %s, got %s", reqUser.FirstName, res.User.FirstName)
 				}
@@ -72,7 +71,8 @@ func TestCreateUser(t *testing.T) {
 				}
 			},
 		},
-		{name: "WithExistingCreatedAt",
+		{
+			name: "WithExistingCreatedAt",
 			getUser: func() *proto.User {
 				u := baseUser()
 				u.CreatedAt = timestamppb.New(customTime)
@@ -90,12 +90,43 @@ func TestCreateUser(t *testing.T) {
 				}
 			},
 		},
-		{name: "DBError",
+		{
+			name:    "DuplicateUsernameError",
 			getUser: baseUser,
 			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
 				mock.ExpectQuery(`INSERT INTO users`).
 					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
-					WillReturnError(errors.New("duplicate key value violates unique constraint"))
+					WillReturnError(errors.New("duplicate key value violates unique constraint \"users_username_key\""))
+			},
+			expectedCode: codes.AlreadyExists,
+			validate: func(t *testing.T, res *proto.CreateUserResponse, reqUser *proto.User) {
+				if res != nil {
+					t.Errorf("expected nil user response on error, got %v", res)
+				}
+			},
+		},
+		{
+			name:    "DuplicateEmailError",
+			getUser: baseUser,
+			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
+				mock.ExpectQuery(`INSERT INTO users`).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
+					WillReturnError(errors.New("duplicate key value violates unique constraint \"users_email_key\""))
+			},
+			expectedCode: codes.AlreadyExists,
+			validate: func(t *testing.T, res *proto.CreateUserResponse, reqUser *proto.User) {
+				if res != nil {
+					t.Errorf("expected nil user response on error, got %v", res)
+				}
+			},
+		},
+		{
+			name:    "GenericDBError",
+			getUser: baseUser,
+			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
+				mock.ExpectQuery(`INSERT INTO users`).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
+					WillReturnError(errors.New("connection failed"))
 			},
 			expectedCode: codes.Internal,
 			validate: func(t *testing.T, res *proto.CreateUserResponse, reqUser *proto.User) {
@@ -104,12 +135,14 @@ func TestCreateUser(t *testing.T) {
 				}
 			},
 		},
-		{name: "NilUser",
+		{
+			name:         "NilUser",
 			getUser:      func() *proto.User { return nil },
 			setupMock:    func(mock sqlmock.Sqlmock, u *proto.User) {},
 			expectedCode: codes.InvalidArgument,
 		},
-		{name: "LongPasswordTruncation",
+		{
+			name: "LongPasswordTruncation",
 			getUser: func() *proto.User {
 				u := baseUser()
 				u.Password = longPassword

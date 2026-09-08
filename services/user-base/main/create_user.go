@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"strings"
 
 	pbf "google.golang.org/protobuf/proto"
 
@@ -21,7 +22,6 @@ func (service UserServiceImpl) CreateUser(ctx context.Context, req *proto.Create
 	if req.GetUser() == nil {
 		log.Printf("Empty request")
 		return nil, status.Error(codes.InvalidArgument, "empty request")
-
 	}
 	user := pbf.Clone(req.User).(*proto.User)
 
@@ -49,6 +49,17 @@ func (service UserServiceImpl) CreateUser(ctx context.Context, req *proto.Create
 	id, err := InsertUser(ctx, service.DB, user)
 	if err != nil {
 		log.Printf("Failed to insert user: %v", err)
+
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "duplicate key value") || strings.Contains(errMsg, "unique constraint") {
+			if strings.Contains(errMsg, "email") {
+				return nil, status.Error(codes.AlreadyExists, "This email address is already in use")
+			}
+			if strings.Contains(errMsg, "username") || strings.Contains(errMsg, "user_name") {
+				return nil, status.Error(codes.AlreadyExists, "This username is already taken")
+			}
+		}
+
 		return nil, status.Errorf(codes.Internal, "failed to save user to database: %v", err)
 	}
 

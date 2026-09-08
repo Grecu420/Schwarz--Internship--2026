@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -20,9 +21,10 @@ func TestCreateProperty(t *testing.T) {
 		Address:     "123 Ocean Drive",
 		Price:       1500,
 		Location:    &proto.Location{Long: 12.34, Lat: 56.78},
+		ImageUrls:   []string{"main.png", "other.png"},
 	}
 
-	expectedSQL := `INSERT INTO properties \(user_id,name,description,address,location,price\) VALUES \(\$1,\$2,\$3,\$4,ST_MakePoint\(\$5, \$6\)::geography,\$7\) RETURNING id`
+	expectedSQL := `INSERT INTO properties \(user_id,name,description,address,location,price,image_urls\) VALUES \(\$1,\$2,\$3,\$4,ST_MakePoint\(\$5, \$6\)::geography,\$7,\$8\) RETURNING id`
 
 	tests := []struct {
 		name         string
@@ -37,7 +39,7 @@ func TestCreateProperty(t *testing.T) {
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.CreatePropertyRequest) {
 				rows := sqlmock.NewRows([]string{"id"}).AddRow(100)
 				mock.ExpectQuery(expectedSQL).
-					WithArgs(req.GetUserId(), req.GetName(), req.GetDescription(), req.GetAddress(), req.GetLocation().GetLong(), req.GetLocation().GetLat(), req.GetPrice()).
+					WithArgs(req.GetUserId(), req.GetName(), req.GetDescription(), req.GetAddress(), req.GetLocation().GetLong(), req.GetLocation().GetLat(), req.GetPrice(), pq.Array(req.GetImageUrls())).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -94,7 +96,7 @@ func TestCreateProperty(t *testing.T) {
 			request: baseReq,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.CreatePropertyRequest) {
 				mock.ExpectQuery(expectedSQL).
-					WithArgs(req.GetUserId(), req.GetName(), req.GetDescription(), req.GetAddress(), req.GetLocation().GetLong(), req.GetLocation().GetLat(), req.GetPrice()).
+					WithArgs(req.GetUserId(), req.GetName(), req.GetDescription(), req.GetAddress(), req.GetLocation().GetLong(), req.GetLocation().GetLat(), req.GetPrice(), pq.Array(req.GetImageUrls())).
 					WillReturnError(errors.New("db insert failure"))
 			},
 			expectedCode: codes.Internal,

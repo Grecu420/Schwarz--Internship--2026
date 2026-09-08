@@ -16,3 +16,11 @@ func (service GatewayServiceImpl) GetUser(ctx context.Context, req *proto.GetUse
 func (service GatewayServiceImpl) ListUsers(ctx context.Context, req *proto.ListUsersRequest) (*proto.ListUsersResponse, error) {
 	return service.userService.ListUsers(ctx, req)
 }
+
+func (service GatewayServiceImpl) UpdateUser(ctx context.Context, req *proto.UpdateUserRequest) (*proto.UpdateUserResponse, error) {
+	return service.userService.UpdateUser(ctx, req)
+}
+
+func (service GatewayServiceImpl) DeleteUser(ctx context.Context, req *proto.DeleteUserRequest) (*proto.DeleteUserResponse, error) {
+	return service.userService.DeleteUser(ctx, req)
+}
