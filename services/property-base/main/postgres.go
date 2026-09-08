@@ -6,19 +6,29 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/lib/pq"
 )
 
-func InsertPropertyInDB(ctx context.Context, db *sql.DB, name string, description string, user_id int64, address string, price int, lng, lat float64) (int64, error) {
+func InsertPropertyInDB(ctx context.Context, db *sql.DB, name string, description string, user_id int64, address string, price int, lng, lat float64, image_urls []string) (int64, error) {
 	var generatedID int64
 
+	log.Printf("name %s\n", name)
 	ins := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Insert("properties").
-		Columns("user_id", "name", "description", "address", "location", "price").
-		Values(user_id, name, description, address, sq.Expr("ST_MakePoint(?, ?)::geography", lng, lat), price).
+		Columns("user_id", "name", "description", "address", "location", "price", "image_urls").
+		Values(user_id, name, description, address, sq.Expr("ST_MakePoint(?, ?)::geography", lng, lat), price, pq.Array(&image_urls)).
 		Suffix("RETURNING id")
-	err := ins.RunWith(db).QueryRowContext(ctx).Scan(&generatedID)
+
+	query, args, err := ins.ToSql()
+	log.Printf("query: %s\n", query)
+	for i, a := range args {
+		log.Printf("A%d: %s", i, a)
+	}
+
+	err = ins.RunWith(db).QueryRowContext(ctx).Scan(&generatedID)
 
 	return generatedID, err
 }
@@ -62,7 +72,9 @@ func SelectPropertyInDB(ctx context.Context, db *sql.DB, id int64) (*proto.Prope
 			"address",
 			"price",
 			"ST_X(location::geometry) AS lng",
-			"ST_Y(location::geometry) AS lat").
+			"ST_Y(location::geometry) AS lat",
+			"image_urls",
+		).
 		From("properties").
 		Where(sq.Eq{"id": id})
 
@@ -75,6 +87,7 @@ func SelectPropertyInDB(ctx context.Context, db *sql.DB, id int64) (*proto.Prope
 		&property.Price,
 		&property.Location.Long,
 		&property.Location.Lat,
+		pq.Array(&property.ImageUrls),
 	)
 
 	if err != nil {
@@ -95,7 +108,8 @@ func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, pag
 			"address",
 			"price",
 			"ST_X(location::geometry) AS lng",
-			"ST_Y(location::geometry) AS lat").
+			"ST_Y(location::geometry) AS lat",
+			"image_urls").
 		From("properties").
 		Where(sq.Eq{"user_id": userID})
 
@@ -127,6 +141,7 @@ func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, pag
 			&property.Price,
 			&property.Location.Long,
 			&property.Location.Lat,
+			pq.Array(&property.ImageUrls),
 		); err != nil {
 			return nil, fmt.Errorf("scan property: %w", err)
 		}

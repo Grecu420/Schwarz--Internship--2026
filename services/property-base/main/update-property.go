@@ -7,6 +7,7 @@ import (
 	"errors"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -37,16 +38,28 @@ func (service PropertyServiceImpl) UpdateProperty(ctx context.Context, req *prot
 	for _, path := range req.FieldMask.GetPaths() {
 		switch path {
 		case "name":
+			if req.Property.GetName() == "" {
+				return nil, status.Error(codes.InvalidArgument, "name is mandatory")
+			}
 			build = build.Set("name", req.Property.GetName())
 			hasValidFields = true
 		case "description":
+			if req.Property.GetDescription() == "" {
+				return nil, status.Error(codes.InvalidArgument, "description is mandatory")
+			}
 			build = build.Set("description", req.Property.GetDescription())
 			hasValidFields = true
 		case "address":
+			if req.Property.GetAddress() == "" {
+				return nil, status.Error(codes.InvalidArgument, "address is mandatory")
+			}
 			build = build.Set("address", req.Property.GetAddress())
 			hasValidFields = true
 		case "price":
 			build = build.Set("price", req.Property.GetPrice())
+			hasValidFields = true
+		case "image_urls":
+			build = build.Set("image_urls", pq.Array(req.Property.ImageUrls))
 			hasValidFields = true
 		case "location":
 			location := req.GetProperty().GetLocation()
@@ -62,7 +75,7 @@ func (service PropertyServiceImpl) UpdateProperty(ctx context.Context, req *prot
 		return nil, status.Error(codes.InvalidArgument, "no valid fields to update")
 	}
 	// Return updated property
-	build = build.Suffix("RETURNING id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat")
+	build = build.Suffix("RETURNING id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat, image_urls")
 
 	var returnProperty = proto.Property{Location: &proto.Location{}}
 	err := build.RunWith(service.DB).QueryRowContext(ctx).Scan(
@@ -74,6 +87,7 @@ func (service PropertyServiceImpl) UpdateProperty(ctx context.Context, req *prot
 		&returnProperty.Price,
 		&returnProperty.Location.Long,
 		&returnProperty.Location.Lat,
+		pq.Array(&returnProperty.ImageUrls),
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
