@@ -62,6 +62,6 @@ func (i *authInterceptor) AuthInterceptor(ctx context.Context, req any, info *gr
 	}
 
 	// 4. Store claims/user in context and pass to the endpoint handler
-	newCtx := context.WithValue(ctx, "user_id", loginClaims.ID)
+	newCtx := context.WithValue(ctx, "user_id", loginClaims.UserID)
 	return handler(newCtx, req)
 }
