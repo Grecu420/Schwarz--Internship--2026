@@ -57,10 +57,13 @@ import { iconMail, iconPasswordLock } from '@sit-onyx/icons'
 import axios from 'axios'
 import api from '@/api'
 import { LoginRequest, LoginResponse } from '@/generated/proto/auth-api'
+import { GetUserResponse } from '@/generated/proto/user-api'
+import { useAuthStore } from '@/stores/auth'
 
 const toast = useToast()
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 
 const formData = reactive({
   email: '',
@@ -106,13 +109,21 @@ const handleLogin = async () => {
       password: formData.password
     })
     
-    const response = await api.post<LoginResponse>('/api/login', loginRequest)
-    const token = response.data.JWT
-    
-    localStorage.setItem('jwt_token', token)
+    const loginResponse = await api.post<LoginResponse>('/api/login', loginRequest)
+    const token = loginResponse.data.JWT
 
-    const redirectPath = (route.query.redirect as string) || '/'
-    router.push(redirectPath)
+    const userResponse = await api.get<GetUserResponse>(`/api/user?email=${formData.email}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    const user = userResponse.data.user
+
+    if (user) {
+      authStore.setSession(token, user)
+
+      const redirectPath = (route.query.redirect as string) || '/'
+      router.push(redirectPath)
+    }
 
   } catch (error: unknown) {
     let errorMessage = 'An unexpected error occurred.'
@@ -133,6 +144,7 @@ const handleLogin = async () => {
       description: errorMessage,
       color: 'danger'
     })
+  } finally {
     isLoading.value = false
   }
 }
