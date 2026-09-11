@@ -26,13 +26,14 @@
         </div>
       </div>
 
-      <button type="button" class="change-photo-btn" @click="triggerFileInput">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-          <circle cx="12" cy="13" r="3"/>
-        </svg>
-        Change Photo
-      </button>
+      <OnyxButton 
+        type="button" 
+        mode="outline" 
+        label="Change Photo" 
+        :icon="iconCamera"
+        class="change-photo-btn"
+        @click="triggerFileInput"
+      />
     </div>
 
     <form @submit.prevent="handleSave" class="profile-form">
@@ -106,7 +107,7 @@
 import { reactive, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { OnyxInput, OnyxButton, OnyxIcon, OnyxAvatar, useToast } from 'sit-onyx'
-import { iconUser, iconTrash } from '@sit-onyx/icons'
+import { iconUser, iconTrash, iconCamera } from '@sit-onyx/icons'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api'
 import { UpdateUserRequest, UpdateUserResponse, DeleteUserRequest, DeleteUserResponse } from '@/generated/proto/user-api'
@@ -304,34 +305,22 @@ const handleDeleteAccount = async () => {
   opacity: 1;
 }
 
-.trash-icon {
-  font-size: 1.5rem;
-  color: #ffffff;
-  transition: transform 0.15s ease;
-}
-
 .avatar-overlay:hover .trash-icon {
   transform: scale(1.15);
 }
 
-.change-photo-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.875rem;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 9999px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.15s ease;
+:deep(.change-photo-btn) {
+  border-radius: 9999px !important;
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #374151 !important;
+  font-weight: 500 !important;
+  padding: 0.25rem 0.875rem !important;
 }
 
-.change-photo-btn:hover {
-  background-color: #f9fafb;
-  border-color: #d1d5db;
+:deep(.change-photo-btn:hover) {
+  background-color: #f9fafb !important;
+  border-color: #d1d5db !important;
 }
 
 .profile-form {

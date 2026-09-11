@@ -112,15 +112,13 @@ const handleLogin = async () => {
     const loginResponse = await api.post<LoginResponse>('/api/login', loginRequest)
     const token = loginResponse.data.JWT
 
-    const userResponse = await api.get<GetUserResponse>(`/api/user?email=${formData.email}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    authStore.token = token
 
+    const userResponse = await api.get<GetUserResponse>(`/api/user?email=${formData.email}`)
     const user = userResponse.data.user
 
     if (user) {
-      authStore.setSession(token, user)
-
+      authStore.setSession(token, user) 
       const redirectPath = (route.query.redirect as string) || '/'
       router.push(redirectPath)
     }

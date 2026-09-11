@@ -6,9 +6,7 @@
       :aria-expanded="isMenuOpen"
       aria-label="User menu"
     >
-      <svg class="hamburger-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
+      <OnyxIcon :icon="iconMenu" class="hamburger-icon" />
       
       <OnyxAvatar :src="profileImageUrl" :fullName="fullName" size="32px" />
     </button>
@@ -37,7 +35,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { OnyxAvatar } from 'sit-onyx'
+import { OnyxAvatar, OnyxIcon } from 'sit-onyx'
+import { iconMenu } from '@sit-onyx/icons'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
@@ -106,9 +105,10 @@ onUnmounted(() => {
   border-color: #c5c5c5;
 }
 
-.hamburger-icon {
+:deep(.hamburger-icon) {
   width: 18px;
   height: 18px;
+  color: #555555;
 }
 
 .dropdown-menu {
