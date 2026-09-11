@@ -22,3 +22,7 @@ TODO
 
 #secrets
 # secrets/
+
+
+#vscode
+.prettierrc

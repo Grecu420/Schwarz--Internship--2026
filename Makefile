@@ -14,7 +14,8 @@ fresh:
 	docker compose build --no-cache
 	docker compose up -d
 
-
+frontend:
+	docker compose up -d --build --force-recreate frontend
 
 # 
 SUBDIRS := user-base property-base friend-request-base conversation-base message-base auth-base api-rest-gateway 
