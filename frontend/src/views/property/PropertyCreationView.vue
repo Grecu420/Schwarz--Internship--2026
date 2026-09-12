@@ -1,12 +1,13 @@
 <template>
   <div class="page-container">
     <header class="page-header">
-      <OnyxButton label="" mode="outline" class="back-btn" @click="goBack">
-        <template #leadingIcons>
-          <OnyxIcon :icon="iconChevronLeft" />
-        </template>
-        Back to Properties
-      </OnyxButton>
+      <OnyxButton
+        label="Back"
+        :icon="iconChevronLeft"
+        mode="outline"
+        class="back-btn"
+        @click="goBack"
+      />
 
       <div class="header-titles">
         <h1 class="page-title">Create New Property</h1>
@@ -15,16 +16,17 @@
     </header>
 
     <main class="content-card">
-      <PropertyForm @success="handleSuccess" />
+      <PropertyForm @submit="handleSuccess" />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { OnyxButton, OnyxIcon } from 'sit-onyx'
+import { OnyxButton } from 'sit-onyx'
 import { iconChevronLeft } from '@sit-onyx/icons'
 import PropertyForm from '@/components/PropertyForm.vue'
+import type { Property } from '@/generated/proto/property-api'
 
 const router = useRouter()
 
@@ -32,8 +34,12 @@ const goBack = () => {
   router.push('/properties')
 }
 
-const handleSuccess = (createdProperty: any) => {
+const handleSuccess = (createdProperty: Property) => {
   // Option 1: Navigate back to main properties list
+
+  console.log('here')
+  console.log(createdProperty)
+
   router.push('/properties')
 
   // Option 2 (Alternative): Navigate directly to the new property details page

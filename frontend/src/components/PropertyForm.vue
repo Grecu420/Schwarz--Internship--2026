@@ -393,7 +393,6 @@ const handleSubmit = async () => {
     })
 
     emit('submit', propertyObj)
-    router.push('/properties')
   } catch (error: any) {
     toast.show({
       headline: props.isEdit ? 'Update Failed' : 'Creation Failed',
