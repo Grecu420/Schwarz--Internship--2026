@@ -29,8 +29,6 @@
       />
     </div>
 
-    <MapComponent />
-
     <OnyxInput
       v-model="formData.name"
       label="Property Name"
@@ -85,7 +83,7 @@
 
     <!-- Location Selection -->
     <fieldset class="form-section">
-      <legend class="section-title">Location Coordinates</legend>
+      <legend class="section-title">Location</legend>
       <div class="form-row">
         <OnyxStepper
           label="Latitude"
@@ -108,61 +106,27 @@
         />
       </div>
 
+      <!-- Map Component Integration -->
+      <MapComponent
+        :key="mapKey"
+        :initial-center="mapInitialCenter"
+        :initial-zoom="15"
+        @change="handleMapChange"
+      />
+
       <OnyxButton
         type="button"
         mode="outline"
         class="location-btn"
         label="Detect Current Location"
         :loading="isGettingLocation"
-        @click="getCurrentLocation"
+        @click="() => fetchDeviceLocation(false)"
       />
     </fieldset>
 
     <!-- Property Images -->
     <fieldset class="form-section">
       <legend class="section-title">Property Images</legend>
-
-      <!-- Additional Gallery Images -->
-      <!-- <div class="gallery-section">
-        <span class="sub-label">Gallery Images (Optional)</span>
-        <div class="image-input-row">
-          <OnyxInput
-            v-model="galleryUrlInput"
-            label="Gallery Image URL"
-            placeholder="https://example.com/photo.jpg"
-            reserve-message-space
-          >
-            <template #leadingIcons>
-              <OnyxIcon :icon="iconPicture" />
-            </template>
-          </OnyxInput>
-
-          <OnyxButton
-            type="button"
-            label="Add to Gallery"
-            :disabled="!galleryUrlInput"
-            @click="addGalleryImage"
-          />
-        </div>
-
-        <div v-if="formData.galleryImageUrls.length > 0" class="image-preview-grid">
-          <div
-            v-for="(url, index) in formData.galleryImageUrls"
-            :key="url + index"
-            class="image-card"
-          >
-            <img :src="url" alt="Gallery image preview" />
-            <button
-              type="button"
-              class="remove-btn"
-              @click="removeGalleryImage(index)"
-              aria-label="Remove image"
-            >
-              &times;
-            </button>
-          </div>
-        </div>
-      </div> -->
     </fieldset>
 
     <OnyxButton
@@ -177,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, minValue, numeric } from '@vuelidate/validators'
@@ -197,7 +161,7 @@ import {
 import { iconHome, iconMap, iconTag, iconPicture, iconX, iconTrash } from '@sit-onyx/icons'
 
 import { Property } from '../generated/proto/property-api'
-import MapComponent from './MapComponent.vue'
+import MapComponent, { type LocationPayload } from './MapComponent.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -220,6 +184,7 @@ const router = useRouter()
 const galleryUrlInput = ref('')
 const isLoading = ref(false)
 const isGettingLocation = ref(false)
+const mapKey = ref(0)
 
 const imageAccept = ['.png', '.jpg'] as FileType[]
 
@@ -242,6 +207,76 @@ const formData = reactive({
   galleryImageUrls: [] as string[],
 })
 
+const mapInitialCenter = computed<[number, number]>(() => {
+  if (formData.location.lat !== null && formData.location.long !== null) {
+    return [formData.location.lat, formData.location.long]
+  }
+  // Fallback coordinate if geolocation is unavailable or denied
+  return [44.495, 26.08]
+})
+
+function fetchDeviceLocation(silent = false) {
+  if (!navigator.geolocation) {
+    if (!silent) {
+      toast.show({
+        headline: 'Geolocation Unavailable',
+        description: 'Your browser does not support automatic location detection.',
+        color: 'danger',
+      })
+    }
+    return
+  }
+
+  isGettingLocation.value = true
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      formData.location.lat = position.coords.latitude
+      formData.location.long = position.coords.longitude
+      mapKey.value++
+      isGettingLocation.value = false
+
+      if (!silent) {
+        toast.show({
+          headline: 'Location updated',
+          description: 'Coordinates applied successfully.',
+          color: 'success',
+        })
+      }
+    },
+    (error) => {
+      isGettingLocation.value = false
+      if (!silent) {
+        toast.show({
+          headline: 'Location Error',
+          description: error.message || 'Failed to detect current location.',
+          color: 'danger',
+        })
+      }
+    },
+  )
+}
+
+onMounted(() => {
+  // Only attempt auto-detection if initial data wasn't provided
+  if (!props.initialData?.location?.lat || !props.initialData?.location?.long) {
+    fetchDeviceLocation(false)
+  }
+})
+
+function handleMapChange(payload: LocationPayload) {
+  const [lat, long] = payload.location
+  formData.location.lat = lat
+  formData.location.long = long
+
+  if (payload.address) {
+    formData.address = payload.address
+    v$.value.address.$touch()
+  }
+
+  v$.value.location.lat.$touch()
+  v$.value.location.long.$touch()
+}
+
 // Pre-fill form data when initialData prop is provided or updated
 watch(
   () => props.initialData,
@@ -253,6 +288,9 @@ watch(
       formData.price = data.price ?? null
       formData.location.lat = data.location?.lat ?? null
       formData.location.long = data.location?.long ?? null
+
+      mapKey.value++
+
       if (data.imageUrls && data.imageUrls.length > 0) {
         formData.mainImageUrl = data.imageUrls[0] ?? ''
         formData.galleryImageUrls = data.imageUrls.slice(1)
@@ -265,13 +303,10 @@ watch(
   { immediate: true, deep: true },
 )
 
-watch(mainImageFile, (newImage, oldImage) => {
-  console.log(newImage?.name)
+watch(mainImageFile, (newImage) => {
   if (newImage) {
     formData.mainImageUrl = URL.createObjectURL(newImage)
   }
-
-  console.log(formData.mainImageUrl)
 })
 
 const submitButtonLabel = computed(() => {
@@ -291,10 +326,6 @@ const rules = {
     long: { required, numeric },
   },
   mainImageUrl: { required },
-}
-
-const isBlobURL = (url: string) => {
-  return url.startsWith('blob:')
 }
 
 const v$ = useVuelidate(rules, formData)
@@ -322,86 +353,14 @@ const getLocationFieldError = (coord: 'lat' | 'long') => {
   return 'Invalid.'
 }
 
-const getCurrentLocation = () => {
-  if (!navigator.geolocation) {
-    toast.show({
-      headline: 'Geolocation Unavailable',
-      description: 'Your browser does not support automatic location detection.',
-      color: 'danger',
-    })
-    return
-  }
-
-  isGettingLocation.value = true
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      formData.location.lat = position.coords.latitude
-      formData.location.long = position.coords.longitude
-      isGettingLocation.value = false
-      toast.show({
-        headline: 'Location updated',
-        description: 'Coordinates applied successfully.',
-        color: 'success',
-      })
-    },
-    (error) => {
-      isGettingLocation.value = false
-      toast.show({
-        headline: 'Location Error',
-        description: error.message || 'Failed to detect current location.',
-        color: 'danger',
-      })
-    },
-  )
-}
-
-const isValidUrl = (url: string) => {
-  const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/
-  return urlPattern.test(url)
-}
-const getMainImageError = () => {
-  if (v$.value.mainImage.$error) return 'A main cover image is required.'
-  return undefined
-}
-
 const deleteMainImage = () => {
   formData.mainImageUrl = ''
   mainImageFile.value = null
 }
 
-const addGalleryImage = () => {
-  if (!galleryUrlInput.value) return
-
-  if (!isValidUrl(galleryUrlInput.value)) {
-    toast.show({
-      headline: 'Invalid URL',
-      description: 'Please enter a valid image URL.',
-      color: 'danger',
-    })
-    return
-  }
-
-  formData.galleryImageUrls.push(galleryUrlInput.value.trim())
-  galleryUrlInput.value = ''
-}
-
-const removeGalleryImage = (index: number) => {
-  formData.galleryImageUrls.splice(index, 1)
-}
-
-const handleImageError = () => {
-  toast.show({
-    headline: 'Image Load Warning',
-    description: 'Unable to preview the main image URL.',
-    color: 'warning',
-  })
-}
-
 const handleSubmit = async () => {
   v$.value.$touch()
   const isFormValid = await v$.value.$validate()
-
-  console.log(mainImageFile.value)
 
   if (!isFormValid) {
     toast.show({
@@ -480,60 +439,6 @@ const handleSubmit = async () => {
 
 .location-btn {
   align-self: flex-start;
-}
-
-.image-input-row {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-}
-
-.image-input-row > :first-child {
-  flex: 1;
-}
-
-.image-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.image-card {
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: 6px;
-  overflow: hidden;
-  border: 1px solid var(--onyx-color-neutral-300, #e2e8f0);
-}
-
-.image-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.remove-btn {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.validation-error {
-  color: var(--onyx-color-danger-500, #ef4444);
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
 }
 
 :deep(.submit-btn) {

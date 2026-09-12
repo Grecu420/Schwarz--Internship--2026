@@ -1,22 +1,14 @@
 <template>
-  <div style="height: 600px; width: 800px">
-    <l-map ref="map" v-model:zoom="zoom" :center="[47.41322, -1.219482]">
+  <div style="height: 50vh; width: 100%">
+    <l-map ref="map" v-model:zoom="zoom" :center="initialCenter">
       <l-tile-layer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         layer-type="base"
         name="OpenStreetMap"
-      ></l-tile-layer>
-      <l-control-layers />
-      <l-marker :lat-lng="marker" draggable @moveend="console.log('moveend')">
-        <l-tooltip> lol </l-tooltip>
-      </l-marker>
-
-      <l-marker :lat-lng="[47.41322, -1.219482]">
+      />
+      <l-marker v-model:lat-lng="marker" draggable @moveend="dropMarker">
+        <l-tooltip> Drag to set location </l-tooltip>
         <l-icon :icon-url="iconUrl" :icon-size="iconSize" />
-      </l-marker>
-
-      <l-marker :lat-lng="[50, 50]" draggable @moveend="console.log('moveend')">
-        <l-popup> lol </l-popup>
       </l-marker>
     </l-map>
   </div>
@@ -29,30 +21,119 @@ import {
   LMarker,
   LControlLayers,
   LIcon,
-  LPopup,
   LTooltip,
 } from '@vue-leaflet/vue-leaflet'
+import icon from '../../public/favicon.ico'
 import { ref } from 'vue'
 
-// export default {
-//   components: {
-//     LMap,
-//     LTileLayer,
-//   },
-//   data() {
-//     return {
-//       zoom: 2,
-//     }
-//   },
-// }
+interface AddressDetails {
+  house_number?: string
+  road?: string
+  neighbourhood?: string
+  suburb?: string
+  city?: string
+  town?: string
+  village?: string
+  state?: string
+  postcode?: string
+  country?: string
+  country_code?: string
+}
 
-const zoom = ref(2)
+interface NominatimResponse {
+  place_id: number
+  licence: string
+  osm_type: string
+  osm_id: number
+  lat: string
+  lon: string
+  display_name: string
+  address?: AddressDetails
+  boundingbox: [string, string, string, string]
+}
+
+export interface LocationPayload {
+  location: [number, number]
+  address: string
+}
+
+interface Props {
+  initialZoom?: number
+  initialCenter?: [number, number]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  initialZoom: 15,
+  initialCenter: () => [47.41322, -1.219482],
+})
+
+const emit = defineEmits<{
+  (e: 'change', payload: LocationPayload): void
+}>()
+
+const zoom = ref(props.initialZoom)
+const marker = ref<[number, number]>([...props.initialCenter])
+
 const iconWidth = 25
 const iconHeight = 40
-const iconUrl = `https://placekitten.com/${iconWidth}/${iconHeight}`
-const iconSize = [iconWidth, iconHeight]
+const iconUrl = icon
+const iconSize: [number, number] = [iconWidth, iconHeight]
 
-const marker = ref([0, 0])
+const address = ref<string>('')
+const loading = ref<boolean>(false)
+const error = ref<string | null>(null)
+
+async function dropMarker(event?: any) {
+  let lat: number
+  let lon: number
+
+  if (event?.target?.getLatLng) {
+    const latLng = event.target.getLatLng()
+    lat = latLng.lat
+    lon = latLng.lng
+  } else if (Array.isArray(marker.value)) {
+    ;[lat, lon] = marker.value
+  } else {
+    lat = (marker.value as any).lat
+    lon = (marker.value as any).lng
+  }
+
+  marker.value = [lat, lon]
+
+  await fetchAddress(lat, lon)
+
+  emit('change', {
+    location: [lat, lon],
+    address: address.value,
+  })
+}
+
+async function fetchAddress(lat: number, lon: number): Promise<void> {
+  loading.value = true
+  error.value = null
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'VueLeafletApp/1.0',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Geocoding failed with status: ${response.status}`)
+    }
+
+    const data: NominatimResponse = await response.json()
+    address.value = data.display_name || 'No address found'
+  } catch (err) {
+    if (err instanceof Error) {
+      error.value = err.message
+    } else {
+      error.value = 'An unknown error occurred'
+    }
+  } finally {
+    loading.value = false
+  }
+}
 </script>
-
-<style scoped></style>
