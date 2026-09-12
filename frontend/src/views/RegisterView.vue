@@ -3,14 +3,8 @@
     <div class="left-panel">
       <div class="form-wrapper">
         <div class="header">
-          <div class="logo-container">
-            <div class="logo-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 22H22L12 2Z" fill="white"/>
-              </svg>
-            </div>
-            <span class="logo-text">StayNest</span>
-          </div>
+          
+          <Logo/>
 
           <h1>Create an account</h1>
           <p>Join our community of hosts and travelers around the globe.</p>
@@ -29,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import Logo from '@/components/Logo.vue';
 import RegisterForm from '../components/RegisterForm.vue'
 </script>
 
@@ -61,34 +56,6 @@ import RegisterForm from '../components/RegisterForm.vue'
 
 .header {
   margin-bottom: 2rem;
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 1.5rem;
-}
-
-.logo-icon {
-  width: 32px;
-  height: 32px;
-  background-color: #1a41b5;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.logo-text {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #111;
 }
 
 .header h1 {
