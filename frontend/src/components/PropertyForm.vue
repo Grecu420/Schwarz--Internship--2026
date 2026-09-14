@@ -384,49 +384,43 @@ const getLocationFieldError = (coord: 'lat' | 'long') => {
 // Image handling
 // ======================
 
+const trackImageRemoval = (url?: string) => {
+  if (!url) return
+  if (url.startsWith('blob:')) {
+    imagesToUpload.value.delete(url)
+    URL.revokeObjectURL(url) // Free up browser memory
+  } else {
+    urlsToDelete.value.push(url)
+  }
+}
+
 watch(mainImageFile, (newImage) => {
   if (!newImage) return
 
-  if (!formData.mainImageUrl.startsWith('blob:')) {
-    urlsToDelete.value.push(formData.mainImageUrl)
-  }
+  trackImageRemoval(formData.mainImageUrl)
   formData.mainImageUrl = URL.createObjectURL(newImage)
   imagesToUpload.value.set(formData.mainImageUrl, newImage)
 })
 
 const deleteMainImage = () => {
-  if (!formData.mainImageUrl.startsWith('blob:')) {
-    urlsToDelete.value.push(formData.mainImageUrl)
-  }
-
+  trackImageRemoval(formData.mainImageUrl)
   formData.mainImageUrl = ''
   mainImageFile.value = null
 }
 
 watch(uploadedFileInput, (newFiles) => {
-  if (!newFiles || newFiles.length == 0) return
-
-  console.log('uploaded')
-  const filesArray = Array.isArray(newFiles) ? newFiles : [newFiles]
-
-  filesArray.forEach((file) => {
-    if (file instanceof File) {
-      const url = URL.createObjectURL(file)
-      console.log(url)
-      formData.galleryImageUrls.push(url)
-      imagesToUpload.value.set(url, file)
-    }
+  newFiles.forEach((file) => {
+    const url = URL.createObjectURL(file)
+    formData.galleryImageUrls.push(url)
+    imagesToUpload.value.set(url, file)
   })
 
-  console.log(imagesToUpload)
-  console.log(formData.galleryImageUrls)
   uploadedFileInput.value = []
 })
 
 const removeGalleryImage = (index: number) => {
-  const url = formData.galleryImageUrls.at(index)
-
-  formData.galleryImageUrls.splice(index, 1)
+  const [removedUrl] = formData.galleryImageUrls.splice(index, 1)
+  trackImageRemoval(removedUrl)
 }
 
 const handleSubmit = async () => {

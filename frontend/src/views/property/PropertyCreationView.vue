@@ -56,6 +56,12 @@ const handleSuccess = async (
   urlsToDelete: string[],
 ) => {
   try {
+    // check authentication
+    if (authStore.checkTokenExpiration()) {
+      router.push('/login')
+    }
+
+
     // upload images
 
     const substitutionEntries = await Promise.all(Array.from(imagesToUpload, uploadImage))
