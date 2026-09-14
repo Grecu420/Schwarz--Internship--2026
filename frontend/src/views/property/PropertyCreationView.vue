@@ -23,29 +23,73 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { OnyxButton } from 'sit-onyx'
+import { OnyxButton, useToast } from 'sit-onyx'
 import { iconChevronLeft } from '@sit-onyx/icons'
 import PropertyForm from '@/components/PropertyForm.vue'
-import type { Property } from '@/generated/proto/property-api'
-
+import {
+  CreatePropertyRequest,
+  CreatePropertyResponse,
+  type Property,
+} from '@/generated/proto/property-api'
+import { useAuthStore } from '@/stores/auth'
+import api from '@/utils/api'
+import { uploadImageToCloudinary } from '@/utils/cloudinary'
+const presetName = import.meta.env.VITE_CLOUDINARY_PROFILE_PRESET
 const router = useRouter()
+const authStore = useAuthStore()
+const toast = useToast()
 
 const goBack = () => {
   router.push('/properties')
 }
 
-const handleSuccess = (createdProperty: Property) => {
-  // Option 1: Navigate back to main properties list
+const uploadImage = async (data: [string, File]): Promise<[string, string]> => {
+  const [url, file] = data
+  console.log('upload ', url)
+  // const newUrl = await uploadImageToCloudinary(file, presetName)
+  return [url, 'modded:' + url]
+}
 
-  console.log('here')
-  console.log(createdProperty)
+const handleSuccess = async (
+  createdProperty: Property,
+  imagesToUpload: Map<string, File>,
+  urlsToDelete: string[],
+) => {
+  try {
+    // upload images
 
-  router.push('/properties')
+    const substitutionEntries = await Promise.all(Array.from(imagesToUpload, uploadImage))
+    const urlSubstitution = new Map<string, string>(substitutionEntries)
 
-  // Option 2 (Alternative): Navigate directly to the new property details page
-  // if (createdProperty?.id) {
-  //   router.push(`/properties/${createdProperty.id}`)
-  // }
+    const propertyRequest = CreatePropertyRequest.create({
+      userId: createdProperty.userId || authStore.user?.id,
+      name: createdProperty.name,
+      description: createdProperty.description,
+      address: createdProperty.address,
+      price: createdProperty.price,
+      location: createdProperty.location,
+      imageUrls: createdProperty.imageUrls.map((url) => urlSubstitution.get(url) ?? url),
+    })
+
+    console.log(propertyRequest)
+    const response = await api.post<CreatePropertyResponse>('/api/property', propertyRequest)
+
+    console.log(response)
+    toast.show({
+      headline: 'Success',
+      description: 'Property created successfully.',
+      color: 'success',
+    })
+
+    router.push('/properties')
+  } catch (error: any) {
+    console.log(error)
+    toast.show({
+      headline: 'Creation Failed',
+      description: error?.message || 'Failed to submit property request.',
+      color: 'danger',
+    })
+  }
 }
 </script>
 

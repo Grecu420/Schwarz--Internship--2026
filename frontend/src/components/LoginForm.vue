@@ -55,7 +55,7 @@ import { OnyxForm, OnyxInput, OnyxButton, OnyxIcon, useToast } from 'sit-onyx'
 import { iconMail, iconPasswordLock } from '@sit-onyx/icons'
 
 import axios from 'axios'
-import api from '@/api'
+import api from '@/utils/api'
 import { LoginRequest, LoginResponse } from '@/generated/proto/auth-api'
 import { GetUserResponse } from '@/generated/proto/user-api'
 import { useAuthStore } from '@/stores/auth'

@@ -14,7 +14,7 @@
             shape="rounded"
           />
         </div>
-        <OnyxIconButton label="delete" :icon="iconTrash" @click="deleteMainImage" />
+        <OnyxIconButton label="delete" :icon="iconTrash" type="button" @click="deleteMainImage" />
       </div>
       <OnyxFileUpload
         v-else
@@ -124,9 +124,37 @@
       />
     </fieldset>
 
-    <!-- Property Images -->
+    <!-- Property Images Gallery -->
     <fieldset class="form-section">
-      <legend class="section-title">Property Images</legend>
+      <legend class="section-title">Gallery Images</legend>
+
+      <div v-if="formData.galleryImageUrls.length > 0" class="gallery-grid">
+        <div
+          v-for="(url, index) in formData.galleryImageUrls"
+          :key="index"
+          class="existing-preview-card"
+        >
+          <div class="image-wrapper">
+            <OnyxImage :height="100" :width="100" :src="url" alt="Gallery Image" shape="rounded" />
+          </div>
+          <OnyxIconButton
+            label="Delete image"
+            :icon="iconTrash"
+            type="button"
+            @click="removeGalleryImage(index)"
+          />
+        </div>
+      </div>
+
+      <OnyxFileUpload
+        v-model="uploadedFileInput"
+        :accept="imageAccept"
+        label="Add gallery images"
+        maxSize="4MiB"
+        multiple
+        size="medium"
+        style="width: 30rem; max-width: 100%"
+      />
     </fieldset>
 
     <OnyxButton
@@ -142,7 +170,6 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, minValue, numeric } from '@vuelidate/validators'
 import {
@@ -158,10 +185,12 @@ import {
   OnyxImage,
   OnyxTextarea,
 } from 'sit-onyx'
-import { iconHome, iconMap, iconTag, iconPicture, iconX, iconTrash } from '@sit-onyx/icons'
-
+import { iconHome, iconMap, iconTag, iconTrash } from '@sit-onyx/icons'
 import { Property } from '../generated/proto/property-api'
 import MapComponent, { type LocationPayload } from './MapComponent.vue'
+import { useAuthStore } from '@/stores/auth.ts'
+
+const defaultLocation: [number, number] = [44.495, 26.08]
 
 const props = withDefaults(
   defineProps<{
@@ -175,24 +204,16 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'submit', property: Property): void
+  (e: 'submit', property: Property, imagesToUpload: Map<string, File>, urlsToDelete: string[]): void
 }>()
 
 const toast = useToast()
-const router = useRouter()
+const authStore = useAuthStore()
 
-const galleryUrlInput = ref('')
 const isLoading = ref(false)
-const isGettingLocation = ref(false)
-const mapKey = ref(0)
 
-const imageAccept = ['.png', '.jpg'] as FileType[]
-
-const mainImageFile = ref<File | null>(null)
-const galleryImageFiles = ref<File[]>([])
-
-const deletedImageUrls = ref<string[]>([])
-const imagesToUpload = ref<File[]>([])
+// Form data
+// ======================
 
 const formData = reactive({
   name: '',
@@ -207,12 +228,85 @@ const formData = reactive({
   galleryImageUrls: [] as string[],
 })
 
+// File Storage
+// ======================
+const imageAccept = ['.png', '.jpg'] as FileType[]
+const mainImageFile = ref<File | null>(null)
+const uploadedFileInput = ref<File[]>([])
+
+const imagesToUpload = ref<Map<string, File>>(new Map())
+const urlsToDelete = ref<string[]>([])
+
+// Pre-fill form data when initialData prop is provided or updated
+watch(
+  () => props.initialData,
+  (data) => {
+    if (data) {
+      formData.name = data.name || ''
+      formData.description = data.description || ''
+      formData.address = data.address || ''
+      formData.price = data.price ?? null
+      formData.location.lat = data.location?.lat ?? null
+      formData.location.long = data.location?.long ?? null
+
+      mapKey.value++
+
+      if (data.imageUrls && data.imageUrls.length > 0) {
+        formData.mainImageUrl = data.imageUrls[0] ?? ''
+        formData.galleryImageUrls = data.imageUrls.slice(1)
+      } else {
+        formData.mainImageUrl = ''
+        formData.galleryImageUrls = []
+      }
+    }
+  },
+  { immediate: true, deep: true },
+)
+
+const submitButtonLabel = computed(() => {
+  if (isLoading.value) {
+    return props.isEdit ? 'Updating property...' : 'Creating property...'
+  }
+  return props.isEdit ? 'Update Property' : 'Create Property'
+})
+
+const rules = {
+  name: { required, minLength: minLength(3) },
+  description: { required, minLength: minLength(10) },
+  address: { required },
+  price: { required, minValue: minValue(1) },
+  location: {
+    lat: { required, numeric },
+    long: { required, numeric },
+  },
+  mainImageUrl: { required },
+}
+const v$ = useVuelidate(rules, formData)
+
+const getFieldError = (field: keyof typeof formData) => {
+  const fieldValidation = v$.value[field]
+  if (!fieldValidation || !fieldValidation.$error) return undefined
+
+  if (fieldValidation.required?.$invalid) return 'This field is required.'
+  if (fieldValidation.minLength?.$invalid)
+    return `Minimum ${fieldValidation.minLength.$params.min} characters required.`
+  if (fieldValidation.minValue?.$invalid)
+    return `Value must be at least ${fieldValidation.minValue.$params.min}.`
+
+  return 'Invalid value.'
+}
+
+// Map data
+// ======================
+
+const isGettingLocation = ref(false)
+const mapKey = ref(0)
+
 const mapInitialCenter = computed<[number, number]>(() => {
   if (formData.location.lat !== null && formData.location.long !== null) {
     return [formData.location.lat, formData.location.long]
   }
-  // Fallback coordinate if geolocation is unavailable or denied
-  return [44.495, 26.08]
+  return defaultLocation
 })
 
 function fetchDeviceLocation(silent = false) {
@@ -259,7 +353,7 @@ function fetchDeviceLocation(silent = false) {
 onMounted(() => {
   // Only attempt auto-detection if initial data wasn't provided
   if (!props.initialData?.location?.lat || !props.initialData?.location?.long) {
-    fetchDeviceLocation(false)
+    fetchDeviceLocation(true)
   }
 })
 
@@ -277,72 +371,6 @@ function handleMapChange(payload: LocationPayload) {
   v$.value.location.long.$touch()
 }
 
-// Pre-fill form data when initialData prop is provided or updated
-watch(
-  () => props.initialData,
-  (data) => {
-    if (data) {
-      formData.name = data.name || ''
-      formData.description = data.description || ''
-      formData.address = data.address || ''
-      formData.price = data.price ?? null
-      formData.location.lat = data.location?.lat ?? null
-      formData.location.long = data.location?.long ?? null
-
-      mapKey.value++
-
-      if (data.imageUrls && data.imageUrls.length > 0) {
-        formData.mainImageUrl = data.imageUrls[0] ?? ''
-        formData.galleryImageUrls = data.imageUrls.slice(1)
-      } else {
-        formData.mainImageUrl = ''
-        formData.galleryImageUrls = []
-      }
-    }
-  },
-  { immediate: true, deep: true },
-)
-
-watch(mainImageFile, (newImage) => {
-  if (newImage) {
-    formData.mainImageUrl = URL.createObjectURL(newImage)
-  }
-})
-
-const submitButtonLabel = computed(() => {
-  if (isLoading.value) {
-    return props.isEdit ? 'Updating property...' : 'Creating property...'
-  }
-  return props.isEdit ? 'Update Property' : 'Create Property'
-})
-
-const rules = {
-  name: { required, minLength: minLength(3) },
-  description: { required, minLength: minLength(10) },
-  address: { required },
-  price: { required, minValue: minValue(1) },
-  location: {
-    lat: { required, numeric },
-    long: { required, numeric },
-  },
-  mainImageUrl: { required },
-}
-
-const v$ = useVuelidate(rules, formData)
-
-const getFieldError = (field: keyof typeof formData) => {
-  const fieldValidation = v$.value[field]
-  if (!fieldValidation || !fieldValidation.$error) return undefined
-
-  if (fieldValidation.required?.$invalid) return 'This field is required.'
-  if (fieldValidation.minLength?.$invalid)
-    return `Minimum ${fieldValidation.minLength.$params.min} characters required.`
-  if (fieldValidation.minValue?.$invalid)
-    return `Value must be at least ${fieldValidation.minValue.$params.min}.`
-
-  return 'Invalid value.'
-}
-
 const getLocationFieldError = (coord: 'lat' | 'long') => {
   const coordValidation = v$.value.location[coord]
   if (!coordValidation || !coordValidation.$error) return undefined
@@ -353,12 +381,60 @@ const getLocationFieldError = (coord: 'lat' | 'long') => {
   return 'Invalid.'
 }
 
+// Image handling
+// ======================
+
+watch(mainImageFile, (newImage) => {
+  if (!newImage) return
+
+  if (!formData.mainImageUrl.startsWith('blob:')) {
+    urlsToDelete.value.push(formData.mainImageUrl)
+  }
+  formData.mainImageUrl = URL.createObjectURL(newImage)
+  imagesToUpload.value.set(formData.mainImageUrl, newImage)
+})
+
 const deleteMainImage = () => {
+  if (!formData.mainImageUrl.startsWith('blob:')) {
+    urlsToDelete.value.push(formData.mainImageUrl)
+  }
+
   formData.mainImageUrl = ''
   mainImageFile.value = null
 }
 
+watch(uploadedFileInput, (newFiles) => {
+  if (!newFiles || newFiles.length == 0) return
+
+  console.log('uploaded')
+  const filesArray = Array.isArray(newFiles) ? newFiles : [newFiles]
+
+  filesArray.forEach((file) => {
+    if (file instanceof File) {
+      const url = URL.createObjectURL(file)
+      console.log(url)
+      formData.galleryImageUrls.push(url)
+      imagesToUpload.value.set(url, file)
+    }
+  })
+
+  console.log(imagesToUpload)
+  console.log(formData.galleryImageUrls)
+  uploadedFileInput.value = []
+})
+
+const removeGalleryImage = (index: number) => {
+  const url = formData.galleryImageUrls.at(index)
+
+  formData.galleryImageUrls.splice(index, 1)
+}
+
 const handleSubmit = async () => {
+  if (!authStore.user) {
+    toast.show({ headline: 'Auth Error', description: 'User session is missing', color: 'danger' })
+    return
+  }
+
   v$.value.$touch()
   const isFormValid = await v$.value.$validate()
 
@@ -374,8 +450,11 @@ const handleSubmit = async () => {
   isLoading.value = true
 
   try {
+    const allImages = [formData.mainImageUrl, ...formData.galleryImageUrls].filter(Boolean)
+
     const propertyObj = Property.create({
-      id: props.initialData?.id || undefined,
+      id: props.initialData?.id,
+      userId: authStore.user.id,
       name: formData.name,
       description: formData.description,
       address: formData.address,
@@ -384,15 +463,10 @@ const handleSubmit = async () => {
         lat: formData.location.lat!,
         long: formData.location.long!,
       },
-      imageUrls: [formData.mainImageUrl, ...formData.galleryImageUrls],
-    })
-    toast.show({
-      headline: props.isEdit ? 'Property Updated!' : 'Property Created!',
-      description: `Your property has been successfully ${props.isEdit ? 'updated' : 'created'}.`,
-      color: 'success',
+      imageUrls: allImages,
     })
 
-    emit('submit', propertyObj)
+    emit('submit', propertyObj, imagesToUpload.value, urlsToDelete.value)
   } catch (error: any) {
     toast.show({
       headline: props.isEdit ? 'Update Failed' : 'Creation Failed',
@@ -438,6 +512,20 @@ const handleSubmit = async () => {
 
 .location-btn {
   align-self: flex-start;
+}
+
+.gallery-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.existing-preview-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 :deep(.submit-btn) {
