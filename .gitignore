@@ -8,7 +8,7 @@ services/message-base/main/proto
 # all generated proto files
 *.pb.go
 *.pb.gw.go
-frontend/src/generated/proto
+# frontend/src/generated/proto
 
 
 
