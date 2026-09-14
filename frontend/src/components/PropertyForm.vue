@@ -7,8 +7,8 @@
         <span class="preview-label">Main Image</span>
         <div class="image-wrapper">
           <OnyxImage
-            :height="100"
-            :width="100"
+            :height="200"
+            :width="300"
             :src="formData.mainImageUrl"
             alt="Existing Cover Image"
             shape="rounded"
@@ -24,8 +24,8 @@
         maxSize="4MiB"
         required
         show-error
-        size="small"
-        style="width: 30rem; max-width: 100%"
+        size="medium"
+        style="width: 30rem; max-width: 40%"
       />
     </div>
 

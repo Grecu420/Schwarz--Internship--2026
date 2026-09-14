@@ -43,11 +43,20 @@ const goBack = () => {
   router.push('/properties')
 }
 
+const uploadToCloud = false
+
 const uploadImage = async (data: [string, File]): Promise<[string, string]> => {
   const [url, file] = data
   console.log('upload ', url)
-  // const newUrl = await uploadImageToCloudinary(file, presetName)
-  return [url, 'modded:' + url]
+
+
+  if (uploadToCloud) {
+    const newUrl = await uploadImageToCloudinary(file, presetName)
+    return [url, newUrl]
+  } else {
+    return [url, 'uploaded:' + url]
+  }
+  
 }
 
 const handleSuccess = async (
