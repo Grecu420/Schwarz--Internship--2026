@@ -6,6 +6,7 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import { FieldMask } from "./google/protobuf/field_mask";
 import { Timestamp } from "./google/protobuf/timestamp";
 
 export const protobufPackage = "userbase";
@@ -17,6 +18,7 @@ export interface User {
   userName: string;
   email: string;
   password: string;
+  profileImageUrl: string;
   createdAt: Date | undefined;
 }
 
@@ -36,8 +38,57 @@ export interface GetUserResponse {
   user: User | undefined;
 }
 
+export interface ListUsersRequest {
+  nextPageToken: string;
+  pageSize: number;
+  filters: ListUsersFiltersOneOf[];
+}
+
+export interface ListUsersResponse {
+  nextPageToken: string;
+  users: User[];
+}
+
+export interface ListUsersFiltersOneOf {
+  firstName?: FilterByFirstName | undefined;
+  lastName?: FilterByLastName | undefined;
+}
+
+export interface FilterByFirstName {
+  value: string;
+}
+
+export interface FilterByLastName {
+  value: string;
+}
+
+export interface UpdateUserRequest {
+  user: User | undefined;
+  fieldMask: string[] | undefined;
+}
+
+export interface UpdateUserResponse {
+  user: User | undefined;
+}
+
+export interface DeleteUserRequest {
+  id: number;
+}
+
+export interface DeleteUserResponse {
+}
+
 function createBaseUser(): User {
-  return { id: 0, firstName: "", lastName: "", userName: "", email: "", password: "", createdAt: undefined };
+  return {
+    id: 0,
+    firstName: "",
+    lastName: "",
+    userName: "",
+    email: "",
+    password: "",
+    profileImageUrl: "",
+    createdAt: undefined,
+  };
 }
 
 export const User: MessageFns<User> = {
@@ -60,8 +111,11 @@ export const User: MessageFns<User> = {
     if (message.password !== "") {
       writer.uint32(50).string(message.password);
     }
+    if (message.profileImageUrl !== "") {
+      writer.uint32(58).string(message.profileImageUrl);
+    }
     if (message.createdAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(58).fork()).join();
+      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(66).fork()).join();
     }
     return writer;
   },
@@ -126,6 +180,14 @@ export const User: MessageFns<User> = {
             break;
           }
 
+          message.profileImageUrl = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
           message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           continue;
         }
@@ -158,6 +220,11 @@ export const User: MessageFns<User> = {
         : "",
       email: isSet(object.email) ? globalThis.String(object.email) : "",
       password: isSet(object.password) ? globalThis.String(object.password) : "",
+      profileImageUrl: isSet(object.profileImageUrl)
+        ? globalThis.String(object.profileImageUrl)
+        : isSet(object.profile_image_url)
+        ? globalThis.String(object.profile_image_url)
+        : "",
       createdAt: isSet(object.createdAt)
         ? fromJsonTimestamp(object.createdAt)
         : isSet(object.created_at)
@@ -186,6 +253,9 @@ export const User: MessageFns<User> = {
     if (message.password !== "") {
       obj.password = message.password;
     }
+    if (message.profileImageUrl !== "") {
+      obj.profileImageUrl = message.profileImageUrl;
+    }
     if (message.createdAt !== undefined) {
       obj.createdAt = message.createdAt.toISOString();
     }
@@ -203,6 +273,7 @@ export const User: MessageFns<User> = {
     message.userName = object.userName ?? "";
     message.email = object.email ?? "";
     message.password = object.password ?? "";
+    message.profileImageUrl = object.profileImageUrl ?? "";
     message.createdAt = object.createdAt ?? undefined;
     return message;
   },
@@ -436,6 +507,619 @@ export const GetUserResponse: MessageFns<GetUserResponse> = {
   fromPartial<I extends Exact<DeepPartial<GetUserResponse>, I>>(object: I): GetUserResponse {
     const message = createBaseGetUserResponse();
     message.user = (object.user !== undefined && object.user !== null) ? User.fromPartial(object.user) : undefined;
+    return message;
+  },
+};
+
+function createBaseListUsersRequest(): ListUsersRequest {
+  return { nextPageToken: "", pageSize: 0, filters: [] };
+}
+
+export const ListUsersRequest: MessageFns<ListUsersRequest> = {
+  encode(message: ListUsersRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.nextPageToken !== "") {
+      writer.uint32(10).string(message.nextPageToken);
+    }
+    if (message.pageSize !== 0) {
+      writer.uint32(16).int64(message.pageSize);
+    }
+    for (const v of message.filters) {
+      ListUsersFiltersOneOf.encode(v!, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ListUsersRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseListUsersRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.nextPageToken = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.pageSize = longToNumber(reader.int64());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.filters.push(ListUsersFiltersOneOf.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ListUsersRequest {
+    return {
+      nextPageToken: isSet(object.nextPageToken) ? globalThis.String(object.nextPageToken) : "",
+      pageSize: isSet(object.pageSize) ? globalThis.Number(object.pageSize) : 0,
+      filters: globalThis.Array.isArray(object?.filters)
+        ? object.filters.map((e: any) => ListUsersFiltersOneOf.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ListUsersRequest): unknown {
+    const obj: any = {};
+    if (message.nextPageToken !== "") {
+      obj.nextPageToken = message.nextPageToken;
+    }
+    if (message.pageSize !== 0) {
+      obj.pageSize = Math.round(message.pageSize);
+    }
+    if (message.filters?.length) {
+      obj.filters = message.filters.map((e) => ListUsersFiltersOneOf.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ListUsersRequest>, I>>(base?: I): ListUsersRequest {
+    return ListUsersRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ListUsersRequest>, I>>(object: I): ListUsersRequest {
+    const message = createBaseListUsersRequest();
+    message.nextPageToken = object.nextPageToken ?? "";
+    message.pageSize = object.pageSize ?? 0;
+    message.filters = object.filters?.map((e) => ListUsersFiltersOneOf.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseListUsersResponse(): ListUsersResponse {
+  return { nextPageToken: "", users: [] };
+}
+
+export const ListUsersResponse: MessageFns<ListUsersResponse> = {
+  encode(message: ListUsersResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.nextPageToken !== "") {
+      writer.uint32(10).string(message.nextPageToken);
+    }
+    for (const v of message.users) {
+      User.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ListUsersResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseListUsersResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.nextPageToken = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.users.push(User.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ListUsersResponse {
+    return {
+      nextPageToken: isSet(object.nextPageToken) ? globalThis.String(object.nextPageToken) : "",
+      users: globalThis.Array.isArray(object?.users) ? object.users.map((e: any) => User.fromJSON(e)) : [],
+    };
+  },
+
+  toJSON(message: ListUsersResponse): unknown {
+    const obj: any = {};
+    if (message.nextPageToken !== "") {
+      obj.nextPageToken = message.nextPageToken;
+    }
+    if (message.users?.length) {
+      obj.users = message.users.map((e) => User.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ListUsersResponse>, I>>(base?: I): ListUsersResponse {
+    return ListUsersResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ListUsersResponse>, I>>(object: I): ListUsersResponse {
+    const message = createBaseListUsersResponse();
+    message.nextPageToken = object.nextPageToken ?? "";
+    message.users = object.users?.map((e) => User.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseListUsersFiltersOneOf(): ListUsersFiltersOneOf {
+  return { firstName: undefined, lastName: undefined };
+}
+
+export const ListUsersFiltersOneOf: MessageFns<ListUsersFiltersOneOf> = {
+  encode(message: ListUsersFiltersOneOf, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.firstName !== undefined) {
+      FilterByFirstName.encode(message.firstName, writer.uint32(10).fork()).join();
+    }
+    if (message.lastName !== undefined) {
+      FilterByLastName.encode(message.lastName, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ListUsersFiltersOneOf {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseListUsersFiltersOneOf();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.firstName = FilterByFirstName.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.lastName = FilterByLastName.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ListUsersFiltersOneOf {
+    return {
+      firstName: isSet(object.firstName)
+        ? FilterByFirstName.fromJSON(object.firstName)
+        : isSet(object.first_name)
+        ? FilterByFirstName.fromJSON(object.first_name)
+        : undefined,
+      lastName: isSet(object.lastName)
+        ? FilterByLastName.fromJSON(object.lastName)
+        : isSet(object.last_name)
+        ? FilterByLastName.fromJSON(object.last_name)
+        : undefined,
+    };
+  },
+
+  toJSON(message: ListUsersFiltersOneOf): unknown {
+    const obj: any = {};
+    if (message.firstName !== undefined) {
+      obj.firstName = FilterByFirstName.toJSON(message.firstName);
+    }
+    if (message.lastName !== undefined) {
+      obj.lastName = FilterByLastName.toJSON(message.lastName);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ListUsersFiltersOneOf>, I>>(base?: I): ListUsersFiltersOneOf {
+    return ListUsersFiltersOneOf.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ListUsersFiltersOneOf>, I>>(object: I): ListUsersFiltersOneOf {
+    const message = createBaseListUsersFiltersOneOf();
+    message.firstName = (object.firstName !== undefined && object.firstName !== null)
+      ? FilterByFirstName.fromPartial(object.firstName)
+      : undefined;
+    message.lastName = (object.lastName !== undefined && object.lastName !== null)
+      ? FilterByLastName.fromPartial(object.lastName)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseFilterByFirstName(): FilterByFirstName {
+  return { value: "" };
+}
+
+export const FilterByFirstName: MessageFns<FilterByFirstName> = {
+  encode(message: FilterByFirstName, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.value !== "") {
+      writer.uint32(10).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): FilterByFirstName {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFilterByFirstName();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FilterByFirstName {
+    return { value: isSet(object.value) ? globalThis.String(object.value) : "" };
+  },
+
+  toJSON(message: FilterByFirstName): unknown {
+    const obj: any = {};
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<FilterByFirstName>, I>>(base?: I): FilterByFirstName {
+    return FilterByFirstName.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FilterByFirstName>, I>>(object: I): FilterByFirstName {
+    const message = createBaseFilterByFirstName();
+    message.value = object.value ?? "";
+    return message;
+  },
+};
+
+function createBaseFilterByLastName(): FilterByLastName {
+  return { value: "" };
+}
+
+export const FilterByLastName: MessageFns<FilterByLastName> = {
+  encode(message: FilterByLastName, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.value !== "") {
+      writer.uint32(10).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): FilterByLastName {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFilterByLastName();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FilterByLastName {
+    return { value: isSet(object.value) ? globalThis.String(object.value) : "" };
+  },
+
+  toJSON(message: FilterByLastName): unknown {
+    const obj: any = {};
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<FilterByLastName>, I>>(base?: I): FilterByLastName {
+    return FilterByLastName.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FilterByLastName>, I>>(object: I): FilterByLastName {
+    const message = createBaseFilterByLastName();
+    message.value = object.value ?? "";
+    return message;
+  },
+};
+
+function createBaseUpdateUserRequest(): UpdateUserRequest {
+  return { user: undefined, fieldMask: undefined };
+}
+
+export const UpdateUserRequest: MessageFns<UpdateUserRequest> = {
+  encode(message: UpdateUserRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.user !== undefined) {
+      User.encode(message.user, writer.uint32(10).fork()).join();
+    }
+    if (message.fieldMask !== undefined) {
+      FieldMask.encode(FieldMask.wrap(message.fieldMask), writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateUserRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateUserRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.user = User.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.fieldMask = FieldMask.unwrap(FieldMask.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UpdateUserRequest {
+    return {
+      user: isSet(object.user) ? User.fromJSON(object.user) : undefined,
+      fieldMask: isSet(object.fieldMask)
+        ? FieldMask.unwrap(FieldMask.fromJSON(object.fieldMask))
+        : isSet(object.field_mask)
+        ? FieldMask.unwrap(FieldMask.fromJSON(object.field_mask))
+        : undefined,
+    };
+  },
+
+  toJSON(message: UpdateUserRequest): unknown {
+    const obj: any = {};
+    if (message.user !== undefined) {
+      obj.user = User.toJSON(message.user);
+    }
+    if (message.fieldMask !== undefined) {
+      obj.fieldMask = FieldMask.toJSON(FieldMask.wrap(message.fieldMask));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UpdateUserRequest>, I>>(base?: I): UpdateUserRequest {
+    return UpdateUserRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UpdateUserRequest>, I>>(object: I): UpdateUserRequest {
+    const message = createBaseUpdateUserRequest();
+    message.user = (object.user !== undefined && object.user !== null) ? User.fromPartial(object.user) : undefined;
+    message.fieldMask = object.fieldMask ?? undefined;
+    return message;
+  },
+};
+
+function createBaseUpdateUserResponse(): UpdateUserResponse {
+  return { user: undefined };
+}
+
+export const UpdateUserResponse: MessageFns<UpdateUserResponse> = {
+  encode(message: UpdateUserResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.user !== undefined) {
+      User.encode(message.user, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateUserResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateUserResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.user = User.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UpdateUserResponse {
+    return { user: isSet(object.user) ? User.fromJSON(object.user) : undefined };
+  },
+
+  toJSON(message: UpdateUserResponse): unknown {
+    const obj: any = {};
+    if (message.user !== undefined) {
+      obj.user = User.toJSON(message.user);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UpdateUserResponse>, I>>(base?: I): UpdateUserResponse {
+    return UpdateUserResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UpdateUserResponse>, I>>(object: I): UpdateUserResponse {
+    const message = createBaseUpdateUserResponse();
+    message.user = (object.user !== undefined && object.user !== null) ? User.fromPartial(object.user) : undefined;
+    return message;
+  },
+};
+
+function createBaseDeleteUserRequest(): DeleteUserRequest {
+  return { id: 0 };
+}
+
+export const DeleteUserRequest: MessageFns<DeleteUserRequest> = {
+  encode(message: DeleteUserRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== 0) {
+      writer.uint32(8).int64(message.id);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DeleteUserRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDeleteUserRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = longToNumber(reader.int64());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DeleteUserRequest {
+    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
+  },
+
+  toJSON(message: DeleteUserRequest): unknown {
+    const obj: any = {};
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DeleteUserRequest>, I>>(base?: I): DeleteUserRequest {
+    return DeleteUserRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DeleteUserRequest>, I>>(object: I): DeleteUserRequest {
+    const message = createBaseDeleteUserRequest();
+    message.id = object.id ?? 0;
+    return message;
+  },
+};
+
+function createBaseDeleteUserResponse(): DeleteUserResponse {
+  return {};
+}
+
+export const DeleteUserResponse: MessageFns<DeleteUserResponse> = {
+  encode(_: DeleteUserResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DeleteUserResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDeleteUserResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): DeleteUserResponse {
+    return {};
+  },
+
+  toJSON(_: DeleteUserResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DeleteUserResponse>, I>>(base?: I): DeleteUserResponse {
+    return DeleteUserResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DeleteUserResponse>, I>>(_: I): DeleteUserResponse {
+    const message = createBaseDeleteUserResponse();
     return message;
   },
 };
