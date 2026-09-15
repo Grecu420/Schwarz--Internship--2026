@@ -1,187 +1,187 @@
 <template>
-  <div class="property-card">
-    <OnyxForm @submit.prevent="handleSubmit" class="property-form" novalidate>
-      <!-- Main Cover Image -->
-      <div class="upload-block">
-        <!-- Existing Cover Image Preview (Edit Mode) -->
-        <div v-if="formData.mainImageUrl" class="existing-preview-card">
-          <span class="preview-label">Main Image</span>
-          <div class="image-wrapper">
-            <OnyxImage
-              :height="200"
-              :width="300"
-              :src="formData.mainImageUrl"
-              alt="Existing Cover Image"
-              shape="rounded"
-            />
-          </div>
-          <OnyxIconButton label="delete" :icon="iconTrash" type="button" @click="deleteMainImage" />
-        </div>
-        <OnyxFileUpload
-          v-else
-          v-model="mainImageFile"
-          :accept="imageAccept"
-          label="Main image"
-          maxSize="4MiB"
-          required
-          show-error
-          size="medium"
-          class="file-upload-input"
-        />
-      </div>
-
-      <OnyxInput
-        v-model="formData.name"
-        label="Property Name"
-        placeholder="Property Name"
-        required-marker="required"
-        reserve-message-space
-        :error="getFieldError('name')"
-        @blur="v$.name.$touch()"
-      >
-        <template #leadingIcons>
-          <OnyxIcon :icon="iconHome" />
-        </template>
-      </OnyxInput>
-
-      <OnyxTextarea
-        v-model="formData.description"
-        label="Description"
-        placeholder="Detailed description of the property..."
-        required-marker="required"
-        reserve-message-space
-        :error="getFieldError('description')"
-        @blur="v$.description.$touch()"
-      />
-
-      <OnyxStepper
-        v-model.number="formData.price"
-        hideButtons
-        label="Price (per night)"
-        required-marker="required"
-        reserve-message-space
-        :error="getFieldError('price')"
-        @blur="v$.price.$touch()"
-      >
-        <template #leadingIcons>
-          <OnyxIcon :icon="iconTag" />
-        </template>
-      </OnyxStepper>
-
-      <OnyxInput
-        v-model="formData.address"
-        label="Address"
-        placeholder="Address"
-        required-marker="required"
-        reserve-message-space
-        :error="getFieldError('address')"
-        @blur="v$.address.$touch()"
-      >
-        <template #leadingIcons>
-          <OnyxIcon :icon="iconMap" />
-        </template>
-      </OnyxInput>
-
-      <!-- Location Selection -->
-      <fieldset class="form-section">
-        <legend class="section-title">Location</legend>
-        <div class="form-row">
-          <OnyxStepper
-            label="Latitude"
-            v-model="formData.location.lat"
-            hideButtons
-            required-marker="required"
-            reserve-message-space
-            :error="getLocationFieldError('lat')"
-            @blur="v$.location.lat.$touch()"
-          />
-
-          <OnyxStepper
-            label="Longitude"
-            v-model="formData.location.long"
-            hideButtons
-            required-marker="required"
-            reserve-message-space
-            :error="getLocationFieldError('long')"
-            @blur="v$.location.long.$touch()"
-          />
+  <div class="form-container">
+    <OnyxForm @submit.prevent="handleSubmit" class="property-form-grid" novalidate>
+      <!-- Left Column: Header, Main Cover Image & Gallery Section -->
+      <div class="left-column">
+        <div class="header-text-block">
+          <span class="category-tag">{{ category }}</span>
+          <h1 class="page-title">{{ title }}</h1>
+          <p class="page-description">{{ description }}</p>
         </div>
 
-        <!-- Map Component Integration -->
-        <MapComponent
-          :key="mapKey"
-          :initial-center="mapInitialCenter"
-          :initial-zoom="15"
-          @change="handleMapChange"
-        />
-
-        <div class="location-actions">
-          <OnyxButton
-            type="button"
-            mode="outline"
-            class="location-btn"
-            label="Center on Marker"
-            @click="centerOnMarker"
-          />
-          <OnyxButton
-            type="button"
-            mode="outline"
-            class="location-btn"
-            label="Detect Current Location"
-            :loading="isGettingLocation"
-            @click="() => fetchDeviceLocation(false)"
-          />
-        </div>
-      </fieldset>
-
-      <!-- Property Images Gallery -->
-      <fieldset class="form-section">
-        <legend class="section-title">Gallery Images</legend>
-
-        <div v-if="formData.galleryImageUrls.length > 0" class="gallery-grid">
-          <div
-            v-for="(url, index) in formData.galleryImageUrls"
-            :key="index"
-            class="existing-preview-card"
-          >
-            <div class="image-wrapper">
+        <!-- Main Cover Image Section -->
+        <fieldset class="form-section">
+          <legend class="section-title">Cover Image</legend>
+          <div class="upload-block">
+            <div v-if="formData.mainImageUrl" class="main-preview-wrapper">
               <OnyxImage
-                :height="100"
-                :width="100"
-                :src="url"
-                alt="Gallery Image"
+                :height="256"
+                :width="256"
+                style="width: 100%"
+                :src="formData.mainImageUrl"
+                alt="Main Cover Image"
                 shape="rounded"
+                class="hero-image"
+              />
+              <OnyxIconButton
+                label="delete cover image"
+                :icon="iconTrash"
+                type="button"
+                class="delete-cover-btn"
+                @click="deleteMainImage"
               />
             </div>
-            <OnyxIconButton
-              label="Delete image"
-              :icon="iconTrash"
-              type="button"
-              @click="removeGalleryImage(index)"
+            <OnyxFileUpload
+              v-else
+              v-model="mainImageFile"
+              :accept="imageAccept"
+              label="Upload Cover Image"
+              maxSize="10MiB"
+              required
+              show-error
+              size="medium"
+              class="file-upload-input"
             />
           </div>
+        </fieldset>
+
+        <!-- Gallery / Photos Upload Section -->
+        <fieldset class="form-section">
+          <legend class="section-title">Gallery Images</legend>
+
+          <div v-if="formData.galleryImageUrls.length > 0" class="gallery-grid">
+            <div
+              v-for="(url, index) in formData.galleryImageUrls"
+              :key="index"
+              class="existing-preview-card"
+            >
+              <div class="image-wrapper">
+                <OnyxImage
+                  :height="100"
+                  :width="100"
+                  :src="url"
+                  alt="Gallery Image"
+                  shape="rounded"
+                />
+              </div>
+              <OnyxIconButton
+                label="Delete image"
+                :icon="iconTrash"
+                type="button"
+                @click="removeGalleryImage(index)"
+              />
+            </div>
+          </div>
+
+          <OnyxFileUpload
+            v-model="uploadedFileInput"
+            :accept="imageAccept"
+            maxSize="10MiB"
+            multiple
+            size="medium"
+            class="file-upload-input gallery-dropzone"
+          />
+        </fieldset>
+      </div>
+
+      <!-- Right Column: Details & Location Fields -->
+      <div class="right-column property-card">
+        <OnyxInput
+          v-model="formData.name"
+          label="Property Name"
+          placeholder="e.g. Cozy Red Redwood Cabin"
+          required-marker="required"
+          reserve-message-space
+          :error="getFieldError('name')"
+          @blur="v$.name.$touch()"
+        >
+          <template #leadingIcons>
+            <OnyxIcon :icon="iconHome" />
+          </template>
+        </OnyxInput>
+
+        <OnyxTextarea
+          v-model="formData.description"
+          :autosize="descriptionAutosize"
+          label="Description"
+          placeholder="Describe what makes your stay unforgettable. Highlight amenities, surroundings, and historical context..."
+          required-marker="required"
+          reserve-message-space
+          :error="getFieldError('description')"
+          @blur="v$.description.$touch()"
+        />
+
+        <OnyxTextarea
+          v-model="formData.address"
+          :autosize="adressAutosize"
+          disable-manual-resize
+          label="Full Address"
+          placeholder="e.g. 1204 Pinecone Ridge Rd, Hood River, OR 97031"
+          required-marker="required"
+          reserve-message-space
+          :error="getFieldError('address')"
+          @blur="v$.address.$touch()"
+        >
+          <template #leadingIcons>
+            <OnyxIcon :icon="iconMap" />
+          </template>
+        </OnyxTextarea>
+
+        <OnyxStepper
+          v-model.number="formData.price"
+          hideButtons
+          label="Price per Night (USD)"
+          placeholder="e.g. 150"
+          required-marker="required"
+          reserve-message-space
+          :error="getFieldError('price')"
+          @blur="v$.price.$touch()"
+        >
+          <template #leadingIcons>
+            <OnyxIcon :icon="iconTag" />
+          </template>
+        </OnyxStepper>
+
+        <!-- Location Selection Map -->
+        <fieldset class="form-section">
+          <legend class="section-title">Location</legend>
+
+          <MapComponent
+            :key="mapKey"
+            :initial-center="mapInitialCenter"
+            :initial-zoom="15"
+            @change="handleMapChange"
+          />
+
+          <div class="location-actions">
+            <OnyxButton
+              type="button"
+              mode="outline"
+              class="location-btn"
+              label="Center on Marker"
+              @click="centerOnMarker"
+            />
+            <OnyxButton
+              type="button"
+              mode="outline"
+              class="location-btn"
+              label="Detect Current Location"
+              :loading="isGettingLocation"
+              @click="() => fetchDeviceLocation(false)"
+            />
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <OnyxButton
+            type="submit"
+            mode="default"
+            class="submit-btn"
+            :loading="isLoading"
+            :disabled="isLoading"
+            :label="submitButtonLabel"
+          />
         </div>
-
-        <OnyxFileUpload
-          v-model="uploadedFileInput"
-          :accept="imageAccept"
-          label="Add gallery images"
-          maxSize="4MiB"
-          multiple
-          size="medium"
-          class="file-upload-input"
-        />
-      </fieldset>
-
-      <div class="form-actions">
-        <OnyxButton
-          type="submit"
-          mode="default"
-          class="submit-btn"
-          :loading="isLoading"
-          :disabled="isLoading"
-          :label="submitButtonLabel"
-        />
       </div>
     </OnyxForm>
   </div>
@@ -210,15 +210,23 @@ import MapComponent, { type LocationPayload } from './MapComponent.vue'
 import { useAuthStore } from '@/stores/auth.ts'
 
 const defaultLocation: [number, number] = [44.495, 26.08]
+const descriptionAutosize = {"min":3,"max":12};
+const adressAutosize = {"min":1,"max":12};
 
 const props = withDefaults(
   defineProps<{
     initialData?: Property | null
     isEdit?: boolean
+    category: string
+    title: string
+    description: string
   }>(),
   {
     initialData: null,
     isEdit: false,
+    category: 'CATEGORY',
+    title: 'Title',
+    description: 'Description',
   },
 )
 
@@ -232,8 +240,6 @@ const authStore = useAuthStore()
 const isLoading = ref(false)
 
 // Form data
-// ======================
-
 const formData = reactive({
   name: '',
   description: '',
@@ -248,7 +254,6 @@ const formData = reactive({
 })
 
 // File Storage
-// ======================
 const imageAccept = ['.png', '.jpg', '.jpeg'] as FileType[]
 const mainImageFile = ref<File | null>(null)
 const uploadedFileInput = ref<File[]>([])
@@ -256,7 +261,6 @@ const uploadedFileInput = ref<File[]>([])
 const imagesToUpload = ref<Map<string, File>>(new Map())
 const urlsToDelete = ref<string[]>([])
 
-// Pre-fill form data when initialData prop is provided or updated
 watch(
   () => props.initialData,
   (data) => {
@@ -286,7 +290,7 @@ const submitButtonLabel = computed(() => {
   if (isLoading.value) {
     return props.isEdit ? 'Updating property...' : 'Creating property...'
   }
-  return props.isEdit ? 'Update Property' : 'Create Property'
+  return props.isEdit ? 'Update' : 'Submit'
 })
 
 const rules = {
@@ -316,8 +320,6 @@ const getFieldError = (field: keyof typeof formData) => {
 }
 
 // Map data
-// ======================
-
 const isGettingLocation = ref(false)
 const mapKey = ref(0)
 
@@ -374,7 +376,6 @@ function fetchDeviceLocation(silent = false) {
 }
 
 onMounted(() => {
-  // Only attempt auto-detection if initial data wasn't provided
   if (!props.initialData?.location?.lat || !props.initialData?.location?.long) {
     fetchDeviceLocation(true)
   }
@@ -394,19 +395,7 @@ function handleMapChange(payload: LocationPayload) {
   v$.value.location.long.$touch()
 }
 
-const getLocationFieldError = (coord: 'lat' | 'long') => {
-  const coordValidation = v$.value.location[coord]
-  if (!coordValidation || !coordValidation.$error) return undefined
-
-  if (coordValidation.required?.$invalid) return 'Required.'
-  if (coordValidation.numeric?.$invalid) return 'Must be a valid coordinate.'
-
-  return 'Invalid.'
-}
-
 // Image handling
-// ======================
-
 const trackImageRemoval = (url?: string) => {
   if (!url) return
   if (url.startsWith('blob:')) {
@@ -432,7 +421,7 @@ const deleteMainImage = () => {
 }
 
 watch(uploadedFileInput, (newFiles) => {
-  if (uploadedFileInput.value.length == 0) return
+  if (uploadedFileInput.value.length === 0) return
 
   newFiles.forEach((file) => {
     const url = URL.createObjectURL(file)
@@ -499,28 +488,99 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-.property-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 20px;
-  padding: 2.5rem;
+.form-container {
   width: 100%;
-  max-width: 640px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  max-width: 1140px;
+  margin: 0 auto;
 }
 
-.property-form {
+.property-form-grid {
+  display: grid;
+  grid-template-columns: 42% 55%;
+  gap: 3%;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .property-form-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.left-column {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
+}
+
+.header-text-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.category-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #2563eb;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.page-description {
+  font-size: 0.95rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .upload-block {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+}
 
-  gap: 0.875rem;
+.main-preview-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.delete-cover-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.right-column.property-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 .file-upload-input {
@@ -546,19 +606,10 @@ const handleSubmit = async () => {
   padding: 0 0.25rem;
 }
 
-.form-row {
-  display: flex;
-  gap: 1rem;
-}
-
-.form-row > * {
-  flex: 1;
-}
-
 .gallery-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .existing-preview-card {
@@ -566,21 +617,21 @@ const handleSubmit = async () => {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem;
+  padding: 0.5rem;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
 }
 
-.preview-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #6b7280;
-}
-
 .image-wrapper {
   border-radius: 8px;
   overflow: hidden;
+}
+
+.location-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 :deep(.location-btn) {

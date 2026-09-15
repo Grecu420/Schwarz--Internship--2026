@@ -1,23 +1,21 @@
 <template>
   <div class="property-creation-page-wrapper">
-    <div class="header-container">
-      <div class="back-button-wrapper">
-        <OnyxButton
-          label="Back"
-          :icon="iconChevronLeft"
-          mode="outline"
-          class="back-btn"
-          @click="goBack"
-        />
-      </div>
-      <span class="category-tag">PROPERTY MANAGEMENT</span>
-      <h1 class="page-title">Create New Property</h1>
-      <p class="page-description">
-        Fill in the details below to publish a new property listing.
-      </p>
+    <div class="back-button-container">
+      <OnyxButton
+        label="Back"
+        :icon="iconChevronLeft"
+        mode="outline"
+        class="back-btn"
+        @click="goBack"
+      />
     </div>
 
-    <PropertyForm @submit="handleSuccess" />
+    <PropertyForm
+      category="JOIN AS A HOST"
+      title="List a New Property"
+      description="Share your unique space with travelers from around the world. We make it simple."
+      @submit="handleSuccess"
+    />
   </div>
 </template>
 
@@ -69,7 +67,6 @@ const handleSuccess = async (
       router.push('/login')
     }
 
-
     // upload images
     const substitutionEntries = await Promise.all(Array.from(imagesToUpload, uploadImage))
     const urlSubstitution = new Map<string, string>(substitutionEntries)
@@ -109,48 +106,20 @@ const handleSuccess = async (
 <style scoped>
 .property-creation-page-wrapper {
   min-height: calc(100vh - 80px);
-  background-color: #fafafa;
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 3rem 1.5rem 5rem 1.5rem;
+  padding: 2.5rem 2rem 5rem 2rem;
 }
 
-.header-container {
-  text-align: center;
-  max-width: 520px;
+.back-button-container {
   width: 100%;
-  margin-bottom: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  max-width: 1140px;
+  margin-bottom: 1.5rem;
 }
 
-.back-button-wrapper {
-  align-self: flex-start;
-  margin-bottom: 1rem;
-}
-
-.category-tag {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: #2563eb;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.page-title {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #111827;
-  margin: 0.25rem 0 0.5rem 0;
-  letter-spacing: -0.02em;
-}
-
-.page-description {
-  font-size: 0.875rem;
-  color: #6b7280;
-  line-height: 1.5;
-  margin: 0;
+:deep(.back-btn) {
+  border-radius: 9999px !important;
 }
 </style>
