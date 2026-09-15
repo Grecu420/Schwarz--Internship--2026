@@ -111,6 +111,21 @@
           @blur="v$.description.$touch()"
         />
 
+        <OnyxStepper
+          v-model.number="formData.price"
+          hideButtons
+          label="Price per Night (USD)"
+          placeholder="e.g. 150"
+          required-marker="required"
+          reserve-message-space
+          :error="getFieldError('price')"
+          @blur="v$.price.$touch()"
+        >
+          <template #leadingIcons>
+            <OnyxIcon :icon="iconTag" />
+          </template>
+        </OnyxStepper>
+
         <OnyxTextarea
           v-model="formData.address"
           :autosize="adressAutosize"
@@ -126,21 +141,6 @@
             <OnyxIcon :icon="iconMap" />
           </template>
         </OnyxTextarea>
-
-        <OnyxStepper
-          v-model.number="formData.price"
-          hideButtons
-          label="Price per Night (USD)"
-          placeholder="e.g. 150"
-          required-marker="required"
-          reserve-message-space
-          :error="getFieldError('price')"
-          @blur="v$.price.$touch()"
-        >
-          <template #leadingIcons>
-            <OnyxIcon :icon="iconTag" />
-          </template>
-        </OnyxStepper>
 
         <!-- Location Selection Map -->
         <fieldset class="form-section">
