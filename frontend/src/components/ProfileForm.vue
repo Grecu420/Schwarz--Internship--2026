@@ -109,7 +109,7 @@ import { useRouter } from 'vue-router'
 import { OnyxInput, OnyxButton, OnyxIcon, OnyxAvatar, useToast } from 'sit-onyx'
 import { iconUser, iconTrash, iconCamera } from '@sit-onyx/icons'
 import { useAuthStore } from '@/stores/auth'
-import api from '@/api'
+import api from '@/utils/api'
 import { UpdateUserRequest, UpdateUserResponse, DeleteUserRequest, DeleteUserResponse } from '@/generated/proto/user-api'
 import { uploadImageToCloudinary } from '@/utils/cloudinary'
 

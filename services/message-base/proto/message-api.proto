@@ -2,12 +2,14 @@ syntax = "proto3";
 package messagebase;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
 
 option go_package = "main/proto";
 
 service MessageService {
   rpc CreateMessage (CreateMessageRequest) returns (CreateMessageResponse);
   rpc ListMessages (ListMessagesRequest) returns (ListMessagesResponse);
+  rpc UpdateMessage (UpdateMessageRequest) returns (UpdateMessageResponse);
 }
 
 message Message {
@@ -16,6 +18,7 @@ message Message {
   int64                     sender_id       = 3;
   string                    content         = 4;
   google.protobuf.Timestamp created_at      = 5;
+  bool                      is_read         = 6;
 }
 
 message CreateMessageRequest {
@@ -34,4 +37,13 @@ message ListMessagesRequest {
 
 message ListMessagesResponse{
   repeated Message messages = 1;
+}
+
+message UpdateMessageRequest {
+  Message message = 1;
+  google.protobuf.FieldMask field_mask = 2;
+}
+
+message UpdateMessageResponse {
+  Message message = 1;
 }
