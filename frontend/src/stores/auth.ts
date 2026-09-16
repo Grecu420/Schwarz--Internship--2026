@@ -10,7 +10,7 @@ function isTokenExpired(token: string | null): boolean {
     const payload = JSON.parse(atob(base64Payload))
     if (!payload.exp) return false
     return Date.now() >= payload.exp * 1000
-  } catch {
+  } catch (err) {
     return true // malformed token
   }
 }

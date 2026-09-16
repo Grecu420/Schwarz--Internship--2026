@@ -188,7 +188,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, minValue, numeric } from '@vuelidate/validators'
 import {
@@ -210,8 +210,8 @@ import MapComponent, { type LocationPayload } from './MapComponent.vue'
 import { useAuthStore } from '@/stores/auth.ts'
 
 const defaultLocation: [number, number] = [44.495, 26.08]
-const descriptionAutosize = {"min":3,"max":12};
-const adressAutosize = {"min":1,"max":12};
+const descriptionAutosize = { min: 3, max: 12 }
+const adressAutosize = { min: 1, max: 12 }
 
 const props = withDefaults(
   defineProps<{
@@ -251,6 +251,17 @@ const formData = reactive({
   },
   mainImageUrl: '',
   galleryImageUrls: [] as string[],
+})
+
+onUnmounted(() => {
+  // remove all uploaded blobs
+  if (formData.mainImageUrl.startsWith('blob:')) {
+    URL.revokeObjectURL(formData.mainImageUrl)
+  }
+
+  formData.galleryImageUrls.forEach((url) => {
+    if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+  })
 })
 
 // File Storage
@@ -646,6 +657,10 @@ const handleSubmit = async () => {
 :deep(.location-btn:hover) {
   background-color: #f9fafb !important;
   border-color: #d1d5db !important;
+}
+
+:deep(.onyx-form-element-v2__label) {
+  font-weight: bold !important;
 }
 
 .form-actions {

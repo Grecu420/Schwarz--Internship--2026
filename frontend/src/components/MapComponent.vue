@@ -15,14 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  LMap,
-  LTileLayer,
-  LMarker,
-  LControlLayers,
-  LIcon,
-  LTooltip,
-} from '@vue-leaflet/vue-leaflet'
+import { LMap, LTileLayer, LMarker, LIcon, LTooltip } from '@vue-leaflet/vue-leaflet'
 import icon from '../../public/favicon.ico'
 import { ref } from 'vue'
 
@@ -72,7 +65,7 @@ const emit = defineEmits<{
 }>()
 
 const zoom = ref(props.initialZoom)
-const marker = ref<[number, number]>([...props.initialCenter])
+const marker = ref({ lat: props.initialCenter[0], lng: props.initialCenter[1] })
 
 const iconWidth = 25
 const iconHeight = 40
@@ -83,27 +76,14 @@ const address = ref<string>('')
 const loading = ref<boolean>(false)
 const error = ref<string | null>(null)
 
-async function dropMarker(event?: any) {
-  let lat: number
-  let lon: number
+async function dropMarker() {
+  let lat = marker.value.lat
+  let lng = marker.value.lng
 
-  if (event?.target?.getLatLng) {
-    const latLng = event.target.getLatLng()
-    lat = latLng.lat
-    lon = latLng.lng
-  } else if (Array.isArray(marker.value)) {
-    ;[lat, lon] = marker.value
-  } else {
-    lat = (marker.value as any).lat
-    lon = (marker.value as any).lng
-  }
-
-  marker.value = [lat, lon]
-
-  await fetchAddress(lat, lon)
+  await fetchAddress(lat, lng)
 
   emit('change', {
-    location: [lat, lon],
+    location: [lat, lng],
     address: address.value,
   })
 }
