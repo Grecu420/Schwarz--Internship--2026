@@ -66,7 +66,7 @@ onMounted(async () => {
   const id = route.params.id
 
   try {
-    const response = await api.get<GetPropertyResponse>('/api/property', { params: { id } })
+    const response = await api.get<GetPropertyResponse>(`/api/property?id=${id}`)
     initialProperty.value = response.data.property ?? null
     if (initialProperty.value === null) {
       goBack()
