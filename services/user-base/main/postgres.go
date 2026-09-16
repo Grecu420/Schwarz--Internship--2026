@@ -141,3 +141,26 @@ func DeleteUserInDB(ctx context.Context, db *sql.DB, id int64) error {
 	
 	return nil
 }
+
+func SelectPublicUserProfileInDB(ctx context.Context, db *sql.DB, id int64) (*proto.UserProfile, error) {
+    var profile proto.UserProfile
+
+    query := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+        Select("id", "first_name", "last_name", "user_name", "profile_image_url").
+        From("users").
+        Where(sq.Eq{"id": id})
+
+    err := query.RunWith(db).QueryRowContext(ctx).Scan(
+        &profile.Id,
+        &profile.FirstName,
+        &profile.LastName,
+        &profile.UserName,
+        &profile.ProfileImageUrl,
+    )
+
+    if err != nil {
+        return nil, err
+    }
+
+    return &profile, nil
+}

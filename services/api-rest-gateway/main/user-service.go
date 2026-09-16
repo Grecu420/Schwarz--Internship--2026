@@ -24,3 +24,7 @@ func (service GatewayServiceImpl) UpdateUser(ctx context.Context, req *proto.Upd
 func (service GatewayServiceImpl) DeleteUser(ctx context.Context, req *proto.DeleteUserRequest) (*proto.DeleteUserResponse, error) {
 	return service.userService.DeleteUser(ctx, req)
 }
+
+func (service GatewayServiceImpl) GetUserProfile(ctx context.Context, req *proto.GetUserProfileRequest) (*proto.GetUserProfileResponse, error) {
+	return service.userService.GetUserProfile(ctx, req)
+}

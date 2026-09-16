@@ -39,6 +39,12 @@ service GatewayService {
     };
   }
 
+  rpc GetUserProfile(userbase.GetUserProfileRequest) returns (userbase.GetUserProfileResponse){
+    option (google.api.http) = {
+      get: "/user/profile" 
+    };
+  }
+
   rpc CreateFriendRequest (friendrequestbase.CreateFriendRequestRequest) returns (friendrequestbase.CreateFriendRequestResponse){
     option (google.api.http) = {
       post: "/friend-request"
@@ -84,6 +90,13 @@ service GatewayService {
   rpc ListMessages(messagebase.ListMessagesRequest) returns (messagebase.ListMessagesResponse) {
     option (google.api.http) = {
       get: "/message" // query on conversation_id
+    };
+  }
+
+  rpc UpdateMessage (messagebase.UpdateMessageRequest) returns (messagebase.UpdateMessageResponse){
+    option (google.api.http) = {
+      patch: "/message"
+      body: "*"
     };
   }
 
