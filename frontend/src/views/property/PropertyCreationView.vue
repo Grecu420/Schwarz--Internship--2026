@@ -65,6 +65,7 @@ const handleSuccess = async (
     // check authentication
     if (authStore.checkTokenExpiration()) {
       router.push('/login')
+      return
     }
 
     // upload images
