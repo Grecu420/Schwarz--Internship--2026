@@ -46,19 +46,18 @@
           class="send-btn"
           :disabled="!newMessageText.trim()"
         >
-          <svg class="send-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-          </svg>
+          <OnyxIcon :icon="iconSend" class="send-icon" />
         </button>
       </form>
     </footer>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
-import { OnyxAvatar } from 'sit-onyx'
+import { OnyxAvatar, OnyxIcon, useToast } from 'sit-onyx' 
+import { iconSend } from "@sit-onyx/icons";
+
 import { useMessageStore } from '@/stores/messages'
 import MessageBubble from './MessageBubble.vue'
 import type { Message } from '@/generated/proto/message-api'
@@ -68,6 +67,8 @@ const props = defineProps<{
 }>()
 
 const messageStore = useMessageStore()
+const toast = useToast() 
+
 const newMessageText = ref('')
 const messagesFeedRef = ref<HTMLDivElement | null>(null)
 
@@ -92,9 +93,17 @@ const handleSendMessage = async () => {
   const text = newMessageText.value.trim()
   if (!text) return
   
-  await messageStore.sendMessage(props.conversationId, text)
-  newMessageText.value = ''
-  scrollToBottom()
+  try {
+    await messageStore.sendMessage(props.conversationId, text)
+    newMessageText.value = ''
+    scrollToBottom()
+  } catch (error: any) {
+    toast.show({
+      headline: 'Error',
+      description: error.message || 'Could not send message. Please try again.',
+      color: 'danger'
+    })
+  }
 }
 
 watch(
@@ -220,6 +229,6 @@ watch(
 .send-icon {
   width: 1.25rem;
   height: 1.25rem;
-  margin-left: 2px;
+  transform: translateX(3px); 
 }
 </style>

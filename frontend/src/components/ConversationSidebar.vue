@@ -2,9 +2,8 @@
   <div class="sidebar-container">
     <div class="search-header">
       <div class="search-input-wrapper">
-        <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+        <OnyxIcon :icon="iconSearch" class="search-icon" />
+        
         <input 
           v-model="searchQuery"
           type="text" 
@@ -24,7 +23,7 @@
         :key="conv.id"
         @click="messageStore.setActiveConversation(conv.id)"
         class="conversation-item"
-        :class="{ 'active': conv.id === messageStore.activeConversationId }"
+        :class="{ 'active': conv.id === activeConversationId }"
       >
         <div class="avatar-wrapper">
           <OnyxAvatar 
@@ -55,21 +54,31 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { OnyxAvatar } from 'sit-onyx'
+import { OnyxAvatar, OnyxIcon } from 'sit-onyx' 
+import { iconSearch } from "@sit-onyx/icons";
+
 import { useMessageStore } from '@/stores/messages'
+import { storeToRefs } from 'pinia'
 
 const messageStore = useMessageStore()
+
+const { conversations, messagesByConversation, activeConversationId } = storeToRefs(messageStore)
+
 const searchQuery = ref('')
 
 const filteredConversations = computed(() => {
-  if (!searchQuery.value.trim()) return messageStore.conversations
-  return messageStore.conversations.filter(c => 
-    c.partnerName?.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+  const query = searchQuery.value.trim().toLowerCase()
+  if (!query) return conversations.value
+  
+  return conversations.value.filter(c => {
+    const nameMatch = c.partnerName?.toLowerCase().includes(query)
+    const userMatch = c.partnerUserName?.toLowerCase().includes(query)
+    return nameMatch || userMatch
+  })
 })
 
 const getLastMessageText = (conversationId: number) => {
-  const msgs = messageStore.messagesByConversation[conversationId]
+  const msgs = messagesByConversation.value[conversationId]
   if (!msgs || msgs.length === 0) return 'No messages yet'
   
   const lastMsg = msgs[msgs.length - 1]
@@ -99,8 +108,8 @@ const getLastMessageText = (conversationId: number) => {
 .search-icon {
   position: absolute;
   left: 0.75rem;
-  width: 1rem;
-  height: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
   color: #9ca3af;
   pointer-events: none;
 }

@@ -32,6 +32,7 @@ export interface CreateMessageResponse {
 
 export interface ListMessagesRequest {
   conversationId: number;
+  lastMessageId?: number | undefined;
 }
 
 export interface ListMessagesResponse {
@@ -364,13 +365,16 @@ export const CreateMessageResponse: MessageFns<CreateMessageResponse> = {
 };
 
 function createBaseListMessagesRequest(): ListMessagesRequest {
-  return { conversationId: 0 };
+  return { conversationId: 0, lastMessageId: undefined };
 }
 
 export const ListMessagesRequest: MessageFns<ListMessagesRequest> = {
   encode(message: ListMessagesRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.conversationId !== 0) {
       writer.uint32(8).int64(message.conversationId);
+    }
+    if (message.lastMessageId !== undefined) {
+      writer.uint32(16).int64(message.lastMessageId);
     }
     return writer;
   },
@@ -390,6 +394,14 @@ export const ListMessagesRequest: MessageFns<ListMessagesRequest> = {
           message.conversationId = longToNumber(reader.int64());
           continue;
         }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.lastMessageId = longToNumber(reader.int64());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -406,6 +418,11 @@ export const ListMessagesRequest: MessageFns<ListMessagesRequest> = {
         : isSet(object.conversation_id)
         ? globalThis.Number(object.conversation_id)
         : 0,
+      lastMessageId: isSet(object.lastMessageId)
+        ? globalThis.Number(object.lastMessageId)
+        : isSet(object.last_message_id)
+        ? globalThis.Number(object.last_message_id)
+        : undefined,
     };
   },
 
@@ -413,6 +430,9 @@ export const ListMessagesRequest: MessageFns<ListMessagesRequest> = {
     const obj: any = {};
     if (message.conversationId !== 0) {
       obj.conversationId = Math.round(message.conversationId);
+    }
+    if (message.lastMessageId !== undefined) {
+      obj.lastMessageId = Math.round(message.lastMessageId);
     }
     return obj;
   },
@@ -423,6 +443,7 @@ export const ListMessagesRequest: MessageFns<ListMessagesRequest> = {
   fromPartial<I extends Exact<DeepPartial<ListMessagesRequest>, I>>(object: I): ListMessagesRequest {
     const message = createBaseListMessagesRequest();
     message.conversationId = object.conversationId ?? 0;
+    message.lastMessageId = object.lastMessageId ?? undefined;
     return message;
   },
 };

@@ -29,42 +29,51 @@ func InsertMessage(ctx context.Context, db *sql.DB, conversationID int64, sender
 	return id, createdAt, nil
 }
 
-func SelectMessages(ctx context.Context, db *sql.DB, conversationID int64) ([]*proto.Message, error) {
+func SelectMessages(ctx context.Context, db *sql.DB, conversationID int64, lastMessageId int64) ([]*proto.Message, error) {
 
-	sel := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id", "conversation_id", "sender_id", "content", "created_at", "is_read").
-		From("messages").
-		Where(sq.Eq{"conversation_id": conversationID}).
-		OrderBy("created_at ASC")
-	rows, err := sel.RunWith(db).QueryContext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("database query: %w", err)
-	}
-	defer rows.Close()
+    sel := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+        Select("id", "conversation_id", "sender_id", "content", "created_at", "is_read").
+        From("messages").
+        Where(sq.Eq{"conversation_id": conversationID})
 
-	var messages []*proto.Message
-	for rows.Next() {
-		// Read each row
-		var message proto.Message
-		var createdAt time.Time
+    if lastMessageId > 0 {
+        sel = sel.Where(sq.Gt{"id": lastMessageId})
+    }
 
-		if err := rows.Scan(
-			&message.Id,
-			&message.ConversationId,
-			&message.SenderId,
-			&message.Content,
-			&createdAt,
-			&message.IsRead,
-		); err != nil {
-			return nil, fmt.Errorf("scan friend request: %w", err)
-		}
-		message.CreatedAt = timestamppb.New(createdAt)
-		messages = append(messages, &message)
-	}
+    sel = sel.OrderBy("created_at ASC")
 
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error reading database rows: %w", err)
-	}
+    rows, err := sel.RunWith(db).QueryContext(ctx)
+    if err != nil {
+        return nil, fmt.Errorf("database query: %w", err)
+    }
+    defer rows.Close()
 
-	return messages, nil
+    var messages []*proto.Message
+    for rows.Next() {
+        var message proto.Message
+        var createdAt time.Time
+
+        if err := rows.Scan(
+            &message.Id,
+            &message.ConversationId,
+            &message.SenderId,
+            &message.Content,
+            &createdAt,
+            &message.IsRead,
+        ); err != nil {
+            return nil, fmt.Errorf("scan message: %w", err) 
+        }
+        message.CreatedAt = timestamppb.New(createdAt)
+        messages = append(messages, &message)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, fmt.Errorf("error reading database rows: %w", err)
+    }
+
+    if messages == nil {
+        messages = []*proto.Message{}
+    }
+
+    return messages, nil
 }

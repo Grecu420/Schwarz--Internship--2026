@@ -33,6 +33,7 @@ message CreateMessageResponse {
 
 message ListMessagesRequest {
   int64 conversation_id = 1;
+  optional int64 last_message_id = 2;
 }
 
 message ListMessagesResponse{
