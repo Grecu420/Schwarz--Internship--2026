@@ -659,6 +659,10 @@ const handleSubmit = async () => {
   border-color: #d1d5db !important;
 }
 
+:deep(.onyx-form-element-v2__label) {
+  font-weight: bold !important;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
