@@ -14,7 +14,6 @@ services:
       - AUTH-BASE_ENDPOINT=auth-base-service:50053
       - MESSAGE-BASE_ENDPOINT=message-base-service:50054
       - CONVERSATION-BASE_ENDPOINT=conversation-base-service:50057
-
     ports:
       - "50053:8080"
     depends_on:

@@ -15,18 +15,20 @@ func (service *PropertyServiceImpl) ListProperties(ctx context.Context, req *pro
 		return nil, status.Error(codes.InvalidArgument, "request can't be nil")
 	}
 
-	if req.GetOwnerId() == 0 {
+	var ownerID = req.GetOwnerId()
+	if ownerID == 0 {
 		return nil, status.Error(codes.InvalidArgument, "missing owner id")
+
 	}
 
-	filterHash := pagination.HashFilters(req.GetOwnerId())
+	filterHash := pagination.HashFilters(ownerID)
 
 	properties, nextPageToken, err := pagination.Paginate(
 		req.GetPageSize(),
 		req.GetNextPageToken(),
 		filterHash,
 		func(offsetId int64, limit int64) ([]*proto.Property, error) {
-			return SelectPropertyListInDB(ctx, service.DB, offsetId, limit, req.GetOwnerId())
+			return SelectPropertyListInDB(ctx, service.DB, offsetId, limit, ownerID)
 		})
 	if err != nil {
 		return nil, err

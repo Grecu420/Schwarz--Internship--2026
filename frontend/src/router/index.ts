@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import RegisterView from '@/views/RegisterView.vue'
 import LoginView from '@/views/LoginView.vue'
 import MainView from '@/views/MainView.vue'
+import PropertyCreationView from '@/views/property/PropertyCreationView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -25,6 +26,12 @@ const router = createRouter({
       name: 'main',
       component: MainView,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/properties/create',
+      name: 'createProperty',
+      component: PropertyCreationView,
+      meta: { requiresAuth: true } // Protect this route
     },
     {
       path: '/',

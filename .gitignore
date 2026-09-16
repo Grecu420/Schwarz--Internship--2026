@@ -8,6 +8,9 @@ services/message-base/main/proto
 # all generated proto files
 *.pb.go
 *.pb.gw.go
+# frontend/src/generated/proto
+
+
 
 # todo files
 TODO
@@ -19,3 +22,7 @@ TODO
 
 #secrets
 # secrets/
+
+
+#vscode
+.prettierrc
