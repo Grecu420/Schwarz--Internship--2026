@@ -282,9 +282,7 @@ watch(
       formData.price = data.price ?? null
       formData.location.lat = data.location?.lat ?? defaultLocation[0]
       formData.location.long = data.location?.long ?? defaultLocation[1]
-
-      mapKey.value++
-
+      
       if (data.imageUrls && data.imageUrls.length > 0) {
         formData.mainImageUrl = data.imageUrls[0] ?? ''
         formData.galleryImageUrls = data.imageUrls.slice(1)

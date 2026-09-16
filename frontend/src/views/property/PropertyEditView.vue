@@ -11,6 +11,7 @@
     </div>
 
     <PropertyForm
+      v-if="!isLoading && initialProperty"
       category="CURRENT LISTING"
       title="Edit your Property Listing"
       description="Make updates to yout pricing, description, or listing details. Keep information fresh"
@@ -88,9 +89,18 @@ const handleSuccess = async (
     const substitutionEntries = await Promise.all(Array.from(imagesToUpload, uploadImage))
     const urlSubstitution = new Map<string, string>(substitutionEntries)
 
-    updatedProperty.imageUrls.map((url) => urlSubstitution.get(url) ?? url)
+    updatedProperty.imageUrls = updatedProperty.imageUrls.map(
+      (url) => urlSubstitution.get(url) ?? url,
+    )
 
-    const fieldMask: string[] = ['name', 'description', 'address', 'price', 'location', 'imageUrls']
+    const fieldMask: string[] = [
+      'name',
+      'description',
+      'address',
+      'price',
+      'location',
+      'image_urls',
+    ]
 
     const initProperty = initialProperty.value
 
@@ -104,7 +114,8 @@ const handleSuccess = async (
     })
 
     console.log(request)
-    const response = await api.patch<UpdatePropertyResponse>('/api/property', request)
+    
+    const response = await api.patch<UpdatePropertyResponse>('/api/property', {})
 
     console.log(response)
     toast.show({
@@ -116,6 +127,7 @@ const handleSuccess = async (
     router.push('/properties')
   } catch (error: any) {
     console.log(error)
+    console.log(error.message)
     toast.show({
       headline: 'Update Failed',
       description: error?.message || 'Failed to submit update request.',
