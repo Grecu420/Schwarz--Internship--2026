@@ -12,17 +12,26 @@ service UserService {
     rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
     rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
     rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+    rpc GetUserProfile (GetUserProfileRequest) returns (GetUserProfileResponse);
 } 
 
 message User {
-  int64 id = 1;
-  string first_name = 2;
-  string last_name = 3;
-  string user_name = 4;
-  string email = 5;
-  string password = 6;
-  string profile_image_url = 7;
-  google.protobuf.Timestamp created_at = 8; 
+    int64 id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string user_name = 4;
+    string email = 5;
+    string password = 6;
+    string profile_image_url = 7;
+    google.protobuf.Timestamp created_at = 8; 
+}
+
+message UserProfile {
+    int64 id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string user_name = 4;
+    string profile_image_url = 5;
 }
 
 message CreateUserRequest{
@@ -82,5 +91,13 @@ message DeleteUserRequest {
 
 message DeleteUserResponse {
 
+}
+
+message GetUserProfileRequest {
+    int64 id = 1;
+}
+
+message GetUserProfileResponse {
+    UserProfile user = 1;
 }
 
