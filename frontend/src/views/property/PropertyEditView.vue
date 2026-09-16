@@ -114,8 +114,9 @@ const handleSuccess = async (
     })
 
     console.log(request)
-    
-    const response = await api.patch<UpdatePropertyResponse>('/api/property', {})
+    const json = UpdatePropertyRequest.toJSON(request)
+    console.log(json)
+    const response = await api.patch<UpdatePropertyResponse>('/api/property', json)
 
     console.log(response)
     toast.show({
