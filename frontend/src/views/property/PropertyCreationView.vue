@@ -81,11 +81,8 @@ const handleSuccess = async (
       location: createdProperty.location,
       imageUrls: createdProperty.imageUrls.map((url) => urlSubstitution.get(url) ?? url),
     })
-
-    console.log(propertyRequest)
     const response = await api.post<CreatePropertyResponse>('/api/property', propertyRequest)
 
-    console.log(response)
     toast.show({
       headline: 'Success',
       description: 'Property created successfully.',
@@ -94,7 +91,6 @@ const handleSuccess = async (
 
     router.push('/properties')
   } catch (error: any) {
-    console.log(error)
     toast.show({
       headline: 'Creation Failed',
       description: error?.message || 'Failed to submit property request.',

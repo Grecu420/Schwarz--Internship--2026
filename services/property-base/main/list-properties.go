@@ -16,14 +16,6 @@ func (service *PropertyServiceImpl) ListProperties(ctx context.Context, req *pro
 	}
 
 	var ownerID = req.GetOwnerId()
-
-	if ownerID == 0 {
-		if val := ctx.Value("user_id"); val != nil {
-			if id, ok := val.(int64); ok {
-				ownerID = id
-			}
-		}
-	}
 	if ownerID == 0 {
 		return nil, status.Error(codes.InvalidArgument, "missing owner id")
 
