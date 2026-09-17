@@ -13,8 +13,9 @@ fresh:
 	docker compose down -v
 	docker compose build --no-cache
 	docker compose up -d
-
-
+.PHONY: frontend
+frontend:
+	docker compose up -d --build frontend
 
 # 
 SUBDIRS := user-base property-base friend-request-base conversation-base message-base auth-base api-rest-gateway 
@@ -23,6 +24,6 @@ SUBDIRS := user-base property-base friend-request-base conversation-base message
 # clean and build all services
 # Loop over subdirectories as targets
 all: $(SUBDIRS)
-.PHONY: all clean $(SUBDIRS)
+.PHONY: all clean $(SUBDIRS) 
 $(SUBDIRS):
 	$(MAKE) -C services/$@

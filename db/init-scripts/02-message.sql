@@ -3,7 +3,8 @@ id BIGSERIAL PRIMARY KEY,
 conversation_id BIGINT NOT NULL,    
 sender_id BIGINT NOT NULL,    
 content TEXT NOT NULL,     
-created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+is_read BOOLEAN DEFAULT FALSE
 );
 
 -- -- 1. Create the trigger function to update the parent conversation

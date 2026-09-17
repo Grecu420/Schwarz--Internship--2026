@@ -22,6 +22,14 @@ export interface User {
   createdAt: Date | undefined;
 }
 
+export interface UserProfile {
+  id: number;
+  firstName: string;
+  lastName: string;
+  userName: string;
+  profileImageUrl: string;
+}
+
 export interface CreateUserRequest {
   user: User | undefined;
 }
@@ -76,6 +84,14 @@ export interface DeleteUserRequest {
 }
 
 export interface DeleteUserResponse {
+}
+
+export interface GetUserProfileRequest {
+  id: number;
+}
+
+export interface GetUserProfileResponse {
+  user: UserProfile | undefined;
 }
 
 function createBaseUser(): User {
@@ -275,6 +291,146 @@ export const User: MessageFns<User> = {
     message.password = object.password ?? "";
     message.profileImageUrl = object.profileImageUrl ?? "";
     message.createdAt = object.createdAt ?? undefined;
+    return message;
+  },
+};
+
+function createBaseUserProfile(): UserProfile {
+  return { id: 0, firstName: "", lastName: "", userName: "", profileImageUrl: "" };
+}
+
+export const UserProfile: MessageFns<UserProfile> = {
+  encode(message: UserProfile, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== 0) {
+      writer.uint32(8).int64(message.id);
+    }
+    if (message.firstName !== "") {
+      writer.uint32(18).string(message.firstName);
+    }
+    if (message.lastName !== "") {
+      writer.uint32(26).string(message.lastName);
+    }
+    if (message.userName !== "") {
+      writer.uint32(34).string(message.userName);
+    }
+    if (message.profileImageUrl !== "") {
+      writer.uint32(42).string(message.profileImageUrl);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UserProfile {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUserProfile();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = longToNumber(reader.int64());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.firstName = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.lastName = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.userName = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.profileImageUrl = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UserProfile {
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
+      firstName: isSet(object.firstName)
+        ? globalThis.String(object.firstName)
+        : isSet(object.first_name)
+        ? globalThis.String(object.first_name)
+        : "",
+      lastName: isSet(object.lastName)
+        ? globalThis.String(object.lastName)
+        : isSet(object.last_name)
+        ? globalThis.String(object.last_name)
+        : "",
+      userName: isSet(object.userName)
+        ? globalThis.String(object.userName)
+        : isSet(object.user_name)
+        ? globalThis.String(object.user_name)
+        : "",
+      profileImageUrl: isSet(object.profileImageUrl)
+        ? globalThis.String(object.profileImageUrl)
+        : isSet(object.profile_image_url)
+        ? globalThis.String(object.profile_image_url)
+        : "",
+    };
+  },
+
+  toJSON(message: UserProfile): unknown {
+    const obj: any = {};
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.firstName !== "") {
+      obj.firstName = message.firstName;
+    }
+    if (message.lastName !== "") {
+      obj.lastName = message.lastName;
+    }
+    if (message.userName !== "") {
+      obj.userName = message.userName;
+    }
+    if (message.profileImageUrl !== "") {
+      obj.profileImageUrl = message.profileImageUrl;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<UserProfile>, I>>(base?: I): UserProfile {
+    return UserProfile.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UserProfile>, I>>(object: I): UserProfile {
+    const message = createBaseUserProfile();
+    message.id = object.id ?? 0;
+    message.firstName = object.firstName ?? "";
+    message.lastName = object.lastName ?? "";
+    message.userName = object.userName ?? "";
+    message.profileImageUrl = object.profileImageUrl ?? "";
     return message;
   },
 };
@@ -1120,6 +1276,124 @@ export const DeleteUserResponse: MessageFns<DeleteUserResponse> = {
   },
   fromPartial<I extends Exact<DeepPartial<DeleteUserResponse>, I>>(_: I): DeleteUserResponse {
     const message = createBaseDeleteUserResponse();
+    return message;
+  },
+};
+
+function createBaseGetUserProfileRequest(): GetUserProfileRequest {
+  return { id: 0 };
+}
+
+export const GetUserProfileRequest: MessageFns<GetUserProfileRequest> = {
+  encode(message: GetUserProfileRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== 0) {
+      writer.uint32(8).int64(message.id);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetUserProfileRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetUserProfileRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.id = longToNumber(reader.int64());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetUserProfileRequest {
+    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
+  },
+
+  toJSON(message: GetUserProfileRequest): unknown {
+    const obj: any = {};
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GetUserProfileRequest>, I>>(base?: I): GetUserProfileRequest {
+    return GetUserProfileRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GetUserProfileRequest>, I>>(object: I): GetUserProfileRequest {
+    const message = createBaseGetUserProfileRequest();
+    message.id = object.id ?? 0;
+    return message;
+  },
+};
+
+function createBaseGetUserProfileResponse(): GetUserProfileResponse {
+  return { user: undefined };
+}
+
+export const GetUserProfileResponse: MessageFns<GetUserProfileResponse> = {
+  encode(message: GetUserProfileResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.user !== undefined) {
+      UserProfile.encode(message.user, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetUserProfileResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetUserProfileResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.user = UserProfile.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetUserProfileResponse {
+    return { user: isSet(object.user) ? UserProfile.fromJSON(object.user) : undefined };
+  },
+
+  toJSON(message: GetUserProfileResponse): unknown {
+    const obj: any = {};
+    if (message.user !== undefined) {
+      obj.user = UserProfile.toJSON(message.user);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GetUserProfileResponse>, I>>(base?: I): GetUserProfileResponse {
+    return GetUserProfileResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GetUserProfileResponse>, I>>(object: I): GetUserProfileResponse {
+    const message = createBaseGetUserProfileResponse();
+    message.user = (object.user !== undefined && object.user !== null)
+      ? UserProfile.fromPartial(object.user)
+      : undefined;
     return message;
   },
 };

@@ -59,6 +59,9 @@ func TestCreateMessage(t *testing.T) {
 				if res.Message.CreatedAt == nil {
 					t.Errorf("expected CreatedAt to be set, got nil")
 				}
+				if res.Message.IsRead != false {
+        			t.Errorf("expected IsRead to be false for a new message, got true")
+    			}
 			},
 		},
 		{

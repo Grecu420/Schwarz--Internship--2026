@@ -19,7 +19,16 @@ func TestListMessages(t *testing.T) {
 		ConversationId: 1,
 	}
 
-	expectedSQL := `SELECT id, conversation_id, sender_id, content, created_at FROM messages WHERE conversation_id = \$1`
+	// Helpers pentru pointeri (deoarece last_message_id este optional)
+	lastIdVal := int64(100)
+	requestWithLastId := &proto.ListMessagesRequest{
+		ConversationId: 1,
+		LastMessageId:  &lastIdVal,
+	}
+
+	// Cele două query-uri posibile generate de Squirrel
+	baseSQL := `SELECT id, conversation_id, sender_id, content, created_at, is_read FROM messages WHERE conversation_id = \$1 ORDER BY created_at ASC`
+	deltaSQL := `SELECT id, conversation_id, sender_id, content, created_at, is_read FROM messages WHERE conversation_id = \$1 AND id > \$2 ORDER BY created_at ASC`
 
 	now := time.Now()
 
@@ -31,14 +40,14 @@ func TestListMessages(t *testing.T) {
 		validate     func(t *testing.T, res *proto.ListMessagesResponse, req *proto.ListMessagesRequest)
 	}{
 		{
-			name:    "Success",
+			name:    "Success - No LastMessageId",
 			request: baseRequest,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListMessagesRequest) {
-				rows := sqlmock.NewRows([]string{"id", "conversation_id", "sender_id", "content", "created_at"}).
-					AddRow(100, 1, 2, "First message", now).
-					AddRow(101, 1, 3, "Second message", now)
+				rows := sqlmock.NewRows([]string{"id", "conversation_id", "sender_id", "content", "created_at", "is_read"}).
+					AddRow(100, 1, 2, "First message", now, true).
+					AddRow(101, 1, 3, "Second message", now, false)
 
-				mock.ExpectQuery(expectedSQL).
+				mock.ExpectQuery(baseSQL).
 					WithArgs(req.GetConversationId()).
 					WillReturnRows(rows)
 			},
@@ -50,11 +59,35 @@ func TestListMessages(t *testing.T) {
 				if len(res.Messages) != 2 {
 					t.Fatalf("expected 2 messages, got %d", len(res.Messages))
 				}
-				if res.Messages[0].Id != 100 || res.Messages[0].Content != "First message" {
+				if res.Messages[0].Id != 100 || res.Messages[0].Content != "First message" || res.Messages[0].IsRead != true {
 					t.Errorf("unexpected message at index 0: %v", res.Messages[0])
 				}
-				if res.Messages[1].Id != 101 || res.Messages[1].Content != "Second message" {
-					t.Errorf("unexpected message at index 1: %v", res.Messages[1])
+			},
+		},
+		{
+			// TESTUL NOU ADAUGAT PENTRU DELTA FETCHING
+			name:    "Success - With LastMessageId",
+			request: requestWithLastId,
+			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListMessagesRequest) {
+				// Când LastMessageId este trimis, returnăm doar mesajele mai noi de 100
+				rows := sqlmock.NewRows([]string{"id", "conversation_id", "sender_id", "content", "created_at", "is_read"}).
+					AddRow(101, 1, 3, "Second message", now, false)
+
+				// Ne așteptăm la deltaSQL și la ambele argumente (ConversationId și LastMessageId)
+				mock.ExpectQuery(deltaSQL).
+					WithArgs(req.GetConversationId(), req.GetLastMessageId()).
+					WillReturnRows(rows)
+			},
+			expectedCode: codes.OK,
+			validate: func(t *testing.T, res *proto.ListMessagesResponse, req *proto.ListMessagesRequest) {
+				if res == nil {
+					t.Fatalf("expected non-nil response, got nil")
+				}
+				if len(res.Messages) != 1 {
+					t.Fatalf("expected 1 messages, got %d", len(res.Messages))
+				}
+				if res.Messages[0].Id != 101 {
+					t.Errorf("unexpected message id, expected 101, got %v", res.Messages[0].Id)
 				}
 			},
 		},
@@ -62,9 +95,9 @@ func TestListMessages(t *testing.T) {
 			name:    "SuccessEmptyList",
 			request: baseRequest,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListMessagesRequest) {
-				rows := sqlmock.NewRows([]string{"id", "conversation_id", "sender_id", "content", "created_at"})
+				rows := sqlmock.NewRows([]string{"id", "conversation_id", "sender_id", "content", "created_at", "is_read"})
 
-				mock.ExpectQuery(expectedSQL).
+				mock.ExpectQuery(baseSQL).
 					WithArgs(req.GetConversationId()).
 					WillReturnRows(rows)
 			},
@@ -96,7 +129,7 @@ func TestListMessages(t *testing.T) {
 			name:    "InternalDatabaseError",
 			request: baseRequest,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListMessagesRequest) {
-				mock.ExpectQuery(expectedSQL).
+				mock.ExpectQuery(baseSQL).
 					WithArgs(req.GetConversationId()).
 					WillReturnError(errors.New("database query error"))
 			},
