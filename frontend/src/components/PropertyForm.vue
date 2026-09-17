@@ -1,5 +1,20 @@
 <template>
   <div class="form-container">
+
+    <OnyxAlertModal
+      v-model:open="alertOpen"
+      :icon="{ icon: iconCircleAttention, color: 'danger' }"
+      label="Confirm deletion"
+    >
+      Are you sure that you want to delete this property listing? This action can not be reverted.
+
+      <template #actions>
+        <OnyxButton label="Cancel" color="neutral" mode="plain" autofocus @click="alertOpen = false" />
+        <OnyxButton label="Delete" color="danger" @click="deleteProperty"/>
+      </template>
+    </OnyxAlertModal>
+
+
     <OnyxForm @submit.prevent="handleSubmit" class="property-form-grid" novalidate>
       <!-- Left Column: Header, Main Cover Image & Gallery Section -->
       <div class="left-column">
@@ -182,7 +197,7 @@
             :loading="isLoading"
             :disabled="isLoading"
             label="Delete Property"
-            @click="deleteProperty"
+            @click="alertOpen = true"
           />
           <OnyxButton
             type="submit"
@@ -211,11 +226,12 @@ import {
   OnyxStepper,
   OnyxFileUpload,
   OnyxIconButton,
+  OnyxAlertModal,
   type FileType,
   OnyxImage,
   OnyxTextarea,
 } from 'sit-onyx'
-import { iconHome, iconMap, iconTag, iconTrash } from '@sit-onyx/icons'
+import { iconCircleAttention, iconHome, iconMap, iconTag, iconTrash } from '@sit-onyx/icons'
 import { Property } from '../generated/proto/property-api'
 import MapComponent, { type LocationPayload } from './MapComponent.vue'
 import { useAuthStore } from '@/stores/auth.ts'
@@ -255,6 +271,8 @@ const deleteProperty = () => {
 const toast = useToast()
 const authStore = useAuthStore()
 const isLoading = ref(false)
+const alertOpen = ref(false);
+
 
 // Form data
 const formData = reactive({
