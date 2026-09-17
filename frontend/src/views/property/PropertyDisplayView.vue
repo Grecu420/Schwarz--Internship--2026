@@ -34,13 +34,13 @@
           <hr class="dark-divider" />
 
           <!-- Owner Information Component -->
-          <PropertyOwnerCard :userId="property.userId" />
+          <!-- <PropertyOwnerCard :userId="property.userId" /> -->
         </div>
 
         <!-- Right Column: Reservation Component -->
-        <div class="booking-column">
+        <!-- <div class="booking-column">
           <ReservationCard :property="property" />
-        </div>
+        </div> -->
       </section>
     </div>
   </div>

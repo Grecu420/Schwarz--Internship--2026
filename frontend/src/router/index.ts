@@ -6,6 +6,7 @@ import PropertyCreationView from '@/views/property/PropertyCreationView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ConversationsView from '@/views/ConversationsView.vue'
 import { useAuthStore } from '@/stores/auth'
+import PropertyDisplayView from '@/views/property/PropertyDisplayView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,6 +34,11 @@ const router = createRouter({
       name: 'createProperty',
       component: PropertyCreationView,
       meta: { requiresAuth: true } // Protect this route
+    },
+    {
+      path: '/properties/view',
+      name: 'viewProperty',
+      component: PropertyDisplayView
     },
     {
       path: '/',
