@@ -174,6 +174,17 @@
 
         <div class="form-actions">
           <OnyxButton
+            v-if="isEdit"
+            type="button"
+            color="danger"
+            mode="default"
+            class="delete-btn"
+            :loading="isLoading"
+            :disabled="isLoading"
+            label="Delete Property"
+            @click="deleteProperty"
+          />
+          <OnyxButton
             type="submit"
             mode="default"
             class="submit-btn"
@@ -232,11 +243,23 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'submit', property: Property, imagesToUpload: Map<string, File>, urlsToDelete: string[]): void
+  (e: 'delete', propertyID: number, urlsToDelete: string[]): void
 }>()
+
+const deleteProperty = () => {
+  console.log('delete : ', props.initialData?.id || 'none')
+
+
+  const urls = [formData.mainImageUrl, ...formData.galleryImageUrls]
+
+  const urlsToDelete = urls.filter((url) => !url.startsWith("blob:"))
+
+
+  if (props.initialData) emit('delete', props.initialData.id, urlsToDelete)
+}
 
 const toast = useToast()
 const authStore = useAuthStore()
-
 const isLoading = ref(false)
 
 // Form data
@@ -282,7 +305,7 @@ watch(
       formData.price = data.price ?? null
       formData.location.lat = data.location?.lat ?? defaultLocation[0]
       formData.location.long = data.location?.long ?? defaultLocation[1]
-      
+
       if (data.imageUrls && data.imageUrls.length > 0) {
         formData.mainImageUrl = data.imageUrls[0] ?? ''
         formData.galleryImageUrls = data.imageUrls.slice(1)
@@ -667,10 +690,17 @@ const handleSubmit = async () => {
   margin-top: 0.5rem;
 }
 
+:deep(.delete-btn) {
+  border-radius: 8px !important;
+  padding: 0.6rem 1.5rem !important;
+  font-weight: 600 !important;
+}
+
 :deep(.submit-btn) {
   background-color: #1e40af !important;
   border-radius: 8px !important;
   padding: 0.6rem 1.5rem !important;
   font-weight: 600 !important;
+  margin-left: auto;
 }
 </style>

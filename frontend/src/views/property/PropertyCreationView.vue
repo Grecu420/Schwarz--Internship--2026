@@ -46,7 +46,6 @@ const uploadToCloud = false
 
 const uploadImage = async (data: [string, File]): Promise<[string, string]> => {
   const [url, file] = data
-  console.log('upload ', url)
 
   if (uploadToCloud) {
     const newUrl = await uploadImageToCloudinary(file, presetName)

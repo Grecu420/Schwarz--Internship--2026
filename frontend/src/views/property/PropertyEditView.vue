@@ -16,7 +16,9 @@
       title="Edit your Property Listing"
       description="Make updates to yout pricing, description, or listing details. Keep information fresh"
       @submit="handleSuccess"
+      @delete="handleDelete"
       :initial-data="initialProperty"
+      :is-edit="true"
     />
   </div>
 </template>
@@ -27,6 +29,7 @@ import { OnyxButton, useToast } from 'sit-onyx'
 import { iconChevronLeft } from '@sit-onyx/icons'
 import PropertyForm from '@/components/PropertyForm.vue'
 import {
+  DeletePropertyResponse,
   GetPropertyResponse,
   UpdatePropertyRequest,
   UpdatePropertyResponse,
@@ -53,7 +56,6 @@ const uploadToCloud = false
 
 const uploadImage = async (data: [string, File]): Promise<[string, string]> => {
   const [url, file] = data
-  console.log('upload ', url)
 
   if (uploadToCloud) {
     const newUrl = await uploadImageToCloudinary(file, presetName)
@@ -74,10 +76,20 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Failed to load property details:', error)
+    goBack()
   } finally {
     isLoading.value = false
   }
 })
+
+const handleDelete = async (propertyID: number, urlsToDelete: string[]) => {
+  try {
+    const response = await api.delete<DeletePropertyResponse>(`/api/property?id=${propertyID}`)
+    goBack()
+  } catch (error) {
+    console.error('Failed to load property details:', error)
+  }
+}
 
 const handleSuccess = async (
   updatedProperty: Property,
@@ -93,14 +105,7 @@ const handleSuccess = async (
       (url) => urlSubstitution.get(url) ?? url,
     )
 
-    const fieldMask: string[] = [
-      'name',
-      'description',
-      'address',
-      'price',
-      'location',
-      'image_urls',
-    ]
+    const fieldMask: string[] = ['name', 'description', 'address', 'price', 'location', 'imageUrls']
 
     const initProperty = initialProperty.value
 
@@ -113,12 +118,9 @@ const handleSuccess = async (
       fieldMask: fieldMask,
     })
 
-    console.log(request)
     const json = UpdatePropertyRequest.toJSON(request)
-    console.log(json)
     const response = await api.patch<UpdatePropertyResponse>('/api/property', json)
 
-    console.log(response)
     toast.show({
       headline: 'Success',
       description: 'Property updated successfully.',
@@ -127,8 +129,6 @@ const handleSuccess = async (
 
     router.push('/properties')
   } catch (error: any) {
-    console.log(error)
-    console.log(error.message)
     toast.show({
       headline: 'Update Failed',
       description: error?.message || 'Failed to submit update request.',
