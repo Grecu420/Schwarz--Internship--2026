@@ -90,6 +90,11 @@ const handleDelete = async (propertyID: number, urlsToDelete: string[]) => {
   isLoading.value = true
   try {
     const response = await api.delete<DeletePropertyResponse>(`/api/property?id=${propertyID}`)
+    toast.show({
+      headline: 'Success',
+      description: 'Property deleted successfully.',
+      color: 'success',
+    })
     goBack()
   } catch (error: any) {
     toast.show({
@@ -131,14 +136,12 @@ const handleSuccess = async (
 
     const json = UpdatePropertyRequest.toJSON(request)
     const response = await api.patch<UpdatePropertyResponse>('/api/property', json)
-
+    router.push('/properties')
     toast.show({
       headline: 'Success',
       description: 'Property updated successfully.',
       color: 'success',
     })
-
-    router.push('/properties')
   } catch (error: any) {
     toast.show({
       headline: 'Update Failed',
