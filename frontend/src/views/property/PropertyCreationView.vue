@@ -46,7 +46,6 @@ const uploadToCloud = false
 
 const uploadImage = async (data: [string, File]): Promise<[string, string]> => {
   const [url, file] = data
-  console.log('upload ', url)
 
   if (uploadToCloud) {
     const newUrl = await uploadImageToCloudinary(file, presetName)
@@ -62,12 +61,6 @@ const handleSuccess = async (
   urlsToDelete: string[],
 ) => {
   try {
-    // check authentication
-    if (authStore.checkTokenExpiration()) {
-      router.push('/login')
-      return
-    }
-
     // upload images
     const substitutionEntries = await Promise.all(Array.from(imagesToUpload, uploadImage))
     const urlSubstitution = new Map<string, string>(substitutionEntries)

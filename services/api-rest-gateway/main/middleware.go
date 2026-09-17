@@ -31,6 +31,8 @@ func (i *authInterceptor) AuthInterceptor(ctx context.Context, req any, info *gr
 		return handler(ctx, req)
 	}
 
+	slog.Info("authInterceptor", "method", info.FullMethod)
+
 	// 1. Extract metadata from incoming context
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
