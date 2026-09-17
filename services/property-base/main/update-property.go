@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/lib/pq"
@@ -25,7 +24,6 @@ func (service PropertyServiceImpl) UpdateProperty(ctx context.Context, req *prot
 	}
 
 	requestID := req.Property.GetId()
-	fmt.Println("update ", requestID)
 	if requestID == 0 {
 		return nil, status.Error(codes.InvalidArgument, "property id is mandatory")
 	}

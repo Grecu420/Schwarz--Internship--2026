@@ -14,7 +14,7 @@
       v-if="!isLoading && initialProperty"
       category="CURRENT LISTING"
       title="Edit your Property Listing"
-      description="Make updates to yout pricing, description, or listing details. Keep information fresh"
+      description="Make updates to your pricing, description, or listing details. Keep information fresh"
       @submit="handleSuccess"
       @delete="handleDelete"
       :initial-data="initialProperty"
@@ -67,15 +67,19 @@ const uploadImage = async (data: [string, File]): Promise<[string, string]> => {
 
 onMounted(async () => {
   const id = route.params.id
-
+  isLoading.value = true
   try {
     const response = await api.get<GetPropertyResponse>(`/api/property?id=${id}`)
     initialProperty.value = response.data.property ?? null
     if (initialProperty.value === null) {
       goBack()
     }
-  } catch (error) {
-    console.error('Failed to load property details:', error)
+  } catch (error: any) {
+    toast.show({
+      headline: 'Failed to load property details',
+      description: error?.message || 'Failed to send property request.',
+      color: 'danger',
+    })
     goBack()
   } finally {
     isLoading.value = false
@@ -83,11 +87,18 @@ onMounted(async () => {
 })
 
 const handleDelete = async (propertyID: number, urlsToDelete: string[]) => {
+  isLoading.value = true
   try {
     const response = await api.delete<DeletePropertyResponse>(`/api/property?id=${propertyID}`)
     goBack()
-  } catch (error) {
-    console.error('Failed to load property details:', error)
+  } catch (error: any) {
+    toast.show({
+      headline: 'Delete Failed',
+      description: error?.message || 'Failed to delete property listing.',
+      color: 'danger',
+    })
+  } finally {
+    isLoading.value = false
   }
 }
 

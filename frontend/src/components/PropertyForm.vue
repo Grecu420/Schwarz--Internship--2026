@@ -247,14 +247,8 @@ const emit = defineEmits<{
 }>()
 
 const deleteProperty = () => {
-  console.log('delete : ', props.initialData?.id || 'none')
-
-
   const urls = [formData.mainImageUrl, ...formData.galleryImageUrls]
-
   const urlsToDelete = urls.filter((url) => !url.startsWith("blob:"))
-
-
   if (props.initialData) emit('delete', props.initialData.id, urlsToDelete)
 }
 
