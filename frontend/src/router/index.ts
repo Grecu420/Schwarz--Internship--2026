@@ -6,6 +6,7 @@ import PropertyCreationView from '@/views/property/PropertyCreationView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ConversationsView from '@/views/ConversationsView.vue'
 import { useAuthStore } from '@/stores/auth'
+import PropertyEditView from '@/views/property/PropertyEditView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,29 +15,35 @@ const router = createRouter({
       path: '/register',
       name: 'register',
       component: RegisterView,
-      meta: { hideHeaderFooter: true }
+      meta: { hideHeaderFooter: true },
     },
     {
       path: '/login',
       name: 'login',
       component: LoginView,
-      meta: { hideHeaderFooter: true }
+      meta: { hideHeaderFooter: true },
     },
     {
       path: '/main',
       name: 'main',
       component: MainView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
     {
       path: '/properties/create',
       name: 'createProperty',
       component: PropertyCreationView,
-      meta: { requiresAuth: true } // Protect this route
+      meta: { requiresAuth: true }, // Protect this route
+    },
+    {
+      path: '/properties/edit/:id',
+      name: 'editProperty',
+      component: PropertyEditView,
+      meta: { requiresAuth: true }, // Protect this route
     },
     {
       path: '/',
-      redirect: '/main'
+      redirect: '/main',
     },
     {
       path: '/profile',
@@ -55,9 +62,13 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore()
 
+  if (authStore.checkTokenExpiration()) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }
-  } 
+  }
 
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
     return { name: 'main' }

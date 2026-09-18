@@ -6,8 +6,8 @@
         layer-type="base"
         name="OpenStreetMap"
       />
-      <l-marker v-model:lat-lng="marker" draggable @moveend="dropMarker">
-        <l-tooltip> Drag to set location </l-tooltip>
+      <l-marker v-model:lat-lng="marker" :draggable="!loading" @moveend="dropMarker">
+        <l-tooltip> {{ loading ? "Loading..." : "Drag to set location" }}</l-tooltip>
         <l-icon :icon-url="iconUrl" :icon-size="iconSize" />
       </l-marker>
     </l-map>

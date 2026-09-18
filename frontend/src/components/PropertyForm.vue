@@ -1,5 +1,20 @@
 <template>
   <div class="form-container">
+
+    <OnyxAlertModal
+      v-model:open="alertOpen"
+      :icon="{ icon: iconCircleAttention, color: 'danger' }"
+      label="Confirm deletion"
+    >
+      Are you sure that you want to delete this property listing? This action can not be reverted.
+
+      <template #actions>
+        <OnyxButton label="Cancel" color="neutral" mode="plain" autofocus @click="alertOpen = false" />
+        <OnyxButton label="Delete" color="danger" @click="deleteProperty" :disabled="isUploading"/>
+      </template>
+    </OnyxAlertModal>
+
+
     <OnyxForm @submit.prevent="handleSubmit" class="property-form-grid" novalidate>
       <!-- Left Column: Header, Main Cover Image & Gallery Section -->
       <div class="left-column">
@@ -29,6 +44,7 @@
                 type="button"
                 class="delete-cover-btn"
                 @click="deleteMainImage"
+                :disabled="isUploading"
               />
             </div>
             <OnyxFileUpload
@@ -41,6 +57,8 @@
               show-error
               size="medium"
               class="file-upload-input"
+              @update:model-value="acceptMainImage"
+              :disabled="isUploading"
             />
           </div>
         </fieldset>
@@ -69,6 +87,7 @@
                 :icon="iconTrash"
                 type="button"
                 @click="removeGalleryImage(index)"
+                :disabled="isUploading"
               />
             </div>
           </div>
@@ -80,6 +99,8 @@
             multiple
             size="medium"
             class="file-upload-input gallery-dropzone"
+            @update:model-value="acceptGalleryImages"
+            :disabled="isUploading"
           />
         </fieldset>
       </div>
@@ -94,6 +115,7 @@
           reserve-message-space
           :error="getFieldError('name')"
           @blur="v$.name.$touch()"
+          :disabled="isUploading"
         >
           <template #leadingIcons>
             <OnyxIcon :icon="iconHome" />
@@ -109,6 +131,7 @@
           reserve-message-space
           :error="getFieldError('description')"
           @blur="v$.description.$touch()"
+          :disabled="isUploading"
         />
 
         <OnyxStepper
@@ -120,6 +143,7 @@
           reserve-message-space
           :error="getFieldError('price')"
           @blur="v$.price.$touch()"
+          :disabled="isUploading"
         >
           <template #leadingIcons>
             <OnyxIcon :icon="iconTag" />
@@ -136,6 +160,7 @@
           reserve-message-space
           :error="getFieldError('address')"
           @blur="v$.address.$touch()"
+          :disabled="isUploading"
         >
           <template #leadingIcons>
             <OnyxIcon :icon="iconMap" />
@@ -174,11 +199,22 @@
 
         <div class="form-actions">
           <OnyxButton
+            v-if="isEdit"
+            type="button"
+            color="danger"
+            mode="default"
+            class="delete-btn"
+            :loading="isUploading"
+            :disabled="isUploading"
+            label="Delete Property"
+            @click="alertOpen = true"
+          />
+          <OnyxButton
             type="submit"
             mode="default"
             class="submit-btn"
-            :loading="isLoading"
-            :disabled="isLoading"
+            :loading="isUploading"
+            :disabled="isUploading"
             :label="submitButtonLabel"
           />
         </div>
@@ -200,11 +236,13 @@ import {
   OnyxStepper,
   OnyxFileUpload,
   OnyxIconButton,
+  OnyxAlertModal,
   type FileType,
   OnyxImage,
   OnyxTextarea,
+  type Nullable,
 } from 'sit-onyx'
-import { iconHome, iconMap, iconTag, iconTrash } from '@sit-onyx/icons'
+import { iconCircleAttention, iconHome, iconMap, iconTag, iconTrash } from '@sit-onyx/icons'
 import { Property } from '../generated/proto/property-api'
 import MapComponent, { type LocationPayload } from './MapComponent.vue'
 import { useAuthStore } from '@/stores/auth.ts'
@@ -220,6 +258,7 @@ const props = withDefaults(
     category: string
     title: string
     description: string
+    isUploading: boolean
   }>(),
   {
     initialData: null,
@@ -227,17 +266,25 @@ const props = withDefaults(
     category: 'CATEGORY',
     title: 'Title',
     description: 'Description',
+    isUploading: false
   },
 )
 
 const emit = defineEmits<{
   (e: 'submit', property: Property, imagesToUpload: Map<string, File>, urlsToDelete: string[]): void
+  (e: 'delete', propertyID: number, urlsToDelete: string[]): void
 }>()
+
+const deleteProperty = () => {
+  const urls = [formData.mainImageUrl, ...formData.galleryImageUrls]
+  const urlsToDelete = urls.filter((url) => !url.startsWith("blob:"))
+  if (props.initialData) emit('delete', props.initialData.id, urlsToDelete)
+}
 
 const toast = useToast()
 const authStore = useAuthStore()
+const alertOpen = ref(false)
 
-const isLoading = ref(false)
 
 // Form data
 const formData = reactive({
@@ -283,8 +330,6 @@ watch(
       formData.location.lat = data.location?.lat ?? defaultLocation[0]
       formData.location.long = data.location?.long ?? defaultLocation[1]
 
-      mapKey.value++
-
       if (data.imageUrls && data.imageUrls.length > 0) {
         formData.mainImageUrl = data.imageUrls[0] ?? ''
         formData.galleryImageUrls = data.imageUrls.slice(1)
@@ -298,7 +343,7 @@ watch(
 )
 
 const submitButtonLabel = computed(() => {
-  if (isLoading.value) {
+  if (props.isUploading) {
     return props.isEdit ? 'Updating property...' : 'Creating property...'
   }
   return props.isEdit ? 'Update' : 'Submit'
@@ -417,13 +462,13 @@ const trackImageRemoval = (url?: string) => {
   }
 }
 
-watch(mainImageFile, (newImage) => {
+const acceptMainImage = (newImage: Nullable<File>) => {
   if (!newImage) return
 
   trackImageRemoval(formData.mainImageUrl)
   formData.mainImageUrl = URL.createObjectURL(newImage)
   imagesToUpload.value.set(formData.mainImageUrl, newImage)
-})
+}
 
 const deleteMainImage = () => {
   trackImageRemoval(formData.mainImageUrl)
@@ -431,7 +476,8 @@ const deleteMainImage = () => {
   mainImageFile.value = null
 }
 
-watch(uploadedFileInput, (newFiles) => {
+
+const acceptGalleryImages = (newFiles: File[]) => {
   if (uploadedFileInput.value.length === 0) return
 
   newFiles.forEach((file) => {
@@ -439,9 +485,8 @@ watch(uploadedFileInput, (newFiles) => {
     formData.galleryImageUrls.push(url)
     imagesToUpload.value.set(url, file)
   })
-
   uploadedFileInput.value = []
-})
+}
 
 const removeGalleryImage = (index: number) => {
   const [removedUrl] = formData.galleryImageUrls.splice(index, 1)
@@ -465,9 +510,6 @@ const handleSubmit = async () => {
     })
     return
   }
-
-  isLoading.value = true
-
   try {
     const allImages = [formData.mainImageUrl, ...formData.galleryImageUrls].filter(Boolean)
 
@@ -492,8 +534,6 @@ const handleSubmit = async () => {
       description: error.message || 'Error connecting to the server.',
       color: 'danger',
     })
-  } finally {
-    isLoading.value = false
   }
 }
 </script>
@@ -669,10 +709,17 @@ const handleSubmit = async () => {
   margin-top: 0.5rem;
 }
 
+:deep(.delete-btn) {
+  border-radius: 8px !important;
+  padding: 0.6rem 1.5rem !important;
+  font-weight: 600 !important;
+}
+
 :deep(.submit-btn) {
   background-color: #1e40af !important;
   border-radius: 8px !important;
   padding: 0.6rem 1.5rem !important;
   font-weight: 600 !important;
+  margin-left: auto;
 }
 </style>

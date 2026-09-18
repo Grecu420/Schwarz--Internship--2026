@@ -29,7 +29,7 @@ service GatewayService {
   rpc UpdateUser(userbase.UpdateUserRequest) returns (userbase.UpdateUserResponse){
     option (google.api.http) = {
       patch: "/user"
-      body: "*"
+      body : "*"
     };
   }
 
