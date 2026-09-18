@@ -1,18 +1,15 @@
 <template>
   <div class="property-view-wrapper">
     <div v-if="!isLoading && property" class="main-container">
-      <!-- Scrollable Image Gallery -->
+      <!-- Image Gallery -->
       <section v-if="property.imageUrls?.length" class="image-scroll-container">
-        <div v-for="(url, index) in property.imageUrls">
-          <OnyxImage
-            :height="320"
-            :width="300"
-            :key="index"
-            :src="url"
-            :alt="`${property.name} photo ${index + 1}`"
-            class="scroll-image"
-          />
-        </div>
+        <img
+          v-for="(url, index) in property.imageUrls"
+          :key="index"
+          :src="url"
+          :alt="`${property.name} photo ${index + 1}`"
+          class="scroll-image"
+        />
       </section>
 
       <!-- Property Details & Reservation Grid -->
@@ -42,7 +39,7 @@
 
         <!-- Right Column: Reservation Component -->
         <div class="booking-column">
-          <ReservationCard :price="property.price" :disabled-days="[]" />
+          <ReservationCard :price="property.price" :disabled-days="disabledD" />
         </div>
       </section>
     </div>
@@ -51,13 +48,13 @@
 
 <script setup lang="ts">
 import type { GetPropertyResponse, Property } from '@/generated/proto/property-api'
-import PropertyOwnerCard from '@/components/PropertyOwnerCard.vue'
-import ReservationCard from '@/components/ReservationCard.vue'
+import PropertyOwnerCard from '@/components/property/PropertyOwnerCard.vue'
+import ReservationCard from '@/components/property/ReservationCard.vue'
 import api from '@/utils/api'
 import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useToast, OnyxImage } from 'sit-onyx'
-import { GetUserProfileResponse, User, UserProfile } from '@/generated/proto/user-api'
+import { GetUserProfileResponse, UserProfile } from '@/generated/proto/user-api'
 
 const router = useRouter()
 const route = useRoute()
@@ -67,11 +64,14 @@ const property = ref<Property | null>(null)
 const owner = ref<UserProfile | null>(null)
 const isLoading = ref(true)
 
+const disabledD = getNextWeekDates(true)
+
 const goBack = () => {
   router.push('/properties')
 }
 
 onMounted(async () => {
+  console.log(disabledD)
   const id = route.params.id
   isLoading.value = true
   try {
@@ -95,6 +95,27 @@ onMounted(async () => {
     isLoading.value = false
   }
 })
+
+
+function getNextWeekDates(startOnMonday: boolean = true): Date[] {
+  const today = new Date();
+  const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+  // Days needed to reach the start of next week
+  const daysUntilNextStart = startOnMonday
+    ? (currentDay === 0 ? 1 : 8 - currentDay)
+    : 7 - currentDay;
+
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() + daysUntilNextStart);
+  startDate.setHours(0, 0, 0, 0);
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + index);
+    return date;
+  });
+}
 </script>
 
 <style scoped>
@@ -110,34 +131,32 @@ onMounted(async () => {
   margin: 0 auto;
 }
 
-/* Scrollable Horizontal Image Gallery */
 .image-scroll-container {
   display: flex;
   gap: 1rem;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
+  scroll-snap-type: x proximity;
   padding-bottom: 1rem;
   margin-bottom: 2.5rem;
   scrollbar-width: thin;
-  scrollbar-color: #515b69 #f1f1f1;
-  scrollbar-gutter: stable both-edges;
+  scrollbar-color: #515b69 transparent;
 }
 
 .image-scroll-container::-webkit-scrollbar {
   height: 8px;
-  border-radius: 4px;
-}
-
-.image-scroll-container::-webkit-scrollbar-thumb {
-  background: #414852;
-  border-radius: 4px;
 }
 
 .image-scroll-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px; /* Rounded corners for the track box */
-  padding-left: 1rem;
-  padding-right: 1rem;
+  background-color: #f1f1f1;
+  background-clip: padding-box;
+  border-left: 2rem solid transparent;
+  border-right: 2rem solid transparent;
+  border-radius: 8px;
+}
+
+.image-scroll-container::-webkit-scrollbar-thumb {
+  background-color: #414852;
+  border-radius: 4px;
 }
 
 .scroll-image {

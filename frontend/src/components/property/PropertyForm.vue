@@ -243,7 +243,7 @@ import {
   type Nullable,
 } from 'sit-onyx'
 import { iconCircleAttention, iconHome, iconMap, iconTag, iconTrash } from '@sit-onyx/icons'
-import { Property } from '../generated/proto/property-api'
+import { Property } from '@/generated/proto/property-api'
 import MapComponent, { type LocationPayload } from './MapComponent.vue'
 import { useAuthStore } from '@/stores/auth.ts'
 

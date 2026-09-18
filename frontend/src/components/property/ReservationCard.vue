@@ -14,13 +14,14 @@
       :min="minDate"
       selectionMode="range"
       class="date-picker-input"
+      :disabledDays="isDisabled"
     />
 
     <!-- Onyx Action Button -->
     <OnyxButton label="Reserve this property" mode="default" color="primary" class="reserve-btn" />
 
     <!-- Check-in and Check-out Display Grid -->
-    <div v-if="nights > 0" class="date-summary-box" >
+    <div v-if="nights > 0" class="date-summary-box">
       <div class="summary-cell">
         <span class="cell-label">CHECK-IN</span>
         <span class="cell-value">{{ startDateFormatted }}</span>
@@ -52,6 +53,43 @@ const props = defineProps<{
 
 const intervalDates = ref<DateRange>()
 const minDate = new Date()
+
+
+const disabledSet = computed(() => {
+  if (!props.disabledDays?.length) return new Set<number>()
+  return new Set(props.disabledDays.map((d) => d.getTime()))
+})
+
+const isDisabled = (targetDate: Date) => {
+  return disabledSet.value.has(targetDate.getTime()); 
+}
+
+const hasDisabledDaysInRange = computed(() => {
+  const start = getStartDate(intervalDates)
+  if (!start || !end) return false
+
+  // Normalize hours to ensure accurate timestamp comparisons
+  const current = new Date(start)
+  current.setHours(0, 0, 0, 0)
+
+  const finalDate = new Date(end)
+  finalDate.setHours(0, 0, 0, 0)
+
+  while (current <= finalDate) {
+    if (disabledSet.value.has(current.getTime())) {
+      return true
+    }
+    // Increment day by 1
+    current.setDate(current.getDate() + 1)
+  }
+
+  return false
+})
+
+const isSubmitDisabled = computed(() => {
+  return nights.value === 0 || hasDisabledDaysInRange.value
+})
+
 
 // Date Extraction Helpers
 const getStartDate = (range?: DateRange): Date | null => {

@@ -24,7 +24,7 @@
 import { useRouter } from 'vue-router'
 import { OnyxButton, useToast } from 'sit-onyx'
 import { iconChevronLeft } from '@sit-onyx/icons'
-import PropertyForm from '@/components/PropertyForm.vue'
+import PropertyForm from '@/components/property/PropertyForm.vue'
 import {
   CreatePropertyRequest,
   CreatePropertyResponse,
