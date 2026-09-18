@@ -10,7 +10,7 @@
 
       <template #actions>
         <OnyxButton label="Cancel" color="neutral" mode="plain" autofocus @click="alertOpen = false" />
-        <OnyxButton label="Delete" color="danger" @click="deleteProperty"/>
+        <OnyxButton label="Delete" color="danger" @click="deleteProperty" :disabled="isLoading"/>
       </template>
     </OnyxAlertModal>
 
@@ -56,6 +56,7 @@
               show-error
               size="medium"
               class="file-upload-input"
+              @update:model-value="acceptMainImage"
             />
           </div>
         </fieldset>
@@ -95,6 +96,7 @@
             multiple
             size="medium"
             class="file-upload-input gallery-dropzone"
+            @update:model-value="acceptGalleryImages"
           />
         </fieldset>
       </div>
@@ -230,6 +232,7 @@ import {
   type FileType,
   OnyxImage,
   OnyxTextarea,
+  type Nullable,
 } from 'sit-onyx'
 import { iconCircleAttention, iconHome, iconMap, iconTag, iconTrash } from '@sit-onyx/icons'
 import { Property } from '../generated/proto/property-api'
@@ -450,13 +453,13 @@ const trackImageRemoval = (url?: string) => {
   }
 }
 
-watch(mainImageFile, (newImage) => {
+const acceptMainImage = (newImage: Nullable<File>) => {
   if (!newImage) return
 
   trackImageRemoval(formData.mainImageUrl)
   formData.mainImageUrl = URL.createObjectURL(newImage)
   imagesToUpload.value.set(formData.mainImageUrl, newImage)
-})
+}
 
 const deleteMainImage = () => {
   trackImageRemoval(formData.mainImageUrl)
@@ -464,7 +467,8 @@ const deleteMainImage = () => {
   mainImageFile.value = null
 }
 
-watch(uploadedFileInput, (newFiles) => {
+
+const acceptGalleryImages = (newFiles: File[]) => {
   if (uploadedFileInput.value.length === 0) return
 
   newFiles.forEach((file) => {
@@ -472,9 +476,8 @@ watch(uploadedFileInput, (newFiles) => {
     formData.galleryImageUrls.push(url)
     imagesToUpload.value.set(url, file)
   })
-
   uploadedFileInput.value = []
-})
+}
 
 const removeGalleryImage = (index: number) => {
   const [removedUrl] = formData.galleryImageUrls.splice(index, 1)
