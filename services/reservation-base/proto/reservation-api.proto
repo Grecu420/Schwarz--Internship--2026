@@ -1,0 +1,102 @@
+syntax = "proto3";
+package reservationbase;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+option go_package = "main/proto";
+
+service ReservationService {
+    rpc CreateReservation(CreateReservationRequest) returns (CreateReservationResponse);
+    rpc GetReservation(GetReservationRequest) returns (GetReservationResponse);
+    rpc ListReservations(ListReservationsRequest) returns (ListReservationsResponse);
+    rpc UpdateReservation(UpdateReservationRequest) returns (UpdateReservationResponse);
+    rpc DeleteReservation(DeleteReservationRequest) returns (DeleteReservationResponse);
+} 
+
+enum ReservationStatus {
+    RESERVATION_STATUS_UNSPECIFIED = 0;
+    RESERVATION_STATUS_PENDING = 1;
+    RESERVATION_STATUS_CONFIRMED = 2;
+    RESERVATION_STATUS_CANCELLED = 3;
+}
+
+message Reservation {
+    int64 id = 1;
+    int64 property_id = 2;
+    int64 user_id = 3;
+    int64 owner_id = 4;
+    string check_in_date = 5; 
+    string check_out_date = 6; 
+    ReservationStatus status = 7;
+    google.protobuf.Timestamp created_at = 8; 
+    google.protobuf.Timestamp updated_at = 9;
+}
+
+message CreateReservationRequest {
+    Reservation reservation = 1;
+}
+
+message CreateReservationResponse {
+    Reservation reservation = 1;
+}
+
+message GetReservationRequest {
+    int64 id = 1;
+}
+
+message GetReservationResponse {
+    Reservation reservation = 1;
+}
+
+message ListReservationsRequest {
+    string nextPageToken = 1;
+    int64 pageSize = 2;
+    repeated ListReservationsFiltersOneOf filters = 3;
+}
+
+message ListReservationsResponse {   
+    string nextPageToken = 1;
+    repeated Reservation reservations = 2; 
+}
+
+message ListReservationsFiltersOneOf {
+    oneof filter {      
+        FilterByPropertyId property_id = 1;
+        FilterByUserId user_id = 2;
+        FilterByOwnerId owner_id = 3;
+        FilterByStatus status = 4;
+    }
+}
+
+message FilterByPropertyId {
+    int64 value = 1;
+}
+
+message FilterByUserId {
+    int64 value = 1;
+}
+
+message FilterByOwnerId {
+    int64 value = 1;
+}
+
+message FilterByStatus {
+    ReservationStatus value = 1;
+}
+
+message UpdateReservationRequest {
+    Reservation reservation = 1;
+    google.protobuf.FieldMask field_mask = 2;
+}
+
+message UpdateReservationResponse {
+    Reservation reservation = 1;
+}
+
+message DeleteReservationRequest {
+    int64 id = 1;
+}
+
+message DeleteReservationResponse {
+}

@@ -37,6 +37,9 @@ proto:
 			--go_out=.  \
 			--go-grpc_out=. \
 		 	message-base/proto/message-api.proto
-
+	protoc 	-I=.. \
+			--go_out=.  \
+			--go-grpc_out=. \
+		 	reservation-base/proto/reservation-api.proto
 
 
