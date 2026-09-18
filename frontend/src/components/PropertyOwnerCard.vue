@@ -3,7 +3,7 @@
     <div class="owner-info">
       <OnyxAvatar size="48px" :fullName="owner.userName" />
       <div class="owner-text">
-        <div class="owner-title">Hosted by Owner</div>
+        <div class="owner-title">Hosted by {{ owner.firstName }} {{ owner.lastName }}</div>
       </div>
     </div>
     <OnyxButton

@@ -3,13 +3,16 @@
     <div v-if="!isLoading && property" class="main-container">
       <!-- Scrollable Image Gallery -->
       <section v-if="property.imageUrls?.length" class="image-scroll-container">
-        <img
-          v-for="(url, index) in property.imageUrls"
-          :key="index"
-          :src="url"
-          :alt="`${property.name} photo ${index + 1}`"
-          class="scroll-image"
-        />
+        <div v-for="(url, index) in property.imageUrls">
+          <OnyxImage
+            :height="320"
+            :width="300"
+            :key="index"
+            :src="url"
+            :alt="`${property.name} photo ${index + 1}`"
+            class="scroll-image"
+          />
+        </div>
       </section>
 
       <!-- Property Details & Reservation Grid -->
@@ -53,7 +56,7 @@ import ReservationCard from '@/components/ReservationCard.vue'
 import api from '@/utils/api'
 import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useToast } from 'sit-onyx'
+import { useToast, OnyxImage } from 'sit-onyx'
 import { GetUserProfileResponse, User, UserProfile } from '@/generated/proto/user-api'
 
 const router = useRouter()
@@ -77,9 +80,10 @@ onMounted(async () => {
     if (property.value === null) {
       goBack()
     }
-    const response2 = await api.get<GetUserProfileResponse>(`/api/user/profile?id=${property.value?.userId}`)
+    const response2 = await api.get<GetUserProfileResponse>(
+      `/api/user/profile?id=${property.value?.userId}`,
+    )
     owner.value = response2.data.user ?? null
-
   } catch (error: any) {
     toast.show({
       headline: 'Failed to load property details',
@@ -115,16 +119,25 @@ onMounted(async () => {
   padding-bottom: 1rem;
   margin-bottom: 2.5rem;
   scrollbar-width: thin;
-  scrollbar-color: #374151 #111827;
+  scrollbar-color: #515b69 #f1f1f1;
+  scrollbar-gutter: stable both-edges;
 }
 
 .image-scroll-container::-webkit-scrollbar {
   height: 8px;
+  border-radius: 4px;
 }
 
 .image-scroll-container::-webkit-scrollbar-thumb {
-  background: #374151;
+  background: #414852;
   border-radius: 4px;
+}
+
+.image-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px; /* Rounded corners for the track box */
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .scroll-image {
@@ -134,7 +147,7 @@ onMounted(async () => {
   height: 380px;
   object-fit: cover;
   border-radius: 16px;
-  scroll-snap-align: start;
+  scroll-snap-align: start end;
 }
 
 /* Grid Layout */
