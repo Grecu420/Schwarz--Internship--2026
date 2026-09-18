@@ -15,6 +15,7 @@
       title="List a New Property"
       description="Share your unique space with travelers from around the world. We make it simple."
       @submit="handleSuccess"
+      :is-uploading="isUploading"
     />
   </div>
 </template>
@@ -32,17 +33,20 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import api from '@/utils/api'
 import { uploadImageToCloudinary } from '@/utils/cloudinary'
+import { ref } from 'vue'
 
-const presetName = import.meta.env.VITE_CLOUDINARY_PROFILE_PRESET
+const presetName = import.meta.env.VITE_CLOUDINARY_PROPERTY_PRESET
 const router = useRouter()
 const authStore = useAuthStore()
 const toast = useToast()
+const isUploading = ref(false)
+
 
 const goBack = () => {
   router.push('/properties')
 }
 
-const uploadToCloud = false
+const uploadToCloud = true
 
 const uploadImage = async (data: [string, File]): Promise<[string, string]> => {
   const [url, file] = data
@@ -61,6 +65,7 @@ const handleSuccess = async (
   urlsToDelete: string[],
 ) => {
   try {
+    isUploading.value = true
     // upload images
     const substitutionEntries = await Promise.all(Array.from(imagesToUpload, uploadImage))
     const urlSubstitution = new Map<string, string>(substitutionEntries)
@@ -75,20 +80,20 @@ const handleSuccess = async (
       imageUrls: createdProperty.imageUrls.map((url) => urlSubstitution.get(url) ?? url),
     })
     const response = await api.post<CreatePropertyResponse>('/api/property', propertyRequest)
-
+    router.push('/properties')
     toast.show({
       headline: 'Success',
       description: 'Property created successfully.',
       color: 'success',
     })
-
-    router.push('/properties')
   } catch (error: any) {
     toast.show({
       headline: 'Creation Failed',
       description: error?.message || 'Failed to submit property request.',
       color: 'danger',
     })
+  } finally {
+    isUploading.value = false
   }
 }
 </script>
