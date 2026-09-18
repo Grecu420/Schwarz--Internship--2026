@@ -10,7 +10,7 @@
 
       <template #actions>
         <OnyxButton label="Cancel" color="neutral" mode="plain" autofocus @click="alertOpen = false" />
-        <OnyxButton label="Delete" color="danger" @click="deleteProperty" :disabled="isLoading"/>
+        <OnyxButton label="Delete" color="danger" @click="deleteProperty" :disabled="isUploading"/>
       </template>
     </OnyxAlertModal>
 
@@ -44,6 +44,7 @@
                 type="button"
                 class="delete-cover-btn"
                 @click="deleteMainImage"
+                :disabled="isUploading"
               />
             </div>
             <OnyxFileUpload
@@ -57,6 +58,7 @@
               size="medium"
               class="file-upload-input"
               @update:model-value="acceptMainImage"
+              :disabled="isUploading"
             />
           </div>
         </fieldset>
@@ -85,6 +87,7 @@
                 :icon="iconTrash"
                 type="button"
                 @click="removeGalleryImage(index)"
+                :disabled="isUploading"
               />
             </div>
           </div>
@@ -97,6 +100,7 @@
             size="medium"
             class="file-upload-input gallery-dropzone"
             @update:model-value="acceptGalleryImages"
+            :disabled="isUploading"
           />
         </fieldset>
       </div>
@@ -111,6 +115,7 @@
           reserve-message-space
           :error="getFieldError('name')"
           @blur="v$.name.$touch()"
+          :disabled="isUploading"
         >
           <template #leadingIcons>
             <OnyxIcon :icon="iconHome" />
@@ -126,6 +131,7 @@
           reserve-message-space
           :error="getFieldError('description')"
           @blur="v$.description.$touch()"
+          :disabled="isUploading"
         />
 
         <OnyxStepper
@@ -137,6 +143,7 @@
           reserve-message-space
           :error="getFieldError('price')"
           @blur="v$.price.$touch()"
+          :disabled="isUploading"
         >
           <template #leadingIcons>
             <OnyxIcon :icon="iconTag" />
@@ -153,6 +160,7 @@
           reserve-message-space
           :error="getFieldError('address')"
           @blur="v$.address.$touch()"
+          :disabled="isUploading"
         >
           <template #leadingIcons>
             <OnyxIcon :icon="iconMap" />
@@ -196,8 +204,8 @@
             color="danger"
             mode="default"
             class="delete-btn"
-            :loading="isLoading"
-            :disabled="isLoading"
+            :loading="isUploading"
+            :disabled="isUploading"
             label="Delete Property"
             @click="alertOpen = true"
           />
@@ -205,8 +213,8 @@
             type="submit"
             mode="default"
             class="submit-btn"
-            :loading="isLoading"
-            :disabled="isLoading"
+            :loading="isUploading"
+            :disabled="isUploading"
             :label="submitButtonLabel"
           />
         </div>
@@ -250,6 +258,7 @@ const props = withDefaults(
     category: string
     title: string
     description: string
+    isUploading: boolean
   }>(),
   {
     initialData: null,
@@ -257,6 +266,7 @@ const props = withDefaults(
     category: 'CATEGORY',
     title: 'Title',
     description: 'Description',
+    isUploading: false
   },
 )
 
@@ -273,8 +283,7 @@ const deleteProperty = () => {
 
 const toast = useToast()
 const authStore = useAuthStore()
-const isLoading = ref(false)
-const alertOpen = ref(false);
+const alertOpen = ref(false)
 
 
 // Form data
@@ -334,7 +343,7 @@ watch(
 )
 
 const submitButtonLabel = computed(() => {
-  if (isLoading.value) {
+  if (props.isUploading) {
     return props.isEdit ? 'Updating property...' : 'Creating property...'
   }
   return props.isEdit ? 'Update' : 'Submit'
@@ -501,9 +510,6 @@ const handleSubmit = async () => {
     })
     return
   }
-
-  isLoading.value = true
-
   try {
     const allImages = [formData.mainImageUrl, ...formData.galleryImageUrls].filter(Boolean)
 
@@ -528,8 +534,6 @@ const handleSubmit = async () => {
       description: error.message || 'Error connecting to the server.',
       color: 'danger',
     })
-  } finally {
-    isLoading.value = false
   }
 }
 </script>

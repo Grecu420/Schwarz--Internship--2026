@@ -21,6 +21,7 @@
       @delete="handleDelete"
       :initial-data="initialProperty"
       :is-edit="true"
+      :is-uploading="isUploading"
     />
 
   </div>
@@ -50,6 +51,7 @@ const authStore = useAuthStore()
 const toast = useToast()
 const initialProperty = ref<Property | null>(null)
 const isLoading = ref(true)
+const isUploading = ref(false)
 
 const goBack = () => {
   router.push('/properties')
@@ -90,7 +92,7 @@ onMounted(async () => {
 })
 
 const handleDelete = async (propertyID: number, urlsToDelete: string[]) => {
-  isLoading.value = true
+  isUploading.value = true
   try {
     const response = await api.delete<DeletePropertyResponse>(`/api/property?id=${propertyID}`)
     toast.show({
@@ -106,7 +108,7 @@ const handleDelete = async (propertyID: number, urlsToDelete: string[]) => {
       color: 'danger',
     })
   } finally {
-    isLoading.value = false
+    isUploading.value = false
   }
 }
 
@@ -116,6 +118,8 @@ const handleSuccess = async (
   urlsToDelete: string[],
 ) => {
   try {
+      isUploading.value = true
+
     // upload images
     const substitutionEntries = await Promise.all(Array.from(imagesToUpload, uploadImage))
     const urlSubstitution = new Map<string, string>(substitutionEntries)
@@ -151,6 +155,8 @@ const handleSuccess = async (
       description: error?.message || 'Failed to submit update request.',
       color: 'danger',
     })
+  } finally {
+    isUploading.value = false
   }
 }
 </script>
