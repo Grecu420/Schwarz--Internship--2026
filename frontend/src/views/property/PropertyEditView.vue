@@ -10,6 +10,8 @@
       />
     </div>
 
+    <p v-if="isLoading"> Loading...</p>
+
     <PropertyForm
       v-if="!isLoading && initialProperty"
       category="CURRENT LISTING"
@@ -20,6 +22,7 @@
       :initial-data="initialProperty"
       :is-edit="true"
     />
+
   </div>
 </template>
 
