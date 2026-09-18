@@ -43,7 +43,7 @@ const router = createRouter({
       meta: { requiresAuth: true }, // Protect this route
     },
     {
-      path: '/properties/view',
+      path: '/properties/view/:id',
       name: 'viewProperty',
       component: PropertyDisplayView
     },

@@ -1,6 +1,6 @@
 <template>
   <div class="property-view-wrapper">
-    <div class="main-container">
+    <div v-if="!isLoading && property" class="main-container">
       <!-- Scrollable Image Gallery -->
       <section v-if="property.imageUrls?.length" class="image-scroll-container">
         <img
@@ -24,44 +24,80 @@
             </p>
           </div>
 
-          <hr class="dark-divider" />
+          <hr class="divider" />
 
           <div class="about-section">
             <h2 class="section-heading">About this space</h2>
             <p class="description-text">{{ property.description }}</p>
           </div>
 
-          <hr class="dark-divider" />
+          <hr class="divider" />
 
           <!-- Owner Information Component -->
-          <!-- <PropertyOwnerCard :userId="property.userId" /> -->
+          <PropertyOwnerCard v-if="owner" :owner="owner" />
         </div>
 
         <!-- Right Column: Reservation Component -->
-        <!-- <div class="booking-column">
-          <ReservationCard :property="property" />
-        </div> -->
+        <div class="booking-column">
+          <ReservationCard :price="property.price" :disabled-days="[]" />
+        </div>
       </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Property } from '@/generated/proto/property-api'
+import type { GetPropertyResponse, Property } from '@/generated/proto/property-api'
 import PropertyOwnerCard from '@/components/PropertyOwnerCard.vue'
 import ReservationCard from '@/components/ReservationCard.vue'
+import api from '@/utils/api'
+import { onMounted, ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useToast } from 'sit-onyx'
+import { GetUserProfileResponse, User, UserProfile } from '@/generated/proto/user-api'
 
-defineProps<{
-  property: Property
-}>()
+const router = useRouter()
+const route = useRoute()
+const toast = useToast()
+
+const property = ref<Property | null>(null)
+const owner = ref<UserProfile | null>(null)
+const isLoading = ref(true)
+
+const goBack = () => {
+  router.push('/properties')
+}
+
+onMounted(async () => {
+  const id = route.params.id
+  isLoading.value = true
+  try {
+    const response = await api.get<GetPropertyResponse>(`/api/property?id=${id}`)
+    property.value = response.data.property ?? null
+    if (property.value === null) {
+      goBack()
+    }
+    const response2 = await api.get<GetUserProfileResponse>(`/api/user/profile?id=${property.value?.userId}`)
+    owner.value = response2.data.user ?? null
+
+  } catch (error: any) {
+    toast.show({
+      headline: 'Failed to load property details',
+      description: error?.message || 'Failed to send property request.',
+      color: 'danger',
+    })
+    goBack()
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <style scoped>
 .property-view-wrapper {
   width: 100%;
   min-height: 100vh;
-  background-color: #000000;
-  color: #ffffff;
+  background-color: #ffffff;
   padding: 2rem 1.5rem 5rem 1.5rem;
 }
 
@@ -119,8 +155,6 @@ defineProps<{
   font-size: 2.25rem;
   font-weight: 800;
   margin: 0 0 0.5rem 0;
-  letter-spacing: -0.02em;
-  color: #ffffff;
 }
 
 .property-address {
@@ -135,7 +169,7 @@ defineProps<{
   margin-top: 0.25rem;
 }
 
-.dark-divider {
+.divider {
   border: none;
   border-top: 1px solid #1f2937;
   margin: 1.75rem 0;
@@ -145,12 +179,11 @@ defineProps<{
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0 0 0.875rem 0;
-  color: #ffffff;
 }
 
 .description-text {
   font-size: 0.9375rem;
-  color: #9ca3af;
+  color: #2c2c2c;
   line-height: 1.65;
   margin: 0;
   white-space: pre-line;
