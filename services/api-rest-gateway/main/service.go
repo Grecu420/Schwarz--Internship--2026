@@ -24,6 +24,7 @@ type GatewayServiceImpl struct {
 	messageService       proto.MessageServiceClient
 	convService          proto.ConversationServiceClient
 	propService          proto.PropertyServiceClient
+	resService           proto.ReservationServiceClient
 }
 
 func createConnection(envVar string, opts []grpc.DialOption) (*grpc.ClientConn, error) {
@@ -65,6 +66,7 @@ func main() {
 		"friend":       "FRIEND-REQUEST-BASE_ENDPOINT",
 		"auth":         "AUTH-BASE_ENDPOINT",
 		"property":     "PROPERTY-BASE_ENDPOINT",
+		"reservation":  "RESERVATION-BASE_ENDPOINT",
 	}
 
 	conns := make(map[string]*grpc.ClientConn, len(envMap))
@@ -84,6 +86,7 @@ func main() {
 		convService:          proto.NewConversationServiceClient(conns["conversation"]),
 		messageService:       proto.NewMessageServiceClient(conns["message"]),
 		propService:          proto.NewPropertyServiceClient(conns["property"]),
+		resService:           proto.NewReservationServiceClient(conns["reservation"]),
 	}
 
 	// Start gRPC Server

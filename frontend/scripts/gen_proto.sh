@@ -11,6 +11,7 @@ PROTO_FILES=(
   "../services/property-base/proto/property-api.proto"
   "../services/message-base/proto/message-api.proto"
   "../services/conversation-base/proto/conversation-api.proto"
+  "../services/reservation-base/proto/reservation-api.proto"
 )
 
 # Recreate target output directory
