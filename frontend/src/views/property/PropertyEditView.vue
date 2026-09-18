@@ -40,7 +40,7 @@ import api from '@/utils/api'
 import { uploadImageToCloudinary } from '@/utils/cloudinary'
 import { onMounted, ref } from 'vue'
 
-const presetName = import.meta.env.VITE_CLOUDINARY_PROFILE_PRESET
+const presetName = import.meta.env.VITE_CLOUDINARY_PROPERTY_PRESET
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
@@ -52,7 +52,7 @@ const goBack = () => {
   router.push('/properties')
 }
 
-const uploadToCloud = false
+const uploadToCloud = true
 
 const uploadImage = async (data: [string, File]): Promise<[string, string]> => {
   const [url, file] = data

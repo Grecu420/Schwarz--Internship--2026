@@ -33,7 +33,7 @@ import { useAuthStore } from '@/stores/auth'
 import api from '@/utils/api'
 import { uploadImageToCloudinary } from '@/utils/cloudinary'
 
-const presetName = import.meta.env.VITE_CLOUDINARY_PROFILE_PRESET
+const presetName = import.meta.env.VITE_CLOUDINARY_PROPERTY_PRESET
 const router = useRouter()
 const authStore = useAuthStore()
 const toast = useToast()
@@ -42,7 +42,7 @@ const goBack = () => {
   router.push('/properties')
 }
 
-const uploadToCloud = false
+const uploadToCloud = true
 
 const uploadImage = async (data: [string, File]): Promise<[string, string]> => {
   const [url, file] = data
