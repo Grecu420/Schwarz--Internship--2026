@@ -8,6 +8,7 @@ import ConversationsView from '@/views/ConversationsView.vue'
 import { useAuthStore } from '@/stores/auth'
 import PropertyDisplayView from '@/views/property/PropertyDisplayView.vue'
 import PropertyEditView from '@/views/property/PropertyEditView.vue'
+import PropertyManagementView from '@/views/property/PropertyManagementView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,7 +46,13 @@ const router = createRouter({
     {
       path: '/properties/view/:id',
       name: 'viewProperty',
-      component: PropertyDisplayView
+      component: PropertyDisplayView,
+    },
+    {
+      path: '/properties',
+      name: 'listProperties',
+      component: PropertyManagementView,
+      meta: { requiresAuth: true }, // Protect this route
     },
     {
       path: '/',
@@ -61,7 +68,7 @@ const router = createRouter({
       name: 'conversations',
       component: ConversationsView,
     },
-  ]
+  ],
 })
 
 // Navigation Guard
