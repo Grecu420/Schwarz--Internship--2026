@@ -7,20 +7,16 @@
       </div>
     </div>
 
-    <!-- Onyx Date Picker -->
     <OnyxUnstableDatePickerV2
-      label="Select Dates"
+      label="Select Check-In and Check-Out Dates"
       v-model="intervalDates"
       :min="minDate"
       selectionMode="range"
       class="date-picker-input"
       :disabledDays="isDisabled"
+      :error="hasDisabledDaysInRange ? 'Pick a valid range' : ''"
     />
 
-    <!-- Onyx Action Button -->
-    <OnyxButton label="Reserve this property" mode="default" color="primary" class="reserve-btn" />
-
-    <!-- Check-in and Check-out Display Grid -->
     <div v-if="nights > 0" class="date-summary-box">
       <div class="summary-cell">
         <span class="cell-label">CHECK-IN</span>
@@ -32,7 +28,15 @@
       </div>
     </div>
 
-    <!-- Dynamic Price Calculation (Base Nights Total Only) -->
+    <OnyxButton
+      label="Reserve this property"
+      mode="default"
+      color="primary"
+      class="reserve-btn"
+      :disabled="isSubmitDisabled"
+      @click="emit('submit', { start: startDateFormatted, end: endDateFormatted })"
+    />
+
     <div v-if="nights > 0" class="price-breakdown">
       <div class="breakdown-row total-row">
         <span>Total ({{ nights }} {{ nights === 1 ? 'night' : 'nights' }})</span>
@@ -48,86 +52,83 @@ import { computed, ref } from 'vue'
 
 const props = defineProps<{
   price: number
-  disabledDays?: Date[]
+  existingReservations?: [string, string][]
+}>()
+
+const emit = defineEmits<{
+  (e: 'submit', reservation: { start: string; end: string }): void
 }>()
 
 const intervalDates = ref<DateRange>()
-const minDate = new Date()
 
-
-const disabledSet = computed(() => {
-  if (!props.disabledDays?.length) return new Set<number>()
-  return new Set(props.disabledDays.map((d) => d.getTime()))
+const minDate = computed(() => {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
 })
 
-const isDisabled = (targetDate: Date) => {
-  return disabledSet.value.has(targetDate.getTime()); 
+const dayTimestamp = (date: Date): number => {
+  const normalized = new Date(date)
+  normalized.setHours(0, 0, 0, 0)
+  return normalized.getTime()
 }
 
+const isDisabled = (targetDate: Date): boolean => {
+  if (!props.existingReservations?.length) return false
+  const target = dayTimestamp(targetDate)
+
+  return props.existingReservations.some(([checkIn, checkOut]) => {
+    const start = dayTimestamp(new Date(checkIn))
+    const end = dayTimestamp(new Date(checkOut))
+    return start <= target && target < end
+  })
+}
+
+const parsedRange = computed<{ start: Date | null; end: Date | null }>(() => {
+  const range = intervalDates.value
+  if (!range) return { start: null, end: null }
+  return { start: range.start, end: range.end || null }
+})
+
 const hasDisabledDaysInRange = computed(() => {
-  const start = getStartDate(intervalDates)
+  const { start, end } = parsedRange.value
   if (!start || !end) return false
 
-  // Normalize hours to ensure accurate timestamp comparisons
   const current = new Date(start)
   current.setHours(0, 0, 0, 0)
+  const targetEnd = dayTimestamp(end)
 
-  const finalDate = new Date(end)
-  finalDate.setHours(0, 0, 0, 0)
-
-  while (current <= finalDate) {
-    if (disabledSet.value.has(current.getTime())) {
-      return true
-    }
-    // Increment day by 1
+  while (current.getTime() <= targetEnd) {
+    if (isDisabled(current)) return true
     current.setDate(current.getDate() + 1)
   }
 
   return false
 })
 
-const isSubmitDisabled = computed(() => {
-  return nights.value === 0 || hasDisabledDaysInRange.value
-})
-
-
-// Date Extraction Helpers
-const getStartDate = (range?: DateRange): Date | null => {
-  if (!range) return null
-  if (Array.isArray(range)) return range[0] ? new Date(range[0]) : null
-  if (typeof range === 'object' && 'start' in range && range.start) return new Date(range.start)
-  return null
-}
-
-const getEndDate = (range?: DateRange): Date | null => {
-  if (!range) return null
-  if (Array.isArray(range)) return range[1] ? new Date(range[1]) : null
-  if (typeof range === 'object' && 'end' in range && range.end) return new Date(range.end)
-  return null
-}
-
-const formatDate = (date: Date | null): string => {
-  if (!date || isNaN(date.getTime())) return 'Select date'
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const year = date.getFullYear()
-  return `${month}/${day}/${year}`
-}
-
-const startDateFormatted = computed(() => formatDate(getStartDate(intervalDates.value)))
-const endDateFormatted = computed(() => formatDate(getEndDate(intervalDates.value)))
-
-// Calculated Values
 const nights = computed(() => {
-  const start = getStartDate(intervalDates.value)
-  const end = getEndDate(intervalDates.value)
+  const { start, end } = parsedRange.value
   if (!start || !end) return 0
   const diffMs = end.getTime() - start.getTime()
-  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+  const days = Math.round(diffMs / (1000 * 60 * 60 * 24))
   return days > 0 ? days : 0
 })
 
 const totalPrice = computed(() => props.price * nights.value)
+const isSubmitDisabled = computed(() => nights.value === 0 || hasDisabledDaysInRange.value)
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: '2-digit',
+  day: '2-digit',
+  year: 'numeric',
+})
+
+const formatDate = (date: Date | null): string => {
+  return date ? dateFormatter.format(date) : 'Select date'
+}
+
+const startDateFormatted = computed(() => formatDate(parsedRange.value.start))
+const endDateFormatted = computed(() => formatDate(parsedRange.value.end))
 </script>
 
 <style scoped>
@@ -196,13 +197,11 @@ const totalPrice = computed(() => props.price * nights.value)
 }
 
 :deep(.reserve-btn) {
-  width: 100% !important;
-  background-color: #2563eb !important;
-  color: #ffffff !important;
-  border-radius: 8px !important;
-  padding: 0.75rem !important;
-  font-weight: 700 !important;
-  font-size: 0.9375rem !important;
+  width: 100%;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-weight: 700;
+  font-size: 0.9375rem;
 }
 
 .price-breakdown {

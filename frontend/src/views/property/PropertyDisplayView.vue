@@ -39,7 +39,7 @@
 
         <!-- Right Column: Reservation Component -->
         <div class="booking-column">
-          <ReservationCard :price="property.price" :disabled-days="disabledD" />
+          <ReservationCard :price="property.price" :existing-reservations="disabledD" @submit="handleReservation" />
         </div>
       </section>
     </div>
@@ -64,7 +64,7 @@ const property = ref<Property | null>(null)
 const owner = ref<UserProfile | null>(null)
 const isLoading = ref(true)
 
-const disabledD = getNextWeekDates(true)
+const disabledD :[string, string][]= [['2026-10-10', '2026-11-20']]
 
 const goBack = () => {
   router.push('/properties')
@@ -79,6 +79,7 @@ onMounted(async () => {
     property.value = response.data.property ?? null
     if (property.value === null) {
       goBack()
+      return
     }
     const response2 = await api.get<GetUserProfileResponse>(
       `/api/user/profile?id=${property.value?.userId}`,
@@ -96,26 +97,15 @@ onMounted(async () => {
   }
 })
 
-
-function getNextWeekDates(startOnMonday: boolean = true): Date[] {
-  const today = new Date();
-  const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-
-  // Days needed to reach the start of next week
-  const daysUntilNextStart = startOnMonday
-    ? (currentDay === 0 ? 1 : 8 - currentDay)
-    : 7 - currentDay;
-
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() + daysUntilNextStart);
-  startDate.setHours(0, 0, 0, 0);
-
-  return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(startDate);
-    date.setDate(startDate.getDate() + index);
-    return date;
-  });
+const handleReservation = (reservation: {start:string, end:string}) => {
+  // TODO:  send user to reservation page first
+  toast.show({
+      headline: 'Submitted reservation',
+      description: `Start: ${reservation.start}; End: ${reservation.end}`,
+      color: 'neutral',
+    })
 }
+
 </script>
 
 <style scoped>
