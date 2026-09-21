@@ -36,7 +36,11 @@
 
         <!-- Right Column: Reservation Component -->
         <div class="booking-column">
-          <ReservationCard :price="property.price" :existing-reservations="disabledD" @submit="handleReservation" />
+          <ReservationCard
+            :price="property.price"
+            :existing-reservations="disabledD"
+            @submit="handleReservation"
+          />
         </div>
       </section>
     </div>
@@ -52,6 +56,11 @@ import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useToast, OnyxImage } from 'sit-onyx'
 import { GetUserProfileResponse, UserProfile } from '@/generated/proto/user-api'
+import {
+  ListReservationsRequest,
+  ListReservationsResponse,
+  ReservationStatus,
+} from '@/generated/proto/reservation-api'
 
 const router = useRouter()
 const route = useRoute()
@@ -61,7 +70,7 @@ const property = ref<Property | null>(null)
 const owner = ref<UserProfile | null>(null)
 const isLoading = ref(true)
 
-const disabledD :[string, string][]= [['2026-10-10', '2026-11-20']]
+const disabledD: [string, string][] = [['2026-10-10', '2026-11-20']]
 
 const goBack = () => {
   router.push('/properties')
@@ -72,16 +81,39 @@ onMounted(async () => {
   const id = route.params.id
   isLoading.value = true
   try {
+    // Load property
     const response = await api.get<GetPropertyResponse>(`/api/property?id=${id}`)
     property.value = response.data.property ?? null
     if (property.value === null) {
       goBack()
       return
     }
+
+    // Load owner profile
     const response2 = await api.get<GetUserProfileResponse>(
       `/api/user/profile?id=${property.value?.userId}`,
     )
     owner.value = response2.data.user ?? null
+
+    // // Load property reservations
+    // const request = ListReservationsRequest.create({
+    //   nextPageToken: '',
+    //   pageSize: 1000,
+    //   filters: [
+    //     {
+    //       propertyId: {
+    //         value: property.value.id
+    //       }
+    //     },
+    //     {
+    //       status: {
+    //         value: ReservationStatus.RESERVATION_STATUS_CONFIRMED
+    //       }
+    //     }
+
+    //   ]
+    // })
+    // const response3 = await api.post<ListReservationsResponse>('/api/reservationsList', request)
   } catch (error: any) {
     toast.show({
       headline: 'Failed to load property details',
@@ -94,15 +126,14 @@ onMounted(async () => {
   }
 })
 
-const handleReservation = (reservation: {start:string, end:string}) => {
+const handleReservation = (reservation: { start: string; end: string }) => {
   // TODO:  send user to reservation page first
   toast.show({
-      headline: 'Submitted reservation',
-      description: `Start: ${reservation.start}; End: ${reservation.end}`,
-      color: 'neutral',
-    })
+    headline: 'Submitted reservation',
+    description: `Start: ${reservation.start}; End: ${reservation.end}`,
+    color: 'neutral',
+  })
 }
-
 </script>
 
 <style scoped>
@@ -142,7 +173,7 @@ const handleReservation = (reservation: {start:string, end:string}) => {
 }
 
 .image-scroll-container::-webkit-scrollbar-thumb {
-  background-color: #414852;
+  background-color: #6b7280;
   border-radius: 4px;
 }
 
@@ -182,15 +213,9 @@ const handleReservation = (reservation: {start:string, end:string}) => {
   margin: 0;
 }
 
-.property-coords {
-  font-size: 0.8125rem;
-  color: #6b7280;
-  margin-top: 0.25rem;
-}
-
 .divider {
   border: none;
-  border-top: 1px solid #1f2937;
+  border-top: 1px solid #e6e5e3;
   margin: 1.75rem 0;
 }
 
