@@ -7,6 +7,7 @@ import "auth-base/proto/auth-api.proto";
 import "message-base/proto/message-api.proto";
 import "conversation-base/proto/conversation-api.proto";
 import "property-base/proto/property-api.proto";
+import "reservation-base/proto/reservation-api.proto";
 
 import "common/google/api/annotations.proto";
 
@@ -145,4 +146,37 @@ service GatewayService {
       body: "*"
     };
   }
+
+ rpc CreateReservation(reservationbase.CreateReservationRequest) returns (reservationbase.CreateReservationResponse){
+    option (google.api.http) = {
+      post: "/reservation"
+      body: "*"
+    };
+  }
+
+  rpc GetReservation(reservationbase.GetReservationRequest) returns (reservationbase.GetReservationResponse){
+    option (google.api.http) = {
+      get: "/reservation" //query on id
+    };
+  }
+
+  rpc UpdateReservation(reservationbase.UpdateReservationRequest) returns (reservationbase.UpdateReservationResponse){
+    option (google.api.http) = {
+      patch: "/reservation"
+      body: "*"
+    };
+  }
+
+  rpc DeleteReservation(reservationbase.DeleteReservationRequest) returns (reservationbase.DeleteReservationResponse){
+    option (google.api.http) = {
+      delete: "/reservation" // query on id
+    };
+  }
+
+  rpc ListReservations(reservationbase.ListReservationsRequest) returns (reservationbase.ListReservationsResponse) {
+    option (google.api.http) = {
+      post: "/reservationsList"
+      body: "*"
+    };
+  }  
 }

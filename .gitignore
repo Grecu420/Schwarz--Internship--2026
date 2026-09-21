@@ -4,6 +4,7 @@ services/user-base/build
 services/user-base/main/proto
 services/message-base/build
 services/message-base/main/proto
+services/reservation-base/build
 
 # all generated proto files
 *.pb.go
