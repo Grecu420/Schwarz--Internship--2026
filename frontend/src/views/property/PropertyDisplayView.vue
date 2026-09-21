@@ -14,14 +14,11 @@
 
       <!-- Property Details & Reservation Grid -->
       <section class="property-details-grid">
-        <!-- Left Column: Factual Property Data -->
+        <!-- Left Column: Property Data -->
         <div class="details-column">
           <div class="title-header-block">
             <h1 class="property-title">{{ property.name }}</h1>
             <p class="property-address">{{ property.address }}</p>
-            <p v-if="property.location" class="property-coords">
-              Lat: {{ property.location.lat }}, Long: {{ property.location.long }}
-            </p>
           </div>
 
           <hr class="divider" />

@@ -6,7 +6,7 @@
         <div class="owner-title">Hosted by {{ owner.firstName }} {{ owner.lastName }}</div>
       </div>
     </div>
-    <OnyxButton
+    <OnyxButton v-if="owner.id !== authStore.user?.id"
       type="button"
       mode="outline"
       label="Ask a question"
