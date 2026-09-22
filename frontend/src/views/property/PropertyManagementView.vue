@@ -117,9 +117,11 @@ const fetchProperties = async (pageTokenToRequest: string) => {
 
   try {
     const request = ListPropertiesRequest.create({
-      ownerId: authStore.user.id,
       pageSize: PAGE_SIZE,
       nextPageToken: pageTokenToRequest,
+      filters: [
+        {owner: {value: authStore.user.id}}
+      ]
     })
 
     const jsonBody = ListPropertiesRequest.toJSON(request)
