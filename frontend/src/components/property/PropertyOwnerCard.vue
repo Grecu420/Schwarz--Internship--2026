@@ -1,7 +1,7 @@
 <template>
   <div class="owner-card">
     <div class="owner-info">
-      <OnyxAvatar size="48px" :fullName="owner.userName" />
+      <OnyxAvatar size="48px" :fullName="owner.userName" :src="owner.profileImageUrl"/>
       <div class="owner-text">
         <div class="owner-title">Hosted by {{ owner.firstName }} {{ owner.lastName }}</div>
       </div>
