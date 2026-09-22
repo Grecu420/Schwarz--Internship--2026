@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { LMap, LTileLayer, LMarker, LIcon, LTooltip } from '@vue-leaflet/vue-leaflet'
-import icon from '../../public/favicon.ico'
+import icon from '@/../public/favicon.ico'
 import { ref } from 'vue'
 
 interface AddressDetails {

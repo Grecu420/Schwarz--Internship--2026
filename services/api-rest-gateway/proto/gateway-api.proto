@@ -42,7 +42,7 @@ service GatewayService {
 
   rpc GetUserProfile(userbase.GetUserProfileRequest) returns (userbase.GetUserProfileResponse){
     option (google.api.http) = {
-      get: "/user/profile" 
+      get: "/user/profile" // query on id
     };
   }
 
@@ -97,7 +97,7 @@ service GatewayService {
   rpc UpdateMessage (messagebase.UpdateMessageRequest) returns (messagebase.UpdateMessageResponse){
     option (google.api.http) = {
       patch: "/message"
-      body: "*"
+      body : "*"
     };
   }
 

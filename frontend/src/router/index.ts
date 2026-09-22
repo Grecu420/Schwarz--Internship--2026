@@ -6,6 +6,7 @@ import PropertyCreationView from '@/views/property/PropertyCreationView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import ConversationsView from '@/views/ConversationsView.vue'
 import { useAuthStore } from '@/stores/auth'
+import PropertyDisplayView from '@/views/property/PropertyDisplayView.vue'
 import PropertyEditView from '@/views/property/PropertyEditView.vue'
 
 const router = createRouter({
@@ -40,6 +41,11 @@ const router = createRouter({
       name: 'editProperty',
       component: PropertyEditView,
       meta: { requiresAuth: true }, // Protect this route
+    },
+    {
+      path: '/properties/view/:id',
+      name: 'viewProperty',
+      component: PropertyDisplayView
     },
     {
       path: '/',
