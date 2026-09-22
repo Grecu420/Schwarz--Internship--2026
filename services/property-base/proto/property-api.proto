@@ -70,9 +70,36 @@ message GetPropertyResponse {
 }
 
 message ListPropertiesRequest {
-  string next_page_token = 1;
-  int64  page_size       = 2;
-  int64  owner_id        = 3;
+  string                              next_page_token = 1;
+  int64                               page_size       = 2;
+  repeated ListPropertiesFiltersOneOf filters         = 3;
+}
+
+message ListPropertiesFiltersOneOf {
+  oneof filter {
+    FilterByOwnerId    owner       = 1;
+    FilterByName       name        = 2;
+    FilterByLocation   location    = 3;
+    FilterByPriceRange price_range = 4;
+  }
+}
+
+message FilterByName {
+  string value = 1;
+}
+
+message FilterByLocation {
+  Location center = 1;
+  float    radius = 2;
+}
+
+message FilterByOwnerId {
+  int64 value = 1;
+}
+
+message FilterByPriceRange {
+  int64 min = 1;
+  int64 max = 2;
 }
 
 message ListPropertiesResponse {
