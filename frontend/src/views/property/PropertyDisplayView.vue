@@ -14,14 +14,11 @@
 
       <!-- Property Details & Reservation Grid -->
       <section class="property-details-grid">
-        <!-- Left Column: Factual Property Data -->
+        <!-- Left Column: Property Data -->
         <div class="details-column">
           <div class="title-header-block">
             <h1 class="property-title">{{ property.name }}</h1>
             <p class="property-address">{{ property.address }}</p>
-            <p v-if="property.location" class="property-coords">
-              Lat: {{ property.location.lat }}, Long: {{ property.location.long }}
-            </p>
           </div>
 
           <hr class="divider" />
@@ -38,8 +35,13 @@
         </div>
 
         <!-- Right Column: Reservation Component -->
-        <div class="booking-column">
-          <ReservationCard :price="property.price" :existing-reservations="disabledD" @submit="handleReservation" />
+        <div v-if="isBookable" class="booking-column">
+          <ReservationCard
+            :price="property.price"
+            :existing-reservations="existingReservations"
+            :is-loading="isLoading"
+            @submit="handleReservation"
+          />
         </div>
       </section>
     </div>
@@ -51,40 +53,85 @@ import type { GetPropertyResponse, Property } from '@/generated/proto/property-a
 import PropertyOwnerCard from '@/components/property/PropertyOwnerCard.vue'
 import ReservationCard from '@/components/property/ReservationCard.vue'
 import api from '@/utils/api'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useToast, OnyxImage } from 'sit-onyx'
 import { GetUserProfileResponse, UserProfile } from '@/generated/proto/user-api'
+import {
+  CreateReservationRequest,
+  CreateReservationResponse,
+  ListReservationsRequest,
+  ListReservationsResponse,
+  Reservation,
+  ReservationStatus,
+} from '@/generated/proto/reservation-api'
+import { useAuthStore } from '@/stores/auth'
+import type { AxiosResponse } from 'axios'
 
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+const auth = useAuthStore()
 
 const property = ref<Property | null>(null)
 const owner = ref<UserProfile | null>(null)
 const isLoading = ref(true)
+const existingReservations = ref<[string, string][]>([])
 
-const disabledD :[string, string][]= [['2026-10-10', '2026-11-20']]
+const isBookable = computed(() => {
+  return property.value && owner.value?.id !== auth.user?.id
+})
 
 const goBack = () => {
   router.push('/properties')
 }
 
 onMounted(async () => {
-  console.log(disabledD)
   const id = route.params.id
+  if (!id) {
+    goBack()
+    return
+  }
+
   isLoading.value = true
   try {
+    // Load property
     const response = await api.get<GetPropertyResponse>(`/api/property?id=${id}`)
     property.value = response.data.property ?? null
     if (property.value === null) {
       goBack()
       return
     }
-    const response2 = await api.get<GetUserProfileResponse>(
-      `/api/user/profile?id=${property.value?.userId}`,
+
+    const ownerPromise = api.get<GetUserProfileResponse>(
+      `/api/user/profile?id=${property.value.userId}`,
     )
-    owner.value = response2.data.user ?? null
+
+    let reservationsPromise: Promise<AxiosResponse<ListReservationsResponse>> | null = null
+    if (auth.user?.id !== property.value.userId) {
+      const reservationRequest = ListReservationsRequest.create({
+        nextPageToken: '',
+        pageSize: 1000,
+        filters: [
+          { propertyId: { value: property.value.id } },
+          { status: { value: ReservationStatus.RESERVATION_STATUS_CONFIRMED } },
+        ],
+      })
+      reservationsPromise = api.post<ListReservationsResponse>(
+        '/api/reservationsList',
+        reservationRequest,
+      )
+    }
+
+    const [ownerRes, reservationsRes] = await Promise.all([ownerPromise, reservationsPromise])
+
+    owner.value = ownerRes.data.user ?? null
+
+    if (reservationsRes) {
+      existingReservations.value = (reservationsRes.data.reservations ?? []).map(
+        (r: Reservation) => [r.checkInDate, r.checkOutDate],
+      )
+    }
   } catch (error: any) {
     toast.show({
       headline: 'Failed to load property details',
@@ -97,15 +144,37 @@ onMounted(async () => {
   }
 })
 
-const handleReservation = (reservation: {start:string, end:string}) => {
-  // TODO:  send user to reservation page first
-  toast.show({
-      headline: 'Submitted reservation',
+const handleReservation = async (reservation: { start: string; end: string }) => {
+  if (!property.value) return
+
+  const request = CreateReservationRequest.create({
+    reservation: {
+      propertyId: property.value.id,
+      ownerId: property.value.userId,
+      userId: auth.user?.id,
+      checkInDate: reservation.start,
+      checkOutDate: reservation.end,
+    },
+  })
+  isLoading.value = true
+  try {
+    const response = await api.post<CreateReservationResponse>('/api/reservation', request)
+    router.push('/reservations')
+    toast.show({
+      headline: 'Reservation submitted',
       description: `Start: ${reservation.start}; End: ${reservation.end}`,
       color: 'neutral',
     })
+  } catch (error: any) {
+    toast.show({
+      headline: 'Failed to create reservation',
+      description: error?.message || 'Failed to send reservation request.',
+      color: 'danger',
+    })
+  } finally {
+    isLoading.value = false
+  }
 }
-
 </script>
 
 <style scoped>
@@ -124,7 +193,7 @@ const handleReservation = (reservation: {start:string, end:string}) => {
 .image-scroll-container {
   display: flex;
   gap: 1rem;
-  overflow-x: auto;
+  overflow-x: scroll;
   scroll-snap-type: x proximity;
   padding-bottom: 1rem;
   margin-bottom: 2.5rem;
@@ -145,7 +214,7 @@ const handleReservation = (reservation: {start:string, end:string}) => {
 }
 
 .image-scroll-container::-webkit-scrollbar-thumb {
-  background-color: #414852;
+  background-color: #6b7280;
   border-radius: 4px;
 }
 
@@ -167,9 +236,18 @@ const handleReservation = (reservation: {start:string, end:string}) => {
   align-items: start;
 }
 
+.booking-column {
+  position: sticky;
+  top: 2rem;
+}
+
 @media (max-width: 900px) {
   .property-details-grid {
     grid-template-columns: 1fr;
+  }
+
+  .booking-column {
+    position: static;
   }
 }
 
@@ -185,15 +263,9 @@ const handleReservation = (reservation: {start:string, end:string}) => {
   margin: 0;
 }
 
-.property-coords {
-  font-size: 0.8125rem;
-  color: #6b7280;
-  margin-top: 0.25rem;
-}
-
 .divider {
   border: none;
-  border-top: 1px solid #1f2937;
+  border-top: 1px solid #e6e5e3;
   margin: 1.75rem 0;
 }
 

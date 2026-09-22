@@ -14,6 +14,7 @@
       selectionMode="range"
       class="date-picker-input"
       :disabledDays="isDisabled"
+      :disabled="isLoading"
       :error="hasDisabledDaysInRange ? 'Pick a valid range' : ''"
     />
 
@@ -33,8 +34,8 @@
       mode="default"
       color="primary"
       class="reserve-btn"
-      :disabled="isSubmitDisabled"
-      @click="emit('submit', { start: startDateFormatted, end: endDateFormatted })"
+      :disabled="isSubmitDisabled || isLoading"
+      @click="emit('submit', emitReservation)"
     />
 
     <div v-if="nights > 0" class="price-breakdown">
@@ -52,7 +53,8 @@ import { computed, ref } from 'vue'
 
 const props = defineProps<{
   price: number
-  existingReservations?: [string, string][]
+  existingReservations?: [string, string][],
+  isLoading: boolean
 }>()
 
 const emit = defineEmits<{
@@ -121,6 +123,19 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   month: '2-digit',
   day: '2-digit',
   year: 'numeric',
+})
+
+const outputFormatter = new Intl.DateTimeFormat('en-CA', {
+  month: '2-digit',
+  day: '2-digit',
+  year: 'numeric',
+})
+
+const emitReservation = computed(() => {
+  return {
+    start: outputFormatter.format(parsedRange.value.start || undefined),
+    end: outputFormatter.format(parsedRange.value.end || undefined),
+  }
 })
 
 const formatDate = (date: Date | null): string => {

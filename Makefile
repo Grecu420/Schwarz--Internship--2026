@@ -18,7 +18,7 @@ frontend:
 	docker compose up -d --build frontend
 
 # 
-SUBDIRS := user-base property-base friend-request-base conversation-base message-base auth-base api-rest-gateway 
+SUBDIRS := user-base property-base friend-request-base conversation-base message-base reservation-base auth-base api-rest-gateway 
 
 
 # clean and build all services

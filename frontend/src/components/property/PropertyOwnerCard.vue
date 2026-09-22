@@ -1,12 +1,13 @@
 <template>
   <div class="owner-card">
     <div class="owner-info">
-      <OnyxAvatar size="48px" :fullName="owner.userName" />
+      <OnyxAvatar size="48px" :fullName="owner.userName" :src="owner.profileImageUrl"/>
       <div class="owner-text">
         <div class="owner-title">Hosted by {{ owner.firstName }} {{ owner.lastName }}</div>
       </div>
     </div>
     <OnyxButton
+      v-if="owner.id !== authStore.user?.id"
       type="button"
       mode="outline"
       label="Ask a question"
@@ -24,7 +25,7 @@ import {
 import type { UserProfile } from '@/generated/proto/user-api'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/utils/api'
-import { Axios, AxiosError } from 'axios'
+import { AxiosError } from 'axios'
 import { OnyxAvatar, OnyxButton, useToast } from 'sit-onyx'
 import { useRouter } from 'vue-router'
 
@@ -53,24 +54,16 @@ const askQuestion = async () => {
     const response = await api.post<CreateConversationResponse>('/api/conversations', request)
     conversationExists = true
   } catch (error: any) {
-    console.log(error)
-    if (error instanceof AxiosError) {
-      console.log(error)
-    }
-
     if (error.status === 409) {
       // conversation exists
       conversationExists = true
     } else {
-
       toast.show({
-      headline: 'Conversation Error',
-      description: error.message || 'Failed to create conversation.',
-      color: 'danger',
-    })
+        headline: 'Conversation Error',
+        description: error.message || 'Failed to create conversation.',
+        color: 'danger',
+      })
     }
-
-    
   }
   if (conversationExists) {
     router.push(`/conversations`)
@@ -80,7 +73,7 @@ const askQuestion = async () => {
 
 <style scoped>
 .owner-card {
-  border: 1px solid #1f2937;
+  border: 1px solid #e6e5e3;
   background-color: rgba(255, 255, 255, 0.02);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
@@ -102,8 +95,8 @@ const askQuestion = async () => {
 
 :deep(.ask-question-btn) {
   border-radius: 9999px !important;
-  background-color: #ffffff !important;
-  color: #111827 !important;
+  background-color: #f0f6fe !important;
+  color: #253fa7 !important;
   border: none !important;
   font-weight: 700 !important;
 }

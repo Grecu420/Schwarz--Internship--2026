@@ -4,7 +4,17 @@ conversation_id BIGINT NOT NULL,
 sender_id BIGINT NOT NULL,    
 content TEXT NOT NULL,     
 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-is_read BOOLEAN DEFAULT FALSE
+is_read BOOLEAN DEFAULT FALSE,
+
+CONSTRAINT fk_messages_conversation 
+    FOREIGN KEY (conversation_id) 
+    REFERENCES conversations (id) 
+    ON DELETE CASCADE,
+
+CONSTRAINT fk_messages_sender 
+    FOREIGN KEY (sender_id) 
+    REFERENCES users (id) 
+    ON DELETE CASCADE
 );
 
 -- -- 1. Create the trigger function to update the parent conversation

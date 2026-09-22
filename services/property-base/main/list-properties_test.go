@@ -17,30 +17,46 @@ import (
 )
 
 func TestListProperties(t *testing.T) {
-	const query_p2 = `SELECT id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat, image_urls
-					FROM properties 
-					WHERE user_id = $1 
-					AND id >= $2 
-					ORDER BY id ASC 
-					LIMIT 3`
+	const queryOwnerLimit3 = `SELECT id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat, image_urls 
+	FROM properties 
+	WHERE id >= $1 
+	AND user_id = $2 
+	ORDER BY id ASC LIMIT 3`
 
-	const query_default = `SELECT id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat, image_urls
-					FROM properties 
-					WHERE user_id = $1 
-					AND id >= $2 
-					ORDER BY id ASC 
-					LIMIT 11`
+	const queryOwnerLimit11 = `SELECT id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat, image_urls 
+	FROM properties 
+	WHERE id >= $1 
+	AND user_id = $2 
+	ORDER BY id ASC LIMIT 11`
 
-	baseRequest := &proto.ListPropertiesRequest{
-		OwnerId:  100,
-		PageSize: 2,
+	const queryAllFiltersLimit3 = `SELECT id, user_id, name, description, address, price, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat, image_urls 
+	FROM properties 
+	WHERE id >= $1 
+	AND user_id = $2 
+	AND name LIKE $3 
+	AND price >= $4 AND price <= $5 
+	AND ST_DWithin(location, ST_MakePoint($6, $7)::geography, $8) 
+	ORDER BY id ASC LIMIT 3`
+
+	baseOwnerFilter := []*proto.ListPropertiesFiltersOneOf{
+		{
+			Filter: &proto.ListPropertiesFiltersOneOf_Owner{
+				Owner: &proto.FilterByOwnerId{Value: 100},
+			},
+		},
 	}
 
-	owner100Hash := pagination.HashFilters(100)
+	baseRequest := &proto.ListPropertiesRequest{
+		PageSize: 2,
+		Filters:  baseOwnerFilter,
+	}
+
+	// Filter Hash order: ownerID, priceMin, priceMax, name, centerLat, centerLong, radius
+	owner100Hash := pagination.HashFilters(int64(100), int64(0), int64(0), "", float32(0), float32(0), float32(0))
 	validToken, _ := pagination.BuildNextPageToken(10, owner100Hash)
 	mismatchedToken, _ := pagination.BuildNextPageToken(10, "mismatched_hash")
 
-	owner200Hash := pagination.HashFilters(200)
+	owner200Hash := pagination.HashFilters(int64(200), int64(0), int64(0), "", float32(0), float32(0), float32(0))
 	differentOwnerToken, _ := pagination.BuildNextPageToken(5, owner200Hash)
 
 	columns := []string{"id", "user_id", "name", "description", "address", "price", "lng", "lat", "image_urls"}
@@ -65,8 +81,8 @@ func TestListProperties(t *testing.T) {
 					AddRow(values[0]...).
 					AddRow(values[1]...)
 
-				mock.ExpectQuery(regexp.QuoteMeta(query_p2)).
-					WithArgs(int64(100), int64(0)).
+				mock.ExpectQuery(regexp.QuoteMeta(queryOwnerLimit3)).
+					WithArgs(int64(0), int64(100)).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -93,8 +109,8 @@ func TestListProperties(t *testing.T) {
 					AddRow(values[1]...).
 					AddRow(values[2]...)
 
-				mock.ExpectQuery(regexp.QuoteMeta(query_p2)).
-					WithArgs(int64(100), int64(0)).
+				mock.ExpectQuery(regexp.QuoteMeta(queryOwnerLimit3)).
+					WithArgs(int64(0), int64(100)).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -112,16 +128,16 @@ func TestListProperties(t *testing.T) {
 		},
 		{name: "Success_WithNextPageToken",
 			request: &proto.ListPropertiesRequest{
-				OwnerId:       100,
 				PageSize:      2,
 				NextPageToken: validToken,
+				Filters:       baseOwnerFilter,
 			},
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {
 				rows := sqlmock.NewRows(columns).
 					AddRow(values[2]...)
 
-				mock.ExpectQuery(regexp.QuoteMeta(query_p2)).
-					WithArgs(int64(100), int64(10)).
+				mock.ExpectQuery(regexp.QuoteMeta(queryOwnerLimit3)).
+					WithArgs(int64(10), int64(100)).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
@@ -137,26 +153,113 @@ func TestListProperties(t *testing.T) {
 				}
 			},
 		},
-		{name: "FilterMismatch_TokenHashDoesNotMatchCurrentOwner",
-			request: &proto.ListPropertiesRequest{
-				OwnerId:       100,
-				PageSize:      2,
-				NextPageToken: differentOwnerToken,
-			},
-			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
-			expectedCode: codes.InvalidArgument,
-		},
-		{name: "MissingOwnerId",
+		{name: "Success_AllFilters",
 			request: &proto.ListPropertiesRequest{
 				PageSize: 2,
+				Filters: []*proto.ListPropertiesFiltersOneOf{
+					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwnerId{Value: 100}}},
+					{Filter: &proto.ListPropertiesFiltersOneOf_Name{Name: &proto.FilterByName{Value: "Villa"}}},
+					{Filter: &proto.ListPropertiesFiltersOneOf_PriceRange{PriceRange: &proto.FilterByPriceRange{Min: 100000, Max: 500000}}},
+					{Filter: &proto.ListPropertiesFiltersOneOf_Location{Location: &proto.FilterByLocation{
+						Center: &proto.Location{Lat: 12.34, Long: 56.78},
+						Radius: 10.0,
+					}}},
+				},
+			},
+			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {
+				rows := sqlmock.NewRows(columns).
+					AddRow(values[0]...)
+
+				mock.ExpectQuery(regexp.QuoteMeta(queryAllFiltersLimit3)).
+					WithArgs(int64(0), int64(100), "%Villa%", int64(100000), int64(500000), float32(56.78), float32(12.34), float32(10.0)).
+					WillReturnRows(rows)
+			},
+			expectedCode: codes.OK,
+		},
+		{name: "FilterMismatch_TokenHashDoesNotMatchCurrentOwner",
+			request: &proto.ListPropertiesRequest{
+				PageSize:      2,
+				NextPageToken: differentOwnerToken,
+				Filters:       baseOwnerFilter,
 			},
 			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
 			expectedCode: codes.InvalidArgument,
 		},
-		{name: "InvalidPageSize",
+		{name: "Invalid_DuplicateOwnerFilter",
 			request: &proto.ListPropertiesRequest{
-				OwnerId:  100,
+				PageSize: 2,
+				Filters: []*proto.ListPropertiesFiltersOneOf{
+					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwnerId{Value: 100}}},
+					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwnerId{Value: 200}}},
+				},
+			},
+			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
+			expectedCode: codes.InvalidArgument,
+		},
+		{name: "Invalid_OwnerIdZeroOrNegative",
+			request: &proto.ListPropertiesRequest{
+				PageSize: 2,
+				Filters: []*proto.ListPropertiesFiltersOneOf{
+					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwnerId{Value: 0}}},
+				},
+			},
+			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
+			expectedCode: codes.InvalidArgument,
+		},
+		{name: "Invalid_NameEmpty",
+			request: &proto.ListPropertiesRequest{
+				PageSize: 2,
+				Filters: []*proto.ListPropertiesFiltersOneOf{
+					{Filter: &proto.ListPropertiesFiltersOneOf_Name{Name: &proto.FilterByName{Value: ""}}},
+				},
+			},
+			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
+			expectedCode: codes.InvalidArgument,
+		},
+		{name: "Invalid_LocationMissingCenter",
+			request: &proto.ListPropertiesRequest{
+				PageSize: 2,
+				Filters: []*proto.ListPropertiesFiltersOneOf{
+					{Filter: &proto.ListPropertiesFiltersOneOf_Location{Location: &proto.FilterByLocation{Radius: 10.0}}},
+				},
+			},
+			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
+			expectedCode: codes.InvalidArgument,
+		},
+		{name: "Invalid_LocationNegativeRadius",
+			request: &proto.ListPropertiesRequest{
+				PageSize: 2,
+				Filters: []*proto.ListPropertiesFiltersOneOf{
+					{Filter: &proto.ListPropertiesFiltersOneOf_Location{Location: &proto.FilterByLocation{Center: &proto.Location{Lat: 1.0, Long: 2.0}, Radius: -1.0}}},
+				},
+			},
+			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
+			expectedCode: codes.InvalidArgument,
+		},
+		{name: "Invalid_PriceRangeNegativeMin",
+			request: &proto.ListPropertiesRequest{
+				PageSize: 2,
+				Filters: []*proto.ListPropertiesFiltersOneOf{
+					{Filter: &proto.ListPropertiesFiltersOneOf_PriceRange{PriceRange: &proto.FilterByPriceRange{Min: -10, Max: 100}}},
+				},
+			},
+			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
+			expectedCode: codes.InvalidArgument,
+		},
+		{name: "Invalid_PriceRangeMinGreaterThanMax",
+			request: &proto.ListPropertiesRequest{
+				PageSize: 2,
+				Filters: []*proto.ListPropertiesFiltersOneOf{
+					{Filter: &proto.ListPropertiesFiltersOneOf_PriceRange{PriceRange: &proto.FilterByPriceRange{Min: 500, Max: 100}}},
+				},
+			},
+			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
+			expectedCode: codes.InvalidArgument,
+		},
+		{name: "InvalidPageSize_DefaultsToEleven",
+			request: &proto.ListPropertiesRequest{
 				PageSize: 0,
+				Filters:  baseOwnerFilter,
 			},
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {
 				rows := sqlmock.NewRows(columns).
@@ -164,26 +267,26 @@ func TestListProperties(t *testing.T) {
 					AddRow(values[1]...).
 					AddRow(values[2]...)
 
-				mock.ExpectQuery(regexp.QuoteMeta(query_default)).
-					WithArgs(int64(100), int64(0)).
+				mock.ExpectQuery(regexp.QuoteMeta(queryOwnerLimit11)).
+					WithArgs(int64(0), int64(100)).
 					WillReturnRows(rows)
 			},
 			expectedCode: codes.OK,
 		},
 		{name: "MalformedNextPageToken",
 			request: &proto.ListPropertiesRequest{
-				OwnerId:       100,
 				PageSize:      2,
 				NextPageToken: "invalid_base64_token",
+				Filters:       baseOwnerFilter,
 			},
 			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
 			expectedCode: codes.InvalidArgument,
 		},
 		{name: "NextPageToken_FilterMismatch",
 			request: &proto.ListPropertiesRequest{
-				OwnerId:       100,
 				PageSize:      2,
 				NextPageToken: mismatchedToken,
+				Filters:       baseOwnerFilter,
 			},
 			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
 			expectedCode: codes.InvalidArgument,
@@ -191,8 +294,8 @@ func TestListProperties(t *testing.T) {
 		{name: "DatabaseError",
 			request: baseRequest,
 			setupMock: func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {
-				mock.ExpectQuery(regexp.QuoteMeta(query_p2)).
-					WithArgs(int64(100), int64(0)).
+				mock.ExpectQuery(regexp.QuoteMeta(queryOwnerLimit3)).
+					WithArgs(int64(0), int64(100)).
 					WillReturnError(errors.New("db query execution failed"))
 			},
 			expectedCode: codes.Internal,
