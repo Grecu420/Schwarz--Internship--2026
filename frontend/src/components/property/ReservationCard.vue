@@ -14,6 +14,7 @@
       selectionMode="range"
       class="date-picker-input"
       :disabledDays="isDisabled"
+      :disabled="isLoading"
       :error="hasDisabledDaysInRange ? 'Pick a valid range' : ''"
     />
 
@@ -33,7 +34,7 @@
       mode="default"
       color="primary"
       class="reserve-btn"
-      :disabled="isSubmitDisabled"
+      :disabled="isSubmitDisabled || isLoading"
       @click="emit('submit', emitReservation)"
     />
 
@@ -52,7 +53,8 @@ import { computed, ref } from 'vue'
 
 const props = defineProps<{
   price: number
-  existingReservations?: [string, string][]
+  existingReservations?: [string, string][],
+  isLoading: boolean
 }>()
 
 const emit = defineEmits<{

@@ -39,6 +39,7 @@
           <ReservationCard
             :price="property.price"
             :existing-reservations="existingReservations"
+            :is-loading="isLoading"
             @submit="handleReservation"
           />
         </div>
@@ -155,7 +156,7 @@ const handleReservation = async (reservation: { start: string; end: string }) =>
       checkOutDate: reservation.end,
     },
   })
-
+  isLoading.value = true
   try {
     const response = await api.post<CreateReservationResponse>('/api/reservation', request)
     router.push('/reservations')
@@ -170,6 +171,8 @@ const handleReservation = async (reservation: { start: string; end: string }) =>
       description: error?.message || 'Failed to send reservation request.',
       color: 'danger',
     })
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
