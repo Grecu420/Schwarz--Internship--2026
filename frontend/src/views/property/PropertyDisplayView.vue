@@ -35,7 +35,7 @@
         </div>
 
         <!-- Right Column: Reservation Component -->
-        <div class="booking-column" v-if="owner?.id !== auth.user?.id">
+        <div v-if="isBookable" class="booking-column">
           <ReservationCard
             :price="property.price"
             :existing-reservations="existingReservations"
@@ -52,7 +52,7 @@ import type { GetPropertyResponse, Property } from '@/generated/proto/property-a
 import PropertyOwnerCard from '@/components/property/PropertyOwnerCard.vue'
 import ReservationCard from '@/components/property/ReservationCard.vue'
 import api from '@/utils/api'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useToast, OnyxImage } from 'sit-onyx'
 import { GetUserProfileResponse, UserProfile } from '@/generated/proto/user-api'
@@ -65,6 +65,7 @@ import {
   ReservationStatus,
 } from '@/generated/proto/reservation-api'
 import { useAuthStore } from '@/stores/auth'
+import type { AxiosResponse } from 'axios'
 
 const router = useRouter()
 const route = useRoute()
@@ -74,18 +75,23 @@ const auth = useAuthStore()
 const property = ref<Property | null>(null)
 const owner = ref<UserProfile | null>(null)
 const isLoading = ref(true)
-
-const disabledD: [string, string][] = [['2026-10-10', '2026-11-20']]
-
 const existingReservations = ref<[string, string][]>([])
+
+const isBookable = computed(() => {
+  return property.value && owner.value?.id !== auth.user?.id
+})
 
 const goBack = () => {
   router.push('/properties')
 }
 
 onMounted(async () => {
-  console.log(disabledD)
   const id = route.params.id
+  if (!id) {
+    goBack()
+    return
+  }
+
   isLoading.value = true
   try {
     // Load property
@@ -96,34 +102,35 @@ onMounted(async () => {
       return
     }
 
-    // Load owner profile
-    const response2 = await api.get<GetUserProfileResponse>(
-      `/api/user/profile?id=${property.value?.userId}`,
+    const ownerPromise = api.get<GetUserProfileResponse>(
+      `/api/user/profile?id=${property.value.userId}`,
     )
-    owner.value = response2.data.user ?? null
 
-    // Load property reservations
-    const request = ListReservationsRequest.create({
-      nextPageToken: '',
-      pageSize: 1000,
-      filters: [
-        {
-          propertyId: {
-            value: property.value.id,
-          },
-        },
-        {
-          status: {
-            value: ReservationStatus.RESERVATION_STATUS_CONFIRMED,
-          },
-        },
-      ],
-    })
-    const response3 = await api.post<ListReservationsResponse>('/api/reservationsList', request)
-    existingReservations.value = response3.data.reservations.map((r: Reservation) => [
-      r.checkInDate,
-      r.checkOutDate,
-    ])
+    let reservationsPromise: Promise<AxiosResponse<ListReservationsResponse>> | null = null
+    if (auth.user?.id !== property.value.userId) {
+      const reservationRequest = ListReservationsRequest.create({
+        nextPageToken: '',
+        pageSize: 1000,
+        filters: [
+          { propertyId: { value: property.value.id } },
+          { status: { value: ReservationStatus.RESERVATION_STATUS_CONFIRMED } },
+        ],
+      })
+      reservationsPromise = api.post<ListReservationsResponse>(
+        '/api/reservationsList',
+        reservationRequest,
+      )
+    }
+
+    const [ownerRes, reservationsRes] = await Promise.all([ownerPromise, reservationsPromise])
+
+    owner.value = ownerRes.data.user ?? null
+
+    if (reservationsRes) {
+      existingReservations.value = (reservationsRes.data.reservations ?? []).map(
+        (r: Reservation) => [r.checkInDate, r.checkOutDate],
+      )
+    }
   } catch (error: any) {
     toast.show({
       headline: 'Failed to load property details',
@@ -137,23 +144,23 @@ onMounted(async () => {
 })
 
 const handleReservation = async (reservation: { start: string; end: string }) => {
-  const formattedStart = reservation.start.replaceAll('/', '-')
-  const formattedEnd = reservation.end.replaceAll('/', '-')
+  if (!property.value) return
 
   const request = CreateReservationRequest.create({
     reservation: {
-      propertyId: property.value?.id,
-      ownerId: property.value?.userId,
+      propertyId: property.value.id,
+      ownerId: property.value.userId,
       userId: auth.user?.id,
-      checkInDate: formattedStart,
-      checkOutDate: formattedEnd,
+      checkInDate: reservation.start,
+      checkOutDate: reservation.end,
     },
   })
+
   try {
     const response = await api.post<CreateReservationResponse>('/api/reservation', request)
     router.push('/reservations')
     toast.show({
-      headline: 'Submitted reservation',
+      headline: 'Reservation submitted',
       description: `Start: ${reservation.start}; End: ${reservation.end}`,
       color: 'neutral',
     })
@@ -226,9 +233,18 @@ const handleReservation = async (reservation: { start: string; end: string }) =>
   align-items: start;
 }
 
+.booking-column {
+  position: sticky;
+  top: 2rem;
+}
+
 @media (max-width: 900px) {
   .property-details-grid {
     grid-template-columns: 1fr;
+  }
+
+  .booking-column {
+    position: static;
   }
 }
 
