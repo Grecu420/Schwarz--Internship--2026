@@ -34,7 +34,7 @@
       color="primary"
       class="reserve-btn"
       :disabled="isSubmitDisabled"
-      @click="emit('submit', { start: startDateFormatted, end: endDateFormatted })"
+      @click="emit('submit', emitReservation)"
     />
 
     <div v-if="nights > 0" class="price-breakdown">
@@ -121,6 +121,19 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   month: '2-digit',
   day: '2-digit',
   year: 'numeric',
+})
+
+const outputFormatter = new Intl.DateTimeFormat('en-CA', {
+  month: '2-digit',
+  day: '2-digit',
+  year: 'numeric',
+})
+
+const emitReservation = computed(() => {
+  return {
+    start: outputFormatter.format(parsedRange.value.start || undefined),
+    end: outputFormatter.format(parsedRange.value.end || undefined),
+  }
 })
 
 const formatDate = (date: Date | null): string => {
