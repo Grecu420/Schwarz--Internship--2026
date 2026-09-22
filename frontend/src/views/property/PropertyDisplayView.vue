@@ -150,7 +150,7 @@ const handleReservation = async (reservation: { start: string; end: string }) =>
     },
   })
   try {
-    const response = await api.post<CreateReservationResponse>('/api/reservations', request)
+    const response = await api.post<CreateReservationResponse>('/api/reservation', request)
     router.push('/reservations')
     toast.show({
       headline: 'Submitted reservation',
