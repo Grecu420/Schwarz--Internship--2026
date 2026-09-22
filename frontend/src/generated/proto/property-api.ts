@@ -71,7 +71,7 @@ export interface ListPropertiesRequest {
 }
 
 export interface ListPropertiesFiltersOneOf {
-  owner?: FilterByOwnerId | undefined;
+  owner?: FilterByOwner | undefined;
   name?: FilterByName | undefined;
   location?: FilterByLocation | undefined;
   priceRange?: FilterByPriceRange | undefined;
@@ -86,7 +86,7 @@ export interface FilterByLocation {
   radius: number;
 }
 
-export interface FilterByOwnerId {
+export interface FilterByOwner {
   value: number;
 }
 
@@ -1054,7 +1054,7 @@ function createBaseListPropertiesFiltersOneOf(): ListPropertiesFiltersOneOf {
 export const ListPropertiesFiltersOneOf: MessageFns<ListPropertiesFiltersOneOf> = {
   encode(message: ListPropertiesFiltersOneOf, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.owner !== undefined) {
-      FilterByOwnerId.encode(message.owner, writer.uint32(10).fork()).join();
+      FilterByOwner.encode(message.owner, writer.uint32(10).fork()).join();
     }
     if (message.name !== undefined) {
       FilterByName.encode(message.name, writer.uint32(18).fork()).join();
@@ -1080,7 +1080,7 @@ export const ListPropertiesFiltersOneOf: MessageFns<ListPropertiesFiltersOneOf> 
             break;
           }
 
-          message.owner = FilterByOwnerId.decode(reader, reader.uint32());
+          message.owner = FilterByOwner.decode(reader, reader.uint32());
           continue;
         }
         case 2: {
@@ -1118,7 +1118,7 @@ export const ListPropertiesFiltersOneOf: MessageFns<ListPropertiesFiltersOneOf> 
 
   fromJSON(object: any): ListPropertiesFiltersOneOf {
     return {
-      owner: isSet(object.owner) ? FilterByOwnerId.fromJSON(object.owner) : undefined,
+      owner: isSet(object.owner) ? FilterByOwner.fromJSON(object.owner) : undefined,
       name: isSet(object.name) ? FilterByName.fromJSON(object.name) : undefined,
       location: isSet(object.location) ? FilterByLocation.fromJSON(object.location) : undefined,
       priceRange: isSet(object.priceRange)
@@ -1132,7 +1132,7 @@ export const ListPropertiesFiltersOneOf: MessageFns<ListPropertiesFiltersOneOf> 
   toJSON(message: ListPropertiesFiltersOneOf): unknown {
     const obj: any = {};
     if (message.owner !== undefined) {
-      obj.owner = FilterByOwnerId.toJSON(message.owner);
+      obj.owner = FilterByOwner.toJSON(message.owner);
     }
     if (message.name !== undefined) {
       obj.name = FilterByName.toJSON(message.name);
@@ -1152,7 +1152,7 @@ export const ListPropertiesFiltersOneOf: MessageFns<ListPropertiesFiltersOneOf> 
   fromPartial<I extends Exact<DeepPartial<ListPropertiesFiltersOneOf>, I>>(object: I): ListPropertiesFiltersOneOf {
     const message = createBaseListPropertiesFiltersOneOf();
     message.owner = (object.owner !== undefined && object.owner !== null)
-      ? FilterByOwnerId.fromPartial(object.owner)
+      ? FilterByOwner.fromPartial(object.owner)
       : undefined;
     message.name = (object.name !== undefined && object.name !== null)
       ? FilterByName.fromPartial(object.name)
@@ -1303,22 +1303,22 @@ export const FilterByLocation: MessageFns<FilterByLocation> = {
   },
 };
 
-function createBaseFilterByOwnerId(): FilterByOwnerId {
+function createBaseFilterByOwner(): FilterByOwner {
   return { value: 0 };
 }
 
-export const FilterByOwnerId: MessageFns<FilterByOwnerId> = {
-  encode(message: FilterByOwnerId, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const FilterByOwner: MessageFns<FilterByOwner> = {
+  encode(message: FilterByOwner, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.value !== 0) {
       writer.uint32(8).int64(message.value);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): FilterByOwnerId {
+  decode(input: BinaryReader | Uint8Array, length?: number): FilterByOwner {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseFilterByOwnerId();
+    const message = createBaseFilterByOwner();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1339,11 +1339,11 @@ export const FilterByOwnerId: MessageFns<FilterByOwnerId> = {
     return message;
   },
 
-  fromJSON(object: any): FilterByOwnerId {
+  fromJSON(object: any): FilterByOwner {
     return { value: isSet(object.value) ? globalThis.Number(object.value) : 0 };
   },
 
-  toJSON(message: FilterByOwnerId): unknown {
+  toJSON(message: FilterByOwner): unknown {
     const obj: any = {};
     if (message.value !== 0) {
       obj.value = Math.round(message.value);
@@ -1351,11 +1351,11 @@ export const FilterByOwnerId: MessageFns<FilterByOwnerId> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<FilterByOwnerId>, I>>(base?: I): FilterByOwnerId {
-    return FilterByOwnerId.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<FilterByOwner>, I>>(base?: I): FilterByOwner {
+    return FilterByOwner.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<FilterByOwnerId>, I>>(object: I): FilterByOwnerId {
-    const message = createBaseFilterByOwnerId();
+  fromPartial<I extends Exact<DeepPartial<FilterByOwner>, I>>(object: I): FilterByOwner {
+    const message = createBaseFilterByOwner();
     message.value = object.value ?? 0;
     return message;
   },

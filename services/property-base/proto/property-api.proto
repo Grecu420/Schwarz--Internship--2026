@@ -77,7 +77,7 @@ message ListPropertiesRequest {
 
 message ListPropertiesFiltersOneOf {
   oneof filter {
-    FilterByOwnerId    owner       = 1;
+    FilterByOwner      owner       = 1;
     FilterByName       name        = 2;
     FilterByLocation   location    = 3;
     FilterByPriceRange price_range = 4;
@@ -93,7 +93,7 @@ message FilterByLocation {
   float    radius = 2;
 }
 
-message FilterByOwnerId {
+message FilterByOwner {
   int64 value = 1;
 }
 

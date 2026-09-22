@@ -41,7 +41,7 @@ func TestListProperties(t *testing.T) {
 	baseOwnerFilter := []*proto.ListPropertiesFiltersOneOf{
 		{
 			Filter: &proto.ListPropertiesFiltersOneOf_Owner{
-				Owner: &proto.FilterByOwnerId{Value: 100},
+				Owner: &proto.FilterByOwner{Value: 100},
 			},
 		},
 	}
@@ -157,7 +157,7 @@ func TestListProperties(t *testing.T) {
 			request: &proto.ListPropertiesRequest{
 				PageSize: 2,
 				Filters: []*proto.ListPropertiesFiltersOneOf{
-					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwnerId{Value: 100}}},
+					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwner{Value: 100}}},
 					{Filter: &proto.ListPropertiesFiltersOneOf_Name{Name: &proto.FilterByName{Value: "Villa"}}},
 					{Filter: &proto.ListPropertiesFiltersOneOf_PriceRange{PriceRange: &proto.FilterByPriceRange{Min: 100000, Max: 500000}}},
 					{Filter: &proto.ListPropertiesFiltersOneOf_Location{Location: &proto.FilterByLocation{
@@ -189,8 +189,8 @@ func TestListProperties(t *testing.T) {
 			request: &proto.ListPropertiesRequest{
 				PageSize: 2,
 				Filters: []*proto.ListPropertiesFiltersOneOf{
-					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwnerId{Value: 100}}},
-					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwnerId{Value: 200}}},
+					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwner{Value: 100}}},
+					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwner{Value: 200}}},
 				},
 			},
 			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},
@@ -200,7 +200,7 @@ func TestListProperties(t *testing.T) {
 			request: &proto.ListPropertiesRequest{
 				PageSize: 2,
 				Filters: []*proto.ListPropertiesFiltersOneOf{
-					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwnerId{Value: 0}}},
+					{Filter: &proto.ListPropertiesFiltersOneOf_Owner{Owner: &proto.FilterByOwner{Value: 0}}},
 				},
 			},
 			setupMock:    func(mock sqlmock.Sqlmock, req *proto.ListPropertiesRequest) {},

@@ -88,7 +88,7 @@ func SelectPropertyInDB(ctx context.Context, db *sql.DB, id int64) (*proto.Prope
 }
 
 func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, page_size int64,
-	owner *proto.FilterByOwnerId,
+	owner *proto.FilterByOwner,
 	name *proto.FilterByName,
 	price *proto.FilterByPriceRange,
 	location *proto.FilterByLocation) ([]*proto.Property, error) {

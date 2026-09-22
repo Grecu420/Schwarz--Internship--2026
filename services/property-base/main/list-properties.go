@@ -15,7 +15,7 @@ func (service *PropertyServiceImpl) ListProperties(ctx context.Context, req *pro
 		return nil, status.Error(codes.InvalidArgument, "request can't be nil")
 	}
 
-	var ownerFilter *proto.FilterByOwnerId
+	var ownerFilter *proto.FilterByOwner
 	var priceFilter *proto.FilterByPriceRange
 	var nameFilter *proto.FilterByName
 	var locationFilter *proto.FilterByLocation
