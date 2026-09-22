@@ -35,10 +35,10 @@
         </div>
 
         <!-- Right Column: Reservation Component -->
-        <div class="booking-column">
+        <div class="booking-column" v-if="owner?.id !== auth.user?.id">
           <ReservationCard
             :price="property.price"
-            :existing-reservations="disabledD"
+            :existing-reservations="existingReservations"
             @submit="handleReservation"
           />
         </div>
@@ -57,20 +57,27 @@ import { useRouter, useRoute } from 'vue-router'
 import { useToast, OnyxImage } from 'sit-onyx'
 import { GetUserProfileResponse, UserProfile } from '@/generated/proto/user-api'
 import {
+  CreateReservationRequest,
+  CreateReservationResponse,
   ListReservationsRequest,
   ListReservationsResponse,
+  Reservation,
   ReservationStatus,
 } from '@/generated/proto/reservation-api'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+const auth = useAuthStore()
 
 const property = ref<Property | null>(null)
 const owner = ref<UserProfile | null>(null)
 const isLoading = ref(true)
 
 const disabledD: [string, string][] = [['2026-10-10', '2026-11-20']]
+
+const existingReservations = ref<[string, string][]>([])
 
 const goBack = () => {
   router.push('/properties')
@@ -95,25 +102,28 @@ onMounted(async () => {
     )
     owner.value = response2.data.user ?? null
 
-    // // Load property reservations
-    // const request = ListReservationsRequest.create({
-    //   nextPageToken: '',
-    //   pageSize: 1000,
-    //   filters: [
-    //     {
-    //       propertyId: {
-    //         value: property.value.id
-    //       }
-    //     },
-    //     {
-    //       status: {
-    //         value: ReservationStatus.RESERVATION_STATUS_CONFIRMED
-    //       }
-    //     }
-
-    //   ]
-    // })
-    // const response3 = await api.post<ListReservationsResponse>('/api/reservationsList', request)
+    // Load property reservations
+    const request = ListReservationsRequest.create({
+      nextPageToken: '',
+      pageSize: 1000,
+      filters: [
+        {
+          propertyId: {
+            value: property.value.id,
+          },
+        },
+        {
+          status: {
+            value: ReservationStatus.RESERVATION_STATUS_CONFIRMED,
+          },
+        },
+      ],
+    })
+    const response3 = await api.post<ListReservationsResponse>('/api/reservationsList', request)
+    existingReservations.value = response3.data.reservations.map((r: Reservation) => [
+      r.checkInDate,
+      r.checkOutDate,
+    ])
   } catch (error: any) {
     toast.show({
       headline: 'Failed to load property details',
@@ -126,13 +136,34 @@ onMounted(async () => {
   }
 })
 
-const handleReservation = (reservation: { start: string; end: string }) => {
-  // TODO:  send user to reservation page first
-  toast.show({
-    headline: 'Submitted reservation',
-    description: `Start: ${reservation.start}; End: ${reservation.end}`,
-    color: 'neutral',
+const handleReservation = async (reservation: { start: string; end: string }) => {
+  const formattedStart = reservation.start.replaceAll('/', '-')
+  const formattedEnd = reservation.end.replaceAll('/', '-')
+
+  const request = CreateReservationRequest.create({
+    reservation: {
+      propertyId: property.value?.id,
+      ownerId: property.value?.userId,
+      userId: auth.user?.id,
+      checkInDate: formattedStart,
+      checkOutDate: formattedEnd,
+    },
   })
+  try {
+    const response = await api.post<CreateReservationResponse>('/api/reservations', request)
+    router.push('/reservations')
+    toast.show({
+      headline: 'Submitted reservation',
+      description: `Start: ${reservation.start}; End: ${reservation.end}`,
+      color: 'neutral',
+    })
+  } catch (error: any) {
+    toast.show({
+      headline: 'Failed to create reservation',
+      description: error?.message || 'Failed to send reservation request.',
+      color: 'danger',
+    })
+  }
 }
 </script>
 
@@ -152,7 +183,7 @@ const handleReservation = (reservation: { start: string; end: string }) => {
 .image-scroll-container {
   display: flex;
   gap: 1rem;
-  overflow-x: auto;
+  overflow-x: scroll;
   scroll-snap-type: x proximity;
   padding-bottom: 1rem;
   margin-bottom: 2.5rem;
