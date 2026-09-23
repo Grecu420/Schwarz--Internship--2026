@@ -267,7 +267,7 @@ onMounted(() => {
 }
 
 :deep(.add-property-btn) {
-  background-color: #2563eb !important;
+  background-color: #1e40af !important;
   color: #ffffff !important;
   border-radius: 12px !important;
   padding: 0.65rem 1.25rem !important;
@@ -308,10 +308,6 @@ onMounted(() => {
   font-size: 1.75rem;
   font-weight: 800;
   color: #111827;
-}
-
-.stat-value.highlight {
-  color: #1d4ed8;
 }
 
 .stat-sub {
@@ -433,7 +429,7 @@ onMounted(() => {
   border-radius: 10px !important;
   border: 1px solid #dbeafe !important;
   background-color: #eff6ff !important;
-  color: #2563eb !important;
+  color: #1e40af !important;
   font-weight: 600 !important;
   padding: 0.4rem 0.9rem !important;
   font-size: 0.85rem !important;
