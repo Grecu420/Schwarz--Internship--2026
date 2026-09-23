@@ -43,10 +43,10 @@
       <div v-else class="properties-container">
         <div class="properties-grid">
           <OnyxCard v-for="property in properties" :key="property.id" class="property-card">
-            <div class="card-image-wrapper">
+            <div class="card-image-wrapper" @click="handleViewProperty(property.id)">
               <OnyxImage
                 :height="256"
-                :width="256"
+                :width="600"
                 :src="getPropertyImage(property)"
                 :alt="property.name"
                 class="property-image"
@@ -208,6 +208,11 @@ const handleEditProperty = (propertyId: number) => {
   router.push(`/properties/edit/${propertyId}`)
 }
 
+const handleViewProperty = (propertyId: number) => {
+  // Adjust the route path if your details page URL is different
+  router.push(`/properties/view/${propertyId}`)
+}
+
 const fetchPropertyCount = async () => {
   const request = CountPropertiesRequest.create({
     filters: [{ owner: { value: authStore.user?.id } }],
@@ -234,7 +239,7 @@ onMounted(() => {
 <style scoped>
 .header-section {
   background-color: #ffffff;
-  padding: 3rem 4rem 2.5rem 4rem;
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
 }
 
 .header-content {
@@ -326,7 +331,7 @@ onMounted(() => {
 .content-section {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 3rem 1.5rem 5rem 1.5rem;
+  padding: 2rem 1rem 4rem 1rem;
 }
 
 .state-container {
@@ -349,7 +354,7 @@ onMounted(() => {
 .properties-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.75rem;
+  gap: 1.5rem;
 }
 
 :deep(.property-card) {
@@ -367,6 +372,9 @@ onMounted(() => {
   width: 100%;
   height: 220px;
   overflow: hidden;
+  justify-content: center;
+  display: flex;
+  cursor: pointer;
   background-color: #f3f4f6;
 }
 
@@ -377,7 +385,7 @@ onMounted(() => {
 }
 
 .card-body {
-  padding: 1.25rem 1.5rem;
+  padding: 0.9rem 1rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -385,7 +393,7 @@ onMounted(() => {
 }
 
 .card-info {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .property-name {
@@ -406,7 +414,9 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 0.5rem;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid #d5d4d1;
 }
 
 .property-price {
