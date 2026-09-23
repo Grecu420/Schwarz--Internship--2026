@@ -67,7 +67,32 @@ export interface GetPropertyResponse {
 export interface ListPropertiesRequest {
   nextPageToken: string;
   pageSize: number;
-  ownerId: number;
+  filters: ListPropertiesFiltersOneOf[];
+}
+
+export interface ListPropertiesFiltersOneOf {
+  owner?: FilterByOwner | undefined;
+  name?: FilterByName | undefined;
+  location?: FilterByLocation | undefined;
+  priceRange?: FilterByPriceRange | undefined;
+}
+
+export interface FilterByName {
+  value: string;
+}
+
+export interface FilterByLocation {
+  center: Location | undefined;
+  radius: number;
+}
+
+export interface FilterByOwner {
+  value: number;
+}
+
+export interface FilterByPriceRange {
+  min: number;
+  max: number;
 }
 
 export interface ListPropertiesResponse {
@@ -921,7 +946,7 @@ export const GetPropertyResponse: MessageFns<GetPropertyResponse> = {
 };
 
 function createBaseListPropertiesRequest(): ListPropertiesRequest {
-  return { nextPageToken: "", pageSize: 0, ownerId: 0 };
+  return { nextPageToken: "", pageSize: 0, filters: [] };
 }
 
 export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
@@ -932,8 +957,8 @@ export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
     if (message.pageSize !== 0) {
       writer.uint32(16).int64(message.pageSize);
     }
-    if (message.ownerId !== 0) {
-      writer.uint32(24).int64(message.ownerId);
+    for (const v of message.filters) {
+      ListPropertiesFiltersOneOf.encode(v!, writer.uint32(26).fork()).join();
     }
     return writer;
   },
@@ -962,11 +987,11 @@ export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
           continue;
         }
         case 3: {
-          if (tag !== 24) {
+          if (tag !== 26) {
             break;
           }
 
-          message.ownerId = longToNumber(reader.int64());
+          message.filters.push(ListPropertiesFiltersOneOf.decode(reader, reader.uint32()));
           continue;
         }
       }
@@ -990,11 +1015,9 @@ export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
         : isSet(object.page_size)
         ? globalThis.Number(object.page_size)
         : 0,
-      ownerId: isSet(object.ownerId)
-        ? globalThis.Number(object.ownerId)
-        : isSet(object.owner_id)
-        ? globalThis.Number(object.owner_id)
-        : 0,
+      filters: globalThis.Array.isArray(object?.filters)
+        ? object.filters.map((e: any) => ListPropertiesFiltersOneOf.fromJSON(e))
+        : [],
     };
   },
 
@@ -1006,8 +1029,8 @@ export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
     if (message.pageSize !== 0) {
       obj.pageSize = Math.round(message.pageSize);
     }
-    if (message.ownerId !== 0) {
-      obj.ownerId = Math.round(message.ownerId);
+    if (message.filters?.length) {
+      obj.filters = message.filters.map((e) => ListPropertiesFiltersOneOf.toJSON(e));
     }
     return obj;
   },
@@ -1019,7 +1042,397 @@ export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
     const message = createBaseListPropertiesRequest();
     message.nextPageToken = object.nextPageToken ?? "";
     message.pageSize = object.pageSize ?? 0;
-    message.ownerId = object.ownerId ?? 0;
+    message.filters = object.filters?.map((e) => ListPropertiesFiltersOneOf.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseListPropertiesFiltersOneOf(): ListPropertiesFiltersOneOf {
+  return { owner: undefined, name: undefined, location: undefined, priceRange: undefined };
+}
+
+export const ListPropertiesFiltersOneOf: MessageFns<ListPropertiesFiltersOneOf> = {
+  encode(message: ListPropertiesFiltersOneOf, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.owner !== undefined) {
+      FilterByOwner.encode(message.owner, writer.uint32(10).fork()).join();
+    }
+    if (message.name !== undefined) {
+      FilterByName.encode(message.name, writer.uint32(18).fork()).join();
+    }
+    if (message.location !== undefined) {
+      FilterByLocation.encode(message.location, writer.uint32(26).fork()).join();
+    }
+    if (message.priceRange !== undefined) {
+      FilterByPriceRange.encode(message.priceRange, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ListPropertiesFiltersOneOf {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseListPropertiesFiltersOneOf();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.owner = FilterByOwner.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.name = FilterByName.decode(reader, reader.uint32());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.location = FilterByLocation.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.priceRange = FilterByPriceRange.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ListPropertiesFiltersOneOf {
+    return {
+      owner: isSet(object.owner) ? FilterByOwner.fromJSON(object.owner) : undefined,
+      name: isSet(object.name) ? FilterByName.fromJSON(object.name) : undefined,
+      location: isSet(object.location) ? FilterByLocation.fromJSON(object.location) : undefined,
+      priceRange: isSet(object.priceRange)
+        ? FilterByPriceRange.fromJSON(object.priceRange)
+        : isSet(object.price_range)
+        ? FilterByPriceRange.fromJSON(object.price_range)
+        : undefined,
+    };
+  },
+
+  toJSON(message: ListPropertiesFiltersOneOf): unknown {
+    const obj: any = {};
+    if (message.owner !== undefined) {
+      obj.owner = FilterByOwner.toJSON(message.owner);
+    }
+    if (message.name !== undefined) {
+      obj.name = FilterByName.toJSON(message.name);
+    }
+    if (message.location !== undefined) {
+      obj.location = FilterByLocation.toJSON(message.location);
+    }
+    if (message.priceRange !== undefined) {
+      obj.priceRange = FilterByPriceRange.toJSON(message.priceRange);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ListPropertiesFiltersOneOf>, I>>(base?: I): ListPropertiesFiltersOneOf {
+    return ListPropertiesFiltersOneOf.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ListPropertiesFiltersOneOf>, I>>(object: I): ListPropertiesFiltersOneOf {
+    const message = createBaseListPropertiesFiltersOneOf();
+    message.owner = (object.owner !== undefined && object.owner !== null)
+      ? FilterByOwner.fromPartial(object.owner)
+      : undefined;
+    message.name = (object.name !== undefined && object.name !== null)
+      ? FilterByName.fromPartial(object.name)
+      : undefined;
+    message.location = (object.location !== undefined && object.location !== null)
+      ? FilterByLocation.fromPartial(object.location)
+      : undefined;
+    message.priceRange = (object.priceRange !== undefined && object.priceRange !== null)
+      ? FilterByPriceRange.fromPartial(object.priceRange)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseFilterByName(): FilterByName {
+  return { value: "" };
+}
+
+export const FilterByName: MessageFns<FilterByName> = {
+  encode(message: FilterByName, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.value !== "") {
+      writer.uint32(10).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): FilterByName {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFilterByName();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FilterByName {
+    return { value: isSet(object.value) ? globalThis.String(object.value) : "" };
+  },
+
+  toJSON(message: FilterByName): unknown {
+    const obj: any = {};
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<FilterByName>, I>>(base?: I): FilterByName {
+    return FilterByName.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FilterByName>, I>>(object: I): FilterByName {
+    const message = createBaseFilterByName();
+    message.value = object.value ?? "";
+    return message;
+  },
+};
+
+function createBaseFilterByLocation(): FilterByLocation {
+  return { center: undefined, radius: 0 };
+}
+
+export const FilterByLocation: MessageFns<FilterByLocation> = {
+  encode(message: FilterByLocation, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.center !== undefined) {
+      Location.encode(message.center, writer.uint32(10).fork()).join();
+    }
+    if (message.radius !== 0) {
+      writer.uint32(21).float(message.radius);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): FilterByLocation {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFilterByLocation();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.center = Location.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 21) {
+            break;
+          }
+
+          message.radius = reader.float();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FilterByLocation {
+    return {
+      center: isSet(object.center) ? Location.fromJSON(object.center) : undefined,
+      radius: isSet(object.radius) ? globalThis.Number(object.radius) : 0,
+    };
+  },
+
+  toJSON(message: FilterByLocation): unknown {
+    const obj: any = {};
+    if (message.center !== undefined) {
+      obj.center = Location.toJSON(message.center);
+    }
+    if (message.radius !== 0) {
+      obj.radius = message.radius;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<FilterByLocation>, I>>(base?: I): FilterByLocation {
+    return FilterByLocation.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FilterByLocation>, I>>(object: I): FilterByLocation {
+    const message = createBaseFilterByLocation();
+    message.center = (object.center !== undefined && object.center !== null)
+      ? Location.fromPartial(object.center)
+      : undefined;
+    message.radius = object.radius ?? 0;
+    return message;
+  },
+};
+
+function createBaseFilterByOwner(): FilterByOwner {
+  return { value: 0 };
+}
+
+export const FilterByOwner: MessageFns<FilterByOwner> = {
+  encode(message: FilterByOwner, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.value !== 0) {
+      writer.uint32(8).int64(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): FilterByOwner {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFilterByOwner();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.value = longToNumber(reader.int64());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FilterByOwner {
+    return { value: isSet(object.value) ? globalThis.Number(object.value) : 0 };
+  },
+
+  toJSON(message: FilterByOwner): unknown {
+    const obj: any = {};
+    if (message.value !== 0) {
+      obj.value = Math.round(message.value);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<FilterByOwner>, I>>(base?: I): FilterByOwner {
+    return FilterByOwner.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FilterByOwner>, I>>(object: I): FilterByOwner {
+    const message = createBaseFilterByOwner();
+    message.value = object.value ?? 0;
+    return message;
+  },
+};
+
+function createBaseFilterByPriceRange(): FilterByPriceRange {
+  return { min: 0, max: 0 };
+}
+
+export const FilterByPriceRange: MessageFns<FilterByPriceRange> = {
+  encode(message: FilterByPriceRange, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.min !== 0) {
+      writer.uint32(8).int64(message.min);
+    }
+    if (message.max !== 0) {
+      writer.uint32(16).int64(message.max);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): FilterByPriceRange {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFilterByPriceRange();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.min = longToNumber(reader.int64());
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.max = longToNumber(reader.int64());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FilterByPriceRange {
+    return {
+      min: isSet(object.min) ? globalThis.Number(object.min) : 0,
+      max: isSet(object.max) ? globalThis.Number(object.max) : 0,
+    };
+  },
+
+  toJSON(message: FilterByPriceRange): unknown {
+    const obj: any = {};
+    if (message.min !== 0) {
+      obj.min = Math.round(message.min);
+    }
+    if (message.max !== 0) {
+      obj.max = Math.round(message.max);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<FilterByPriceRange>, I>>(base?: I): FilterByPriceRange {
+    return FilterByPriceRange.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FilterByPriceRange>, I>>(object: I): FilterByPriceRange {
+    const message = createBaseFilterByPriceRange();
+    message.min = object.min ?? 0;
+    message.max = object.max ?? 0;
     return message;
   },
 };

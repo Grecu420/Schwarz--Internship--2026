@@ -87,7 +87,11 @@ func SelectPropertyInDB(ctx context.Context, db *sql.DB, id int64) (*proto.Prope
 	return property, nil
 }
 
-func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, page_size int64, userID int64) ([]*proto.Property, error) {
+func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, page_size int64,
+	owner *proto.FilterByOwner,
+	name *proto.FilterByName,
+	price *proto.FilterByPriceRange,
+	location *proto.FilterByLocation) ([]*proto.Property, error) {
 	// Build query
 	base := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select(
@@ -100,11 +104,29 @@ func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, pag
 			"ST_X(location::geometry) AS lng",
 			"ST_Y(location::geometry) AS lat",
 			"image_urls").
-		From("properties").
-		Where(sq.Eq{"user_id": userID})
+		From("properties")
 
 	// Add filter for offset (starting ID)
 	base = base.Where(sq.GtOrEq{"id": offsetID})
+	if owner != nil {
+		base = base.Where(sq.Eq{"user_id": owner.Value})
+	}
+	if name != nil {
+		base = base.Where(sq.Like{"name": "%" + name.Value + "%"})
+	}
+	if price != nil {
+		if price.GetMin() > 0 {
+			base = base.Where(sq.GtOrEq{"price": price.Min})
+		}
+		if price.GetMax() > 0 {
+			base = base.Where(sq.LtOrEq{"price": price.Max})
+		}
+	}
+
+	if location != nil && location.Center != nil {
+		base = base.Where(sq.Expr("ST_DWithin(location, ST_MakePoint(?, ?)::geography, ?)",
+			location.Center.Long, location.Center.Lat, location.Radius))
+	}
 
 	// Append ordering and limit
 	base = base.OrderBy("id ASC").
