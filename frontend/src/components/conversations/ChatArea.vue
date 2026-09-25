@@ -59,7 +59,7 @@ import { OnyxAvatar, OnyxIcon, useToast } from 'sit-onyx'
 import { iconSend } from "@sit-onyx/icons";
 
 import { useMessageStore } from '@/stores/messages'
-import MessageBubble from './MessageBubble.vue'
+import MessageBubble from './MessageBubble.vue';
 import type { Message } from '@/generated/proto/message-api'
 
 const props = defineProps<{
