@@ -29,7 +29,7 @@
 
     <main class="content-section">
       <!-- Loading State -->
-      <div v-if="isLoading" class="state-container">
+      <div v-if="isLoading && properties.length === 0" class="state-container">
         <p>Loading properties...</p>
       </div>
 
@@ -50,6 +50,7 @@
                 :src="getPropertyImage(property)"
                 :alt="property.name"
                 class="property-image"
+                :skeleton="isLoading"
               />
             </div>
 
@@ -61,7 +62,8 @@
 
               <div class="card-footer">
                 <div class="property-price">
-                  <span class="price-amount">${{ property.price }}</span>
+                  <span class="price-amount">${{ property.price }} </span>
+                  &nbsp;
                   <span class="price-unit"> / night</span>
                 </div>
 
@@ -425,13 +427,13 @@ onMounted(() => {
 }
 
 .price-amount {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #111827;
 }
 
 .price-unit {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: #6b7280;
 }
 
