@@ -142,14 +142,7 @@ const getPropertyImage = (property: Property): string => {
 }
 
 const fetchProperties = async (pageTokenToRequest: string) => {
-  if (!authStore.user?.id) {
-    toast.show({
-      headline: 'Authentication Error',
-      description: 'You must be logged in to view your properties.',
-      color: 'danger',
-    })
-    return
-  }
+
 
   isLoading.value = true
 
@@ -157,7 +150,7 @@ const fetchProperties = async (pageTokenToRequest: string) => {
     const request = ListPropertiesRequest.create({
       pageSize: PAGE_SIZE,
       nextPageToken: pageTokenToRequest,
-      filters: [{ owner: { value: authStore.user.id } }],
+      filters: [{ owner: { value: authStore.user?.id} }],
     })
 
     const response = await api.post<ListPropertiesResponse>('/api/propertyList', request)
