@@ -8,6 +8,7 @@ import ConversationsView from '@/views/ConversationsView.vue'
 import { useAuthStore } from '@/stores/auth'
 import PropertyDisplayView from '@/views/property/PropertyDisplayView.vue'
 import PropertyEditView from '@/views/property/PropertyEditView.vue'
+import ReservationsView from '@/views/ReservationsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -55,11 +56,19 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/conversations',
       name: 'conversations',
       component: ConversationsView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/reservations',
+      name: 'reservations',
+      component: ReservationsView,
+      meta: { requiresAuth: true },
     },
   ]
 })

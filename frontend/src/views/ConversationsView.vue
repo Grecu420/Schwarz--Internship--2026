@@ -25,9 +25,9 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useMessageStore } from '@/stores/messages'
 
-import ConversationSidebar from '@/components/ConversationSidebar.vue'
-import ChatArea from '@/components/ChatArea.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import ConversationSidebar from '@/components/conversations/ConversationSidebar.vue'
+import ChatArea from '@/components/conversations/ChatArea.vue'
+import EmptyState from '@/components/conversations/EmptyState.vue'
 
 const messageStore = useMessageStore()
 
