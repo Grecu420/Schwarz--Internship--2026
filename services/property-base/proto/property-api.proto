@@ -7,11 +7,12 @@ import "google/protobuf/field_mask.proto";
 option go_package = "main/proto";
 
 service PropertyService {
-  rpc CreateProperty(CreatePropertyRequest) returns (CreatePropertyResponse);
-  rpc UpdateProperty(UpdatePropertyRequest) returns (UpdatePropertyResponse);
-  rpc DeleteProperty(DeletePropertyRequest) returns (DeletePropertyResponse);
-  rpc GetProperty   (GetPropertyRequest)    returns (GetPropertyResponse);
-  rpc ListProperties(ListPropertiesRequest) returns (ListPropertiesResponse);
+  rpc CreateProperty (CreatePropertyRequest)  returns (CreatePropertyResponse);
+  rpc UpdateProperty (UpdatePropertyRequest)  returns (UpdatePropertyResponse);
+  rpc DeleteProperty (DeletePropertyRequest)  returns (DeletePropertyResponse);
+  rpc GetProperty    (GetPropertyRequest)     returns (GetPropertyResponse);
+  rpc ListProperties (ListPropertiesRequest)  returns (ListPropertiesResponse);
+  rpc CountProperties(CountPropertiesRequest) returns (CountPropertiesResponse);
 }
 
 message Property {
@@ -105,4 +106,12 @@ message FilterByPriceRange {
 message ListPropertiesResponse {
   string            next_page_token = 1;
   repeated Property properties      = 2;
+}
+
+message CountPropertiesRequest {
+  repeated ListPropertiesFiltersOneOf filters = 1;
+}
+
+message CountPropertiesResponse {
+  int64 count = 1;
 }
