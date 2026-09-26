@@ -72,7 +72,7 @@ const imageUrl = computed(() => props.property.imageUrls[0] || DEFAULT_IMAGE)
 
 .card-image-wrapper {
   width: 100%;
-  height: 220px;
+  height: 180px;
   overflow: hidden;
   justify-content: center;
   display: flex;
