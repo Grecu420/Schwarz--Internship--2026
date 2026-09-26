@@ -80,27 +80,14 @@
         </div>
 
         <!-- Pagination Controls -->
-        <div class="pagination-controls">
-          <OnyxIconButton
-            mode="outline"
-            label="Previous Page"
-            :icon="iconChevronLeft"
-            :disabled="currentPage === 0 || isLoading"
-            class="pagination-btn"
-            @click="goToPreviousPage"
-          />
-
-          <span class="page-indicator">Page {{ currentPage + 1 }}</span>
-
-          <OnyxIconButton
-            mode="outline"
-            label="Next Page"
-            :icon="iconChevronRight"
-            :disabled="!nextPageToken || isLoading"
-            class="pagination-btn"
-            @click="goToNextPage"
-          />
-        </div>
+        <PaginationControls
+          :current-page="currentPage"
+          :is-next-disabled="!nextPageToken"
+          :is-prev-disabled="currentPage === 0"
+          :is-loading="isLoading"
+          @next-page="goToNextPage"
+          @previous-page="goToPreviousPage"
+        />
       </div>
     </main>
   </div>
@@ -120,6 +107,7 @@ import {
   ListPropertiesResponse,
   Property,
 } from '@/generated/proto/property-api'
+import PaginationControls from '@/components/property/PaginationControls.vue'
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1000'
 const PAGE_SIZE = 6
@@ -142,15 +130,13 @@ const getPropertyImage = (property: Property): string => {
 }
 
 const fetchProperties = async (pageTokenToRequest: string) => {
-
-
   isLoading.value = true
 
   try {
     const request = ListPropertiesRequest.create({
       pageSize: PAGE_SIZE,
       nextPageToken: pageTokenToRequest,
-      filters: [{ owner: { value: authStore.user?.id} }],
+      filters: [{ owner: { value: authStore.user?.id } }],
     })
 
     const response = await api.post<ListPropertiesResponse>('/api/propertyList', request)
@@ -443,47 +429,6 @@ onMounted(() => {
 :deep(.edit-btn:hover) {
   background-color: #dbeafe !important;
   border-color: #bfdbfe !important;
-}
-
-/* Pagination Controls */
-.pagination-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.page-indicator {
-  color: #374151;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-:deep(.pagination-btn) {
-  border-radius: 50% !important;
-  width: 40px !important;
-  height: 40px !important;
-  padding: 0 !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  border: 1px solid #e5e7eb !important;
-  background-color: #ffffff !important;
-  color: #374151 !important;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03) !important;
-}
-
-:deep(.pagination-btn:not(:disabled):hover) {
-  background-color: #f9fafb !important;
-  border-color: #d1d5db !important;
-  color: #111827 !important;
-}
-
-:deep(.pagination-btn:disabled) {
-  opacity: 0.4;
-  cursor: not-allowed;
-  background-color: #f3f4f6 !important;
-  border-color: #e5e7eb !important;
 }
 
 @media (max-width: 1024px) {
