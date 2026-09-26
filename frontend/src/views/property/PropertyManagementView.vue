@@ -70,8 +70,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { OnyxButton, OnyxCard, OnyxIconButton, OnyxImage, useToast } from 'sit-onyx'
-import { iconEdit, iconChevronLeft, iconChevronRight, iconPlus } from '@sit-onyx/icons'
+import { OnyxButton, useToast } from 'sit-onyx'
+import { iconPlus } from '@sit-onyx/icons'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/utils/api'
 import {
@@ -84,7 +84,6 @@ import {
 import PaginationControls from '@/components/property/PaginationControls.vue'
 import PropertyCard from '@/components/property/PropertyCard.vue'
 
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1000'
 const PAGE_SIZE = 6
 
 const router = useRouter()
@@ -99,10 +98,6 @@ const propertyCount = ref(0)
 const currentPage = ref(0)
 const nextPageToken = ref<string>('')
 const pageTokens = ref<string[]>([''])
-
-const getPropertyImage = (property: Property): string => {
-  return property.imageUrls[0] || DEFAULT_IMAGE
-}
 
 const fetchProperties = async (pageTokenToRequest: string) => {
   isLoading.value = true
@@ -165,7 +160,6 @@ const handleEditProperty = (propertyId: number) => {
 }
 
 const handleViewProperty = (propertyId: number) => {
-  // Adjust the route path if your details page URL is different
   router.push(`/properties/view/${propertyId}`)
 }
 
