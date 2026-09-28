@@ -100,6 +100,14 @@ export interface ListPropertiesResponse {
   properties: Property[];
 }
 
+export interface CountPropertiesRequest {
+  filters: ListPropertiesFiltersOneOf[];
+}
+
+export interface CountPropertiesResponse {
+  count: number;
+}
+
 function createBaseProperty(): Property {
   return { id: 0, userId: 0, name: "", description: "", address: "", price: 0, location: undefined, imageUrls: [] };
 }
@@ -1515,6 +1523,126 @@ export const ListPropertiesResponse: MessageFns<ListPropertiesResponse> = {
     const message = createBaseListPropertiesResponse();
     message.nextPageToken = object.nextPageToken ?? "";
     message.properties = object.properties?.map((e) => Property.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseCountPropertiesRequest(): CountPropertiesRequest {
+  return { filters: [] };
+}
+
+export const CountPropertiesRequest: MessageFns<CountPropertiesRequest> = {
+  encode(message: CountPropertiesRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.filters) {
+      ListPropertiesFiltersOneOf.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CountPropertiesRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCountPropertiesRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.filters.push(ListPropertiesFiltersOneOf.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CountPropertiesRequest {
+    return {
+      filters: globalThis.Array.isArray(object?.filters)
+        ? object.filters.map((e: any) => ListPropertiesFiltersOneOf.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: CountPropertiesRequest): unknown {
+    const obj: any = {};
+    if (message.filters?.length) {
+      obj.filters = message.filters.map((e) => ListPropertiesFiltersOneOf.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CountPropertiesRequest>, I>>(base?: I): CountPropertiesRequest {
+    return CountPropertiesRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CountPropertiesRequest>, I>>(object: I): CountPropertiesRequest {
+    const message = createBaseCountPropertiesRequest();
+    message.filters = object.filters?.map((e) => ListPropertiesFiltersOneOf.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseCountPropertiesResponse(): CountPropertiesResponse {
+  return { count: 0 };
+}
+
+export const CountPropertiesResponse: MessageFns<CountPropertiesResponse> = {
+  encode(message: CountPropertiesResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.count !== 0) {
+      writer.uint32(8).int64(message.count);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CountPropertiesResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCountPropertiesResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.count = longToNumber(reader.int64());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CountPropertiesResponse {
+    return { count: isSet(object.count) ? globalThis.Number(object.count) : 0 };
+  },
+
+  toJSON(message: CountPropertiesResponse): unknown {
+    const obj: any = {};
+    if (message.count !== 0) {
+      obj.count = Math.round(message.count);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CountPropertiesResponse>, I>>(base?: I): CountPropertiesResponse {
+    return CountPropertiesResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CountPropertiesResponse>, I>>(object: I): CountPropertiesResponse {
+    const message = createBaseCountPropertiesResponse();
+    message.count = object.count ?? 0;
     return message;
   },
 };

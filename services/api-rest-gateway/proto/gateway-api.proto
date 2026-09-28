@@ -147,7 +147,14 @@ service GatewayService {
     };
   }
 
- rpc CreateReservation(reservationbase.CreateReservationRequest) returns (reservationbase.CreateReservationResponse){
+  rpc CountProperties (property.CountPropertiesRequest) returns (property.CountPropertiesResponse) {
+    option (google.api.http) = {
+      post: "/propertyCount"
+      body: "*"
+    };
+  }
+
+  rpc CreateReservation(reservationbase.CreateReservationRequest) returns (reservationbase.CreateReservationResponse){
     option (google.api.http) = {
       post: "/reservation"
       body: "*"
@@ -163,7 +170,7 @@ service GatewayService {
   rpc UpdateReservation(reservationbase.UpdateReservationRequest) returns (reservationbase.UpdateReservationResponse){
     option (google.api.http) = {
       patch: "/reservation"
-      body: "*"
+      body : "*"
     };
   }
 
@@ -178,5 +185,5 @@ service GatewayService {
       post: "/reservationsList"
       body: "*"
     };
-  }  
+  }
 }

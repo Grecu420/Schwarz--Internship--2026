@@ -167,3 +167,42 @@ func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, pag
 
 	return properties, nil
 }
+
+func CountPropertiesInDB(ctx context.Context, db *sql.DB,
+	owner *proto.FilterByOwner,
+	name *proto.FilterByName,
+	price *proto.FilterByPriceRange,
+	location *proto.FilterByLocation) (int64, error) {
+	// Build query
+	base := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("COUNT(*)").
+		From("properties")
+
+	if owner != nil {
+		base = base.Where(sq.Eq{"user_id": owner.Value})
+	}
+	if name != nil {
+		base = base.Where(sq.Like{"name": "%" + name.Value + "%"})
+	}
+	if price != nil {
+		if price.GetMin() > 0 {
+			base = base.Where(sq.GtOrEq{"price": price.Min})
+		}
+		if price.GetMax() > 0 {
+			base = base.Where(sq.LtOrEq{"price": price.Max})
+		}
+	}
+
+	if location != nil && location.Center != nil {
+		base = base.Where(sq.Expr("ST_DWithin(location, ST_MakePoint(?, ?)::geography, ?)",
+			location.Center.Long, location.Center.Lat, location.Radius))
+	}
+
+	// Execute query
+	var count int64
+	err := base.RunWith(db).QueryRowContext(ctx).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
