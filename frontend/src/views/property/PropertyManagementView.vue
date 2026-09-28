@@ -5,6 +5,9 @@
         <div class="header-main">
           <div class="header-text">
             <h1 class="page-title">My Properties</h1>
+            <h2 class="page-subtitle" v-if="propertyCount > 0">
+              {{ propertyCount }} Active Listings
+            </h2>
             <p class="page-description">
               Manage your listed rentals, edit details, and track performance.
             </p>
@@ -16,13 +19,6 @@
             @click="handleAddNewProperty"
             :icon="iconPlus"
           />
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-card">
-            <span class="stat-label">ACTIVE LISTINGS</span>
-            <div class="stat-value">{{ propertyCount }}</div>
-          </div>
         </div>
       </div>
     </header>
@@ -215,6 +211,13 @@ onMounted(() => {
   letter-spacing: -0.02em;
 }
 
+.page-subtitle {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
 .page-description {
   font-size: 0.9375rem;
   color: #888888;
@@ -232,43 +235,6 @@ onMounted(() => {
 
 :deep(.add-property-btn:hover) {
   background-color: #1d4ed8 !important;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-}
-
-.stat-card {
-  background-color: #ffffff;
-  color: #111827;
-  border-radius: 16px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #6b7280;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.stat-value {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #111827;
-}
-
-.stat-sub {
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: #6b7280;
 }
 
 .properties-page {
@@ -329,5 +295,4 @@ onMounted(() => {
   background-color: #ffffff !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
 }
-
 </style>
