@@ -29,7 +29,7 @@
 
     <main class="content-section">
       <!-- Loading State -->
-      <div v-if="isLoading" class="state-container">
+      <div v-if="isLoading && properties.length === 0" class="state-container">
         <p>Loading properties...</p>
       </div>
 
@@ -144,7 +144,7 @@ const getFilterList = () => {
     if (checkIn && checkOut) {
       const checkInDate = outputFormatter.format(checkIn)
       const checkOutDate = outputFormatter.format(checkOut)
-      reqFilters.push({ dateInterval: {checkInDate, checkOutDate}})
+      reqFilters.push({ dateInterval: { checkInDate, checkOutDate } })
     }
   }
 
@@ -343,20 +343,8 @@ onMounted(() => {
 
 .properties-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-}
-
-@media (max-width: 1024px) {
-  .properties-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .properties-grid {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
 }
 
 :deep(.property-card) {

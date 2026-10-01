@@ -185,7 +185,6 @@ const handleSubmit = () => {
   display: flex;
   gap: 0.75rem;
   width: 100%;
-  max-width: 400px;
 }
 
 .location-select {
@@ -201,7 +200,6 @@ const handleSubmit = () => {
 .filter-field,
 .clear-button {
   width: 100%;
-  max-width: 400px;
 }
 
 :deep(.price-slider .onyx-stepper),
