@@ -88,6 +88,7 @@ func SelectPropertyInDB(ctx context.Context, db *sql.DB, id int64) (*proto.Prope
 }
 
 func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, page_size int64,
+	sort_type proto.SortType,
 	owner *proto.FilterByOwner,
 	name *proto.FilterByName,
 	price *proto.FilterByPriceRange,
@@ -129,8 +130,17 @@ func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, pag
 	}
 
 	// Append ordering and limit
-	base = base.OrderBy("id ASC").
-		Limit(uint64(page_size + 1))
+	switch sort_type {
+	case proto.SortType_SORT_TYPE_NAME:
+		base = base.OrderBy("name ASC")
+	case proto.SortType_SORT_TYPE_PRICE_ASC:
+		base = base.OrderBy("price ASC")
+	case proto.SortType_SORT_TYPE_PRICE_DESC:
+		base = base.OrderBy("price DESC")
+	default:
+		base = base.OrderBy("id ASC")
+	}
+	base = base.Limit(uint64(page_size + 1))
 
 	// Execute query
 	rows, err := base.RunWith(db).QueryContext(ctx)

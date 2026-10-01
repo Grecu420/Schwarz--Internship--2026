@@ -78,7 +78,7 @@ func (service *PropertyServiceImpl) ListProperties(ctx context.Context, req *pro
 		req.GetNextPageToken(),
 		filterHash,
 		func(offsetId int64, limit int64) ([]*proto.Property, error) {
-			return SelectPropertyListInDB(ctx, service.DB, offsetId, limit, ownerFilter, nameFilter, priceFilter, locationFilter)
+			return SelectPropertyListInDB(ctx, service.DB, offsetId, limit, req.GetSortType(), ownerFilter, nameFilter, priceFilter, locationFilter)
 		})
 	if err != nil {
 		return nil, err

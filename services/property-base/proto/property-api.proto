@@ -70,10 +70,18 @@ message GetPropertyResponse {
   Property property = 1;
 }
 
+enum SortType {
+  SORT_TYPE_UNSPECIFIED = 0;
+  SORT_TYPE_NAME        = 1;
+  SORT_TYPE_PRICE_ASC   = 2;
+  SORT_TYPE_PRICE_DESC  = 3;
+}
+
 message ListPropertiesRequest {
   string                              next_page_token = 1;
   int64                               page_size       = 2;
   repeated ListPropertiesFiltersOneOf filters         = 3;
+  SortType                            sort_type       = 4;
 }
 
 message ListPropertiesFiltersOneOf {
