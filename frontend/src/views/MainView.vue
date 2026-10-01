@@ -74,18 +74,18 @@ import PropertySearchBar from '@/components/property/PropertySearchBar.vue'
 import { type FilterState } from '@/components/property/PropertySearchBar.vue'
 import PropertyCard from '@/components/property/PropertyCard.vue'
 import PaginationControls from '@/components/property/PaginationControls.vue'
-import { useAuthStore } from '@/stores/auth'
 import api from '@/utils/api'
+import { getCitiesByCountry, type City } from '@/utils/cities'
+import { Property } from '@/generated/proto/property-api'
 import {
   CountPropertiesRequest,
   CountPropertiesResponse,
-  ListPropertiesFiltersOneOf,
   ListPropertiesRequest,
   ListPropertiesResponse,
-  Property,
   SortType,
-} from '@/generated/proto/property-api'
-import { getCitiesByCountry, type City } from '@/utils/cities'
+  type ListPropertiesFiltersOneOf,
+} from '@/generated/proto/property-list-api'
+import { outputFormatter } from '@/utils/dates'
 
 const SPLASH_URL =
   'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
@@ -93,7 +93,6 @@ const PAGE_SIZE = 6
 
 const router = useRouter()
 const toast = useToast()
-const authStore = useAuthStore()
 
 const properties = ref<Property[]>([])
 const isLoading = ref<boolean>(false)
@@ -140,8 +139,13 @@ const getFilterList = () => {
   }
 
   if (filterState.dates) {
-    console.log('dates')
-    console.log(filterState.dates)
+    const checkIn = filterState.dates.start
+    const checkOut = filterState.dates.end
+    if (checkIn && checkOut) {
+      const checkInDate = outputFormatter.format(checkIn)
+      const checkOutDate = outputFormatter.format(checkOut)
+      reqFilters.push({ dateInterval: {checkInDate, checkOutDate}})
+    }
   }
 
   return reqFilters
@@ -230,8 +234,6 @@ const fetchPropertyCount = async () => {
     if (response.data) {
       propertyCount.value = response.data.count
     }
-    console.log('propcount')
-    console.log(response)
   } catch (error: any) {
     console.error('Failed to fetch property count', error)
   } finally {

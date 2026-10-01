@@ -19,7 +19,7 @@ func applyPropertyFilters(
 	dateInterval *proto.FilterByDateInterval,
 ) sq.SelectBuilder {
 	if owner != nil {
-		base = base.Where(sq.Eq{"user_id": owner.Value})
+		base = base.Where(sq.Eq{"properties.user_id": owner.Value})
 	}
 	if name != nil {
 		base = base.Where(sq.Like{"name": "%" + name.Value + "%"})
@@ -57,8 +57,8 @@ func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, pag
 
 	base := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select(
-			"id",
-			"user_id",
+			"properties.id",
+			"properties.user_id",
 			"name",
 			"description",
 			"address",
@@ -67,7 +67,7 @@ func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, pag
 			"ST_Y(location::geometry) AS lat",
 			"image_urls").
 		From("properties").
-		Where(sq.GtOrEq{"id": offsetID})
+		Where(sq.GtOrEq{"properties.id": offsetID})
 
 	base = applyPropertyFilters(base, owner, name, price, location, dateInterval)
 
@@ -79,7 +79,7 @@ func SelectPropertyListInDB(ctx context.Context, db *sql.DB, offsetID int64, pag
 	case proto.SortType_SORT_TYPE_PRICE_DESC:
 		base = base.OrderBy("price DESC")
 	default:
-		base = base.OrderBy("id ASC")
+		base = base.OrderBy("properties.id ASC")
 	}
 	base = base.Limit(uint64(page_size + 1))
 

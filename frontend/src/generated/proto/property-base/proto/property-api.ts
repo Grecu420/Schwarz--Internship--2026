@@ -2,11 +2,11 @@
 // versions:
 //   protoc-gen-ts_proto  v2.12.0
 //   protoc               v7.35.1
-// source: property-api.proto
+// source: property-base/proto/property-api.proto
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import { FieldMask } from "./google/protobuf/field_mask";
+import { FieldMask } from "../../google/protobuf/field_mask";
 
 export const protobufPackage = "property";
 
