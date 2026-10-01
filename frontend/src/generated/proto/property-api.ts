@@ -10,6 +10,51 @@ import { FieldMask } from "./google/protobuf/field_mask";
 
 export const protobufPackage = "property";
 
+export enum SortType {
+  SORT_TYPE_UNSPECIFIED = 0,
+  SORT_TYPE_NAME = 1,
+  SORT_TYPE_PRICE_ASC = 2,
+  SORT_TYPE_PRICE_DESC = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function sortTypeFromJSON(object: any): SortType {
+  switch (object) {
+    case 0:
+    case "SORT_TYPE_UNSPECIFIED":
+      return SortType.SORT_TYPE_UNSPECIFIED;
+    case 1:
+    case "SORT_TYPE_NAME":
+      return SortType.SORT_TYPE_NAME;
+    case 2:
+    case "SORT_TYPE_PRICE_ASC":
+      return SortType.SORT_TYPE_PRICE_ASC;
+    case 3:
+    case "SORT_TYPE_PRICE_DESC":
+      return SortType.SORT_TYPE_PRICE_DESC;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return SortType.UNRECOGNIZED;
+  }
+}
+
+export function sortTypeToJSON(object: SortType): string {
+  switch (object) {
+    case SortType.SORT_TYPE_UNSPECIFIED:
+      return "SORT_TYPE_UNSPECIFIED";
+    case SortType.SORT_TYPE_NAME:
+      return "SORT_TYPE_NAME";
+    case SortType.SORT_TYPE_PRICE_ASC:
+      return "SORT_TYPE_PRICE_ASC";
+    case SortType.SORT_TYPE_PRICE_DESC:
+      return "SORT_TYPE_PRICE_DESC";
+    case SortType.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export interface Property {
   id: number;
   userId: number;
@@ -68,6 +113,7 @@ export interface ListPropertiesRequest {
   nextPageToken: string;
   pageSize: number;
   filters: ListPropertiesFiltersOneOf[];
+  sortType: SortType;
 }
 
 export interface ListPropertiesFiltersOneOf {
@@ -954,7 +1000,7 @@ export const GetPropertyResponse: MessageFns<GetPropertyResponse> = {
 };
 
 function createBaseListPropertiesRequest(): ListPropertiesRequest {
-  return { nextPageToken: "", pageSize: 0, filters: [] };
+  return { nextPageToken: "", pageSize: 0, filters: [], sortType: 0 };
 }
 
 export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
@@ -967,6 +1013,9 @@ export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
     }
     for (const v of message.filters) {
       ListPropertiesFiltersOneOf.encode(v!, writer.uint32(26).fork()).join();
+    }
+    if (message.sortType !== 0) {
+      writer.uint32(32).int32(message.sortType);
     }
     return writer;
   },
@@ -1002,6 +1051,14 @@ export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
           message.filters.push(ListPropertiesFiltersOneOf.decode(reader, reader.uint32()));
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.sortType = reader.int32() as any;
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1026,6 +1083,11 @@ export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
       filters: globalThis.Array.isArray(object?.filters)
         ? object.filters.map((e: any) => ListPropertiesFiltersOneOf.fromJSON(e))
         : [],
+      sortType: isSet(object.sortType)
+        ? sortTypeFromJSON(object.sortType)
+        : isSet(object.sort_type)
+        ? sortTypeFromJSON(object.sort_type)
+        : 0,
     };
   },
 
@@ -1040,6 +1102,9 @@ export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
     if (message.filters?.length) {
       obj.filters = message.filters.map((e) => ListPropertiesFiltersOneOf.toJSON(e));
     }
+    if (message.sortType !== 0) {
+      obj.sortType = sortTypeToJSON(message.sortType);
+    }
     return obj;
   },
 
@@ -1051,6 +1116,7 @@ export const ListPropertiesRequest: MessageFns<ListPropertiesRequest> = {
     message.nextPageToken = object.nextPageToken ?? "";
     message.pageSize = object.pageSize ?? 0;
     message.filters = object.filters?.map((e) => ListPropertiesFiltersOneOf.fromPartial(e)) || [];
+    message.sortType = object.sortType ?? 0;
     return message;
   },
 };

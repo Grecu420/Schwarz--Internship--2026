@@ -26,18 +26,18 @@ export interface City {
 }
 
 /**
- * Fetches cities for a given 2-letter ISO country code.
- *
- * @param countryCode Two-letter ISO country code (e.g., "JP", "FR", "US")
- * @param limit Maximum number of records to return (default: 100, max: 100 per page)
+ * Escapes special characters for ODSQL double-quoted string literals.
  */
-export async function getCitiesByCountry(
-  countryCode: string,
-  minPopulation: number = 40000,
-  limit: number = 100,
+function escapeODSQL(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
+
+
+async function fetchCitiesFromAPI(
+  whereClause: string,
+  limit: number,
 ): Promise<City[]> {
-  const where = `country_code="${countryCode.toUpperCase()}" AND population > ${minPopulation}`
-  const url = `https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/geonames-all-cities-with-a-population-1000/records?where=${encodeURIComponent(where)}&limit=${limit}`
+  const url = `https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/geonames-all-cities-with-a-population-1000/records?where=${encodeURIComponent(whereClause)}&limit=${limit}`
   const response = await fetch(url)
 
   if (!response.ok) {
@@ -53,4 +53,22 @@ export async function getCitiesByCountry(
     longitude: record.coordinates.lon,
     population: record.population,
   }))
+}
+
+export async function getCitiesByCountry(
+  countryCode: string,
+  minPopulation: number = 40000,
+  limit: number = 100,
+  name?: string,
+): Promise<City[]> {
+  const conditions: string[] = [
+    `country_code="${escapeODSQL(countryCode.toUpperCase())}"`,
+    `population > ${minPopulation}`,
+  ]
+
+  if (name && name.trim() !== '') {
+    conditions.push(`search(name, "${escapeODSQL(name.trim())}")`)
+  }
+
+  return fetchCitiesFromAPI(conditions.join(' AND '), limit)
 }

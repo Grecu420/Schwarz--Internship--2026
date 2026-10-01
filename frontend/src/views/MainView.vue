@@ -19,8 +19,10 @@
         <PropertySearchBar
           :price="[0, 10000]"
           :cities="cities"
+          :sort-options="sortOptions"
           v-model="filters"
           @submit="handleSubmit"
+          class="search-bar"
         />
       </div>
     </header>
@@ -38,6 +40,7 @@
 
       <!-- Property Grid -->
       <div v-else class="properties-container">
+        <h3 v-if="propertyCount > 0">Found {{ propertyCount }} results</h3>
         <div class="properties-grid">
           <PropertyCard
             v-for="property in properties"
@@ -76,14 +79,14 @@ import api from '@/utils/api'
 import {
   CountPropertiesRequest,
   CountPropertiesResponse,
+  ListPropertiesFiltersOneOf,
   ListPropertiesRequest,
   ListPropertiesResponse,
   Property,
+  SortType,
 } from '@/generated/proto/property-api'
 import { getCitiesByCountry, type City } from '@/utils/cities'
 
-// Note: Standard webpage URLs from Unsplash won't render directly as images in CSS.
-// Use a direct image URL format like this:
 const SPLASH_URL =
   'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
 const PAGE_SIZE = 6
@@ -104,14 +107,70 @@ const pageTokens = ref<string[]>([''])
 const filters = ref<FilterState>({})
 const cities = ref<City[]>([])
 
+const sortOptions = [
+  { value: 'name', label: 'Name' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+]
+
+const getFilterList = () => {
+  const reqFilters: ListPropertiesFiltersOneOf[] = []
+  const filterState = filters.value
+  // Name filter
+  if (filterState.search) {
+    const name = filterState.search
+    reqFilters.push({ name: { value: name } })
+  }
+
+  // Location filter
+  if (filterState.location) {
+    const city = cities.value.find((city) => city.name === filterState.location)
+    const lat = city?.latitude
+    const long = city?.longitude
+    const radius = filterState.radius
+    if (!!lat && !!long && !!radius) {
+      reqFilters.push({ location: { center: { lat, long }, radius } })
+    }
+  }
+
+  if (filterState.price) {
+    const [min, max] = filterState.price
+
+    reqFilters.push({ priceRange: { min, max } })
+  }
+
+  if (filterState.dates) {
+    console.log('dates')
+    console.log(filterState.dates)
+  }
+
+  return reqFilters
+}
+
 const fetchProperties = async (pageTokenToRequest: string) => {
   isLoading.value = true
 
   try {
+    let sortType = SortType.SORT_TYPE_UNSPECIFIED
+
+    switch (filters.value.sort) {
+      case 'name':
+        sortType = SortType.SORT_TYPE_NAME
+        break
+      case 'price_asc':
+        sortType = SortType.SORT_TYPE_PRICE_ASC
+        break
+      case 'price_desc':
+        sortType = SortType.SORT_TYPE_PRICE_DESC
+        break
+      default:
+        sortType = SortType.SORT_TYPE_UNSPECIFIED
+    }
     const request = ListPropertiesRequest.create({
       pageSize: PAGE_SIZE,
       nextPageToken: pageTokenToRequest,
-      filters: [],
+      filters: getFilterList(),
+      sortType: sortType,
     })
 
     const response = await api.post<ListPropertiesResponse>('/api/propertyList', request)
@@ -163,7 +222,7 @@ const handleViewProperty = (propertyId: number) => {
 
 const fetchPropertyCount = async () => {
   const request = CountPropertiesRequest.create({
-    filters: [{ owner: { value: authStore.user?.id } }],
+    filters: getFilterList(),
   })
   isLoading.value = true
   try {
@@ -171,6 +230,8 @@ const fetchPropertyCount = async () => {
     if (response.data) {
       propertyCount.value = response.data.count
     }
+    console.log('propcount')
+    console.log(response)
   } catch (error: any) {
     console.error('Failed to fetch property count', error)
   } finally {
@@ -196,13 +257,11 @@ const handleSubmit = (newFilters: FilterState) => {
   console.log(newFilters)
   filters.value = newFilters
 
-
-
   resetPage()
 }
 
 onMounted(() => {
-  fetchPropertyCount()
+  // fetchPropertyCount()
   fetchProperties('')
   fetchCities()
 })
@@ -251,6 +310,10 @@ onMounted(() => {
   font-size: 0.9375rem;
   color: #f3f4f6;
   margin: 0;
+}
+
+.search-bar {
+  max-width: 600px;
 }
 
 .content-section {
