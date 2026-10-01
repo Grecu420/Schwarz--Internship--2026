@@ -15,11 +15,11 @@ import (
 )
 
 var publicMethods = map[string]bool{
-	"/gateway.GatewayService/Login":          true,
-	"/gateway.GatewayService/CreateUser":     true,
-	"/gateway.GatewayService/GetProperty":    true,
-	"/gateway.GatewayService/CountProperty":  true,
-	"/gateway.GatewayService/ListProperties": true,
+	"/gateway.GatewayService/Login":           true,
+	"/gateway.GatewayService/CreateUser":      true,
+	"/gateway.GatewayService/GetProperty":     true,
+	"/gateway.GatewayService/CountProperties": true,
+	"/gateway.GatewayService/ListProperties":  true,
 }
 
 type authInterceptor struct {

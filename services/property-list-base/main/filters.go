@@ -1,47 +1,45 @@
 package main
 
 import (
-	"Schwarz--Internship--2026/services/property-base/main/proto"
-	"context"
+	"Schwarz--Internship--2026/services/property-list-base/main/proto"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (service *PropertyServiceImpl) CountProperties(ctx context.Context, req *proto.CountPropertiesRequest) (*proto.CountPropertiesResponse, error) {
+type parsedPropertyFilters struct {
+	owner    *proto.FilterByOwner
+	price    *proto.FilterByPriceRange
+	name     *proto.FilterByName
+	location *proto.FilterByLocation
+	date     *proto.FilterByDateInterval
+}
 
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "request can't be nil")
-	}
+func parsePropertyFilters(filters []*proto.ListPropertiesFiltersOneOf) (*parsedPropertyFilters, error) {
+	pf := &parsedPropertyFilters{}
 
-	var ownerFilter *proto.FilterByOwner
-	var priceFilter *proto.FilterByPriceRange
-	var nameFilter *proto.FilterByName
-	var locationFilter *proto.FilterByLocation
-
-	filters := req.GetFilters()
 	for _, f := range filters {
 		switch v := f.GetFilter().(type) {
 		case *proto.ListPropertiesFiltersOneOf_Owner:
-			if ownerFilter != nil {
+			if pf.owner != nil {
 				return nil, status.Errorf(codes.InvalidArgument, "duplicate owner filter")
-
 			}
 			if v.Owner.GetValue() <= 0 {
 				return nil, status.Errorf(codes.InvalidArgument, "invalid owner_id filter")
-
 			}
-			ownerFilter = v.Owner
+			pf.owner = v.Owner
+
 		case *proto.ListPropertiesFiltersOneOf_Name:
-			if nameFilter != nil {
+			if pf.name != nil {
 				return nil, status.Errorf(codes.InvalidArgument, "duplicate name filter")
 			}
 			if v.Name.GetValue() == "" {
 				return nil, status.Errorf(codes.InvalidArgument, "missing name in filter")
 			}
-			nameFilter = v.Name
+			pf.name = v.Name
+
 		case *proto.ListPropertiesFiltersOneOf_Location:
-			if locationFilter != nil {
+			if pf.location != nil {
 				return nil, status.Errorf(codes.InvalidArgument, "duplicate location filter")
 			}
 			if v.Location.GetRadius() <= 0 {
@@ -50,14 +48,14 @@ func (service *PropertyServiceImpl) CountProperties(ctx context.Context, req *pr
 			if v.Location.GetCenter() == nil {
 				return nil, status.Errorf(codes.InvalidArgument, "missing center")
 			}
-			locationFilter = v.Location
+			pf.location = v.Location
+
 		case *proto.ListPropertiesFiltersOneOf_PriceRange:
-			if priceFilter != nil {
+			if pf.price != nil {
 				return nil, status.Errorf(codes.InvalidArgument, "duplicate priceRange filter")
 			}
 			if v.PriceRange.GetMin() < 0 {
 				return nil, status.Errorf(codes.InvalidArgument, "invalid priceRange filter: negative min")
-
 			}
 			if v.PriceRange.GetMax() < 0 {
 				return nil, status.Errorf(codes.InvalidArgument, "invalid priceRange filter: negative max")
@@ -65,18 +63,15 @@ func (service *PropertyServiceImpl) CountProperties(ctx context.Context, req *pr
 			if v.PriceRange.GetMin() > v.PriceRange.GetMax() && v.PriceRange.GetMax() > 0 {
 				return nil, status.Errorf(codes.InvalidArgument, "invalid priceRange filter: min > max")
 			}
+			pf.price = v.PriceRange
 
-			priceFilter = v.PriceRange
+		case *proto.ListPropertiesFiltersOneOf_DateInterval:
+			if pf.date != nil {
+				return nil, status.Errorf(codes.InvalidArgument, "duplicate dateInterval filter")
+			}
+			pf.date = v.DateInterval
 		}
 	}
 
-	count, err := CountPropertiesInDB(ctx, service.DB, ownerFilter, nameFilter, priceFilter, locationFilter)
-
-	if err != nil {
-		return nil, status.Errorf(codes.Internal,
-			"failed to get property count from database: %v", err)
-
-	}
-
-	return &proto.CountPropertiesResponse{Count: count}, nil
+	return pf, nil
 }

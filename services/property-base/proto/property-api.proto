@@ -11,8 +11,6 @@ service PropertyService {
   rpc UpdateProperty (UpdatePropertyRequest)  returns (UpdatePropertyResponse);
   rpc DeleteProperty (DeletePropertyRequest)  returns (DeletePropertyResponse);
   rpc GetProperty    (GetPropertyRequest)     returns (GetPropertyResponse);
-  rpc ListProperties (ListPropertiesRequest)  returns (ListPropertiesResponse);
-  rpc CountProperties(CountPropertiesRequest) returns (CountPropertiesResponse);
 }
 
 message Property {
@@ -68,58 +66,4 @@ message GetPropertyRequest {
 
 message GetPropertyResponse {
   Property property = 1;
-}
-
-enum SortType {
-  SORT_TYPE_UNSPECIFIED = 0;
-  SORT_TYPE_NAME        = 1;
-  SORT_TYPE_PRICE_ASC   = 2;
-  SORT_TYPE_PRICE_DESC  = 3;
-}
-
-message ListPropertiesRequest {
-  string                              next_page_token = 1;
-  int64                               page_size       = 2;
-  repeated ListPropertiesFiltersOneOf filters         = 3;
-  SortType                            sort_type       = 4;
-}
-
-message ListPropertiesFiltersOneOf {
-  oneof filter {
-    FilterByOwner      owner       = 1;
-    FilterByName       name        = 2;
-    FilterByLocation   location    = 3;
-    FilterByPriceRange price_range = 4;
-  }
-}
-
-message FilterByName {
-  string value = 1;
-}
-
-message FilterByLocation {
-  Location center = 1;
-  float    radius = 2;
-}
-
-message FilterByOwner {
-  int64 value = 1;
-}
-
-message FilterByPriceRange {
-  int64 min = 1;
-  int64 max = 2;
-}
-
-message ListPropertiesResponse {
-  string            next_page_token = 1;
-  repeated Property properties      = 2;
-}
-
-message CountPropertiesRequest {
-  repeated ListPropertiesFiltersOneOf filters = 1;
-}
-
-message CountPropertiesResponse {
-  int64 count = 1;
 }
