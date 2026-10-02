@@ -138,6 +138,7 @@ const cityOptions = computed(() => {
 const handleClear = () => {
   filters.value = { radius: 5000 }
   priceRange.value = props.price
+  handleSubmit()
 }
 
 const handleSubmit = () => {

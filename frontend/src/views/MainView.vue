@@ -20,7 +20,6 @@
           :price="[0, 10000]"
           :cities="cities"
           :sort-options="sortOptions"
-          v-model="filters"
           @submit="handleSubmit"
           class="search-bar"
         />
@@ -258,7 +257,6 @@ const resetPage = () => {
 const handleSubmit = (newFilters: FilterState) => {
   console.log(newFilters)
   filters.value = newFilters
-
   resetPage()
 }
 
