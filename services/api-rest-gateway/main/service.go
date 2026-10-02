@@ -24,6 +24,7 @@ type GatewayServiceImpl struct {
 	messageService       proto.MessageServiceClient
 	convService          proto.ConversationServiceClient
 	propService          proto.PropertyServiceClient
+	propListService      proto.PropertyListServiceClient
 	resService           proto.ReservationServiceClient
 }
 
@@ -66,6 +67,7 @@ func main() {
 		"friend":       "FRIEND-REQUEST-BASE_ENDPOINT",
 		"auth":         "AUTH-BASE_ENDPOINT",
 		"property":     "PROPERTY-BASE_ENDPOINT",
+		"propertyList": "PROPERTY-LIST-BASE_ENDPOINT",
 		"reservation":  "RESERVATION-BASE_ENDPOINT",
 	}
 
@@ -86,6 +88,7 @@ func main() {
 		convService:          proto.NewConversationServiceClient(conns["conversation"]),
 		messageService:       proto.NewMessageServiceClient(conns["message"]),
 		propService:          proto.NewPropertyServiceClient(conns["property"]),
+		propListService:      proto.NewPropertyListServiceClient(conns["propertyList"]),
 		resService:           proto.NewReservationServiceClient(conns["reservation"]),
 	}
 

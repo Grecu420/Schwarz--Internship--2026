@@ -48,6 +48,7 @@
 </template>
 
 <script setup lang="ts">
+import { dateFormatter, outputFormatter } from '@/utils/dates';
 import { type DateRange, OnyxButton, OnyxCard, OnyxUnstableDatePickerV2 } from 'sit-onyx'
 import { computed, ref } from 'vue'
 
@@ -118,18 +119,6 @@ const nights = computed(() => {
 
 const totalPrice = computed(() => props.price * nights.value)
 const isSubmitDisabled = computed(() => nights.value === 0 || hasDisabledDaysInRange.value)
-
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  month: '2-digit',
-  day: '2-digit',
-  year: 'numeric',
-})
-
-const outputFormatter = new Intl.DateTimeFormat('en-CA', {
-  month: '2-digit',
-  day: '2-digit',
-  year: 'numeric',
-})
 
 const emitReservation = computed(() => {
   return {

@@ -2,8 +2,8 @@ package main_test
 
 import (
 	"Schwarz--Internship--2026/services/common/pagination"
-	"Schwarz--Internship--2026/services/property-base/main"
-	"Schwarz--Internship--2026/services/property-base/main/proto"
+	"Schwarz--Internship--2026/services/property-list-base/main"
+	"Schwarz--Internship--2026/services/property-list-base/main/proto"
 	"context"
 	"database/sql/driver"
 	"errors"
@@ -324,7 +324,7 @@ func TestListProperties(t *testing.T) {
 				tt.setupMock(mock, tt.request)
 			}
 
-			svc := main.PropertyServiceImpl{DB: db}
+			svc := main.PropertyListServiceImpl{DB: db}
 			res, err := svc.ListProperties(context.Background(), tt.request)
 
 			if tt.expectedCode != codes.OK {

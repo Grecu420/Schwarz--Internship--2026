@@ -70,15 +70,15 @@ import { OnyxButton, useToast } from 'sit-onyx'
 import { iconPlus } from '@sit-onyx/icons'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/utils/api'
+import PaginationControls from '@/components/property/PaginationControls.vue'
+import { Property } from '@/generated/proto/property-api'
+import PropertyCard from '@/components/property/PropertyCard.vue'
 import {
-  CountPropertiesRequest,
-  CountPropertiesResponse,
   ListPropertiesRequest,
   ListPropertiesResponse,
-  Property,
-} from '@/generated/proto/property-api'
-import PaginationControls from '@/components/property/PaginationControls.vue'
-import PropertyCard from '@/components/property/PropertyCard.vue'
+  CountPropertiesRequest,
+  CountPropertiesResponse,
+} from '@/generated/proto/property-list-api'
 
 const PAGE_SIZE = 6
 
@@ -269,20 +269,8 @@ onMounted(() => {
 
 .properties-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-}
-
-@media (max-width: 1024px) {
-  .properties-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .properties-grid {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
 }
 
 :deep(.property-card) {

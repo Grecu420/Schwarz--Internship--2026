@@ -28,6 +28,10 @@ proto:
 	protoc 	-I=.. \
 			--go_out=.  \
 			--go-grpc_out=. \
+		 	property-list-base/proto/property-list-api.proto
+	protoc 	-I=.. \
+			--go_out=.  \
+			--go-grpc_out=. \
 		 	friend-request-base/proto/friend-request-api.proto
 	protoc 	-I=.. \
 			--go_out=.  \
