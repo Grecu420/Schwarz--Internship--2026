@@ -55,6 +55,7 @@ import Logo from './Logo.vue';
   font-weight: 500;
   font-size: 0.875rem;
   transition: color 0.2s ease;
+  white-space: nowrap;
 }
 
 .nav-section a:hover,
