@@ -33,6 +33,7 @@
         :icon="iconCamera"
         class="change-photo-btn"
         @click="triggerFileInput"
+        color="neutral"
       />
     </div>
 
@@ -71,6 +72,7 @@
         <OnyxButton 
           type="submit" 
           mode="default" 
+          color="primary"
           label="Save Changes" 
           :loading="isSaving"
           class="save-btn"
@@ -82,11 +84,7 @@
 
     <div class="danger-zone">
       <div class="danger-header">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-          <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
+        <OnyxIcon :icon="iconTriangleWarning" color="danger"/>
         <span class="danger-title">DANGER ZONE</span>
       </div>
 
@@ -96,9 +94,12 @@
         </p>
       </div>
 
-      <button type="button" class="delete-account-btn" @click="handleDeleteAccount">
-        Delete Account
-      </button>
+      <OnyxButton 
+        label="Delete Account" 
+        color="danger" 
+        class="delete-account-btn" 
+        @click="handleDeleteAccount" 
+      />
     </div>
   </div>
 </template>
@@ -112,6 +113,7 @@ import { useAuthStore } from '@/stores/auth'
 import api from '@/utils/api'
 import { UpdateUserRequest, UpdateUserResponse, DeleteUserRequest, DeleteUserResponse } from '@/generated/proto/user-api'
 import { uploadImageToCloudinary } from '@/utils/cloudinary'
+import { iconTriangleWarning } from '@sit-onyx/icons'
 
 const toast = useToast()
 const router = useRouter()
@@ -311,9 +313,7 @@ const handleDeleteAccount = async () => {
 
 :deep(.change-photo-btn) {
   border-radius: 9999px !important;
-  background-color: #ffffff !important;
   border-color: #e5e7eb !important;
-  color: #374151 !important;
   font-weight: 500 !important;
   padding: 0.25rem 0.875rem !important;
 }
@@ -336,7 +336,6 @@ const handleDeleteAccount = async () => {
 }
 
 :deep(.save-btn) {
-  background-color: #1e40af !important;
   border-radius: 8px !important;
   padding: 0.6rem 1.5rem !important;
   font-weight: 600 !important;
@@ -381,20 +380,10 @@ const handleDeleteAccount = async () => {
   margin: 0;
 }
 
-.delete-account-btn {
-  align-self: flex-start;
-  padding: 0.6rem 1.25rem;
-  background-color: #ef4444;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.delete-account-btn:hover {
-  background-color: #dc2626;
+:deep(.delete-account-btn) {
+  align-self: flex-start !important;
+  border-radius: 8px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
 }
 </style>

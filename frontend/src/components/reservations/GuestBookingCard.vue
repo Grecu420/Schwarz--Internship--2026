@@ -10,7 +10,6 @@
           <h3>{{ booking.propertyName }}</h3>
           <p class="location">{{ booking.location }}</p>
         </div>
-        <!-- OnyxBadge cu styling subtil -->
         <OnyxBadge
           :color="statusDetails.color"
           class="custom-onyx-badge"
@@ -38,7 +37,6 @@
             <span class="price">${{ booking.price.toLocaleString() }}</span>
           </div>
 
-          <!-- OnyxButton deschide modalul de alertă -->
           <OnyxButton
             v-if="actionLabel"
             :label="actionLabel"

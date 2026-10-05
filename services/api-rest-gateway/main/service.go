@@ -19,7 +19,6 @@ import (
 type GatewayServiceImpl struct {
 	proto.UnimplementedGatewayServiceServer
 	userService          proto.UserServiceClient
-	friendRequestService proto.FriendRequestServiceClient
 	authService          proto.AuthServiceClient
 	messageService       proto.MessageServiceClient
 	convService          proto.ConversationServiceClient
@@ -64,7 +63,6 @@ func main() {
 		"user":         "USER-BASE_ENDPOINT",
 		"conversation": "CONVERSATION-BASE_ENDPOINT",
 		"message":      "MESSAGE-BASE_ENDPOINT",
-		"friend":       "FRIEND-REQUEST-BASE_ENDPOINT",
 		"auth":         "AUTH-BASE_ENDPOINT",
 		"property":     "PROPERTY-BASE_ENDPOINT",
 		"propertyList": "PROPERTY-LIST-BASE_ENDPOINT",
@@ -84,7 +82,6 @@ func main() {
 	server := GatewayServiceImpl{
 		authService:          proto.NewAuthServiceClient(conns["auth"]),
 		userService:          proto.NewUserServiceClient(conns["user"]),
-		friendRequestService: proto.NewFriendRequestServiceClient(conns["friend"]),
 		convService:          proto.NewConversationServiceClient(conns["conversation"]),
 		messageService:       proto.NewMessageServiceClient(conns["message"]),
 		propService:          proto.NewPropertyServiceClient(conns["property"]),

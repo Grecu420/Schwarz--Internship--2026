@@ -10,6 +10,7 @@ import PropertyDisplayView from '@/views/property/PropertyDisplayView.vue'
 import PropertyEditView from '@/views/property/PropertyEditView.vue'
 import PropertyManagementView from '@/views/property/PropertyManagementView.vue'
 import ReservationsView from '@/views/ReservationsView.vue'
+import NotFoundView from '@/views/NotFoundView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,19 +31,18 @@ const router = createRouter({
       path: '/main',
       name: 'main',
       component: MainView,
-      meta: { requiresAuth: true },
     },
     {
       path: '/properties/create',
       name: 'createProperty',
       component: PropertyCreationView,
-      meta: { requiresAuth: true }, // Protect this route
+      meta: { requiresAuth: true },
     },
     {
       path: '/properties/edit/:id',
       name: 'editProperty',
       component: PropertyEditView,
-      meta: { requiresAuth: true }, // Protect this route
+      meta: { requiresAuth: true },
     },
     {
       path: '/properties/view/:id',
@@ -53,7 +53,7 @@ const router = createRouter({
       path: '/properties',
       name: 'listProperties',
       component: PropertyManagementView,
-      meta: { requiresAuth: true }, // Protect this route
+      meta: { requiresAuth: true },
     },
     {
       path: '/',
@@ -77,11 +77,27 @@ const router = createRouter({
       component: ReservationsView,
       meta: { requiresAuth: true },
     },
+    {
+      path: '/404',
+      name: 'not-found',
+      component: NotFoundView,
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found-wildcard', 
+      component: NotFoundView,
+    },
   ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0, behavior: 'smooth' }
+    }
+  },
 })
 
-// Navigation Guard
-router.beforeEach((to) => {
+router.beforeEach((to, from) => {
   const authStore = useAuthStore()
 
   if (authStore.checkTokenExpiration()) {
@@ -95,6 +111,8 @@ router.beforeEach((to) => {
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
     return { name: 'main' }
   }
+
+  return true
 })
 
 export default router

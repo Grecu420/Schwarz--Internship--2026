@@ -15,11 +15,13 @@ import (
 )
 
 var publicMethods = map[string]bool{
-	"/gateway.GatewayService/Login":           true,
-	"/gateway.GatewayService/CreateUser":      true,
-	"/gateway.GatewayService/GetProperty":     true,
-	"/gateway.GatewayService/CountProperties": true,
-	"/gateway.GatewayService/ListProperties":  true,
+	"/gateway.GatewayService/Login":            true,
+	"/gateway.GatewayService/CreateUser":       true,
+	"/gateway.GatewayService/GetProperty":      true,
+	"/gateway.GatewayService/CountProperty":    true,
+	"/gateway.GatewayService/ListProperties":   true,
+	"/gateway.GatewayService/GetUserProfile":   true,
+	"/gateway.GatewayService/ListReservations": true,
 }
 
 type authInterceptor struct {
@@ -28,6 +30,7 @@ type authInterceptor struct {
 
 func (i *authInterceptor) AuthInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 
+	slog.Info("CHECK_METHOD", "fullMethod", info.FullMethod)
 	// Skip verification for public methods
 	if publicMethods[info.FullMethod] {
 		return handler(ctx, req)

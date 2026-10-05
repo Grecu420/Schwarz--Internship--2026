@@ -220,4 +220,38 @@ const handleRegister = async () => {
   margin-top: 0.5rem;
   border-radius: 9999px;
 }
+
+:deep(.onyx-form-element-v2__content) {
+  border-radius: 50px !important;
+  border: 1px solid lightgrey !important; 
+  overflow: hidden !important; 
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important; 
+}
+
+:deep(.onyx-form-element-v2__input-container) {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+:deep(.onyx-form-element-v2__input) {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+:deep(.onyx-form-element-v2__slot--trailing) {
+  border: none !important; 
+  background: transparent !important;
+}
+
+:deep(.onyx-form-element-v2__slot--trailing .onyx-form-element-action__button) {
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
 </style>

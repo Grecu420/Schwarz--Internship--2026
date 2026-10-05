@@ -35,7 +35,7 @@
       color="primary"
       class="reserve-btn"
       :disabled="isSubmitDisabled || isLoading"
-      @click="emit('submit', emitReservation)"
+      @click="handleReserveClick"
     />
 
     <div v-if="nights > 0" class="price-breakdown">
@@ -49,18 +49,24 @@
 
 <script setup lang="ts">
 import { dateFormatter, outputFormatter } from '@/utils/dates';
-import { type DateRange, OnyxButton, OnyxCard, OnyxUnstableDatePickerV2 } from 'sit-onyx'
 import { computed, ref } from 'vue'
+import { type DateRange, OnyxButton, OnyxCard, OnyxUnstableDatePickerV2 } from 'sit-onyx'
+import { useAuthStore } from '@/stores/auth'
+import { useRoute, useRouter } from 'vue-router'
 
 const props = defineProps<{
   price: number
-  existingReservations?: [string, string][],
+  existingReservations?: [string, string][]
   isLoading: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'submit', reservation: { start: string; end: string }): void
 }>()
+
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
 const intervalDates = ref<DateRange>()
 
@@ -133,6 +139,18 @@ const formatDate = (date: Date | null): string => {
 
 const startDateFormatted = computed(() => formatDate(parsedRange.value.start))
 const endDateFormatted = computed(() => formatDate(parsedRange.value.end))
+
+const handleReserveClick = () => {
+  if (!authStore.user) {
+    router.push({
+      path: '/login',
+      query: { redirect: route.fullPath },
+    })
+    return
+  }
+
+  emit('submit', emitReservation.value)
+}
 </script>
 
 <style scoped>

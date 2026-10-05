@@ -9,7 +9,7 @@
       <nav class="nav-section">
         <router-link to="/">Home</router-link>
         <router-link to="/reservations">Reservations</router-link>
-        <router-link to="/properties">Properties</router-link>
+        <router-link to="/properties">My Properties</router-link>
         <router-link to="/conversations">Conversations</router-link>
       </nav>
 

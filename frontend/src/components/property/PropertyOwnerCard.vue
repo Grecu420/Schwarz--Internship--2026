@@ -1,7 +1,7 @@
 <template>
   <div class="owner-card">
     <div class="owner-info">
-      <OnyxAvatar size="48px" :fullName="owner.userName" :src="owner.profileImageUrl"/>
+      <OnyxAvatar size="48px" :fullName="ownerFullName" :src="owner.profileImageUrl" />
       <div class="owner-text">
         <div class="owner-title">Hosted by {{ owner.firstName }} {{ owner.lastName }}</div>
       </div>
@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import {
   CreateConversationRequest,
   CreateConversationResponse,
@@ -25,9 +26,8 @@ import {
 import type { UserProfile } from '@/generated/proto/user-api'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/utils/api'
-import { AxiosError } from 'axios'
 import { OnyxAvatar, OnyxButton, useToast } from 'sit-onyx'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const props = defineProps<{
   owner: UserProfile
@@ -36,14 +36,27 @@ const props = defineProps<{
 const router = useRouter()
 const authStore = useAuthStore()
 const toast = useToast()
+const route = useRoute()
+
+const ownerFullName = computed(() => {
+  const first = props.owner.firstName || ''
+  const last = props.owner.lastName || ''
+  return `${first} ${last}`.trim() || props.owner.userName || 'Owner'
+})
 
 const askQuestion = async () => {
-  // create a conversation
+  if (!authStore.user) {
+    router.push({
+      path: '/login',
+      query: { redirect: route.fullPath }, 
+    })
+    return
+  }
 
   let conversationExists = false
 
   try {
-    const userID = authStore.user?.id
+    const userID = authStore.user.id
     const ownerID = props.owner.id
 
     const request = CreateConversationRequest.create({
@@ -51,11 +64,10 @@ const askQuestion = async () => {
       user2Id: ownerID,
     })
 
-    const response = await api.post<CreateConversationResponse>('/api/conversations', request)
+    await api.post<CreateConversationResponse>('/api/conversations', request)
     conversationExists = true
   } catch (error: any) {
     if (error.status === 409) {
-      // conversation exists
       conversationExists = true
     } else {
       toast.show({
@@ -65,8 +77,9 @@ const askQuestion = async () => {
       })
     }
   }
+
   if (conversationExists) {
-    router.push(`/conversations`)
+    router.push('/conversations')
   }
 }
 </script>
