@@ -36,6 +36,8 @@ const activeConversationId = computed(() => messageStore.activeConversationId)
 let pollingTimer: number | null = null
 
 onMounted(async () => {
+  messageStore.activeConversationId = null 
+
   await messageStore.fetchConversations()
 
   pollingTimer = window.setInterval(() => {

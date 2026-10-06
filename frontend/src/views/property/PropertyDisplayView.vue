@@ -133,12 +133,6 @@ onMounted(async () => {
       )
     }
   } catch (error: any) {
-    toast.show({
-      headline: 'Failed to load property details',
-      description: error?.message || 'Failed to send property request.',
-      color: 'danger',
-    })
-    goBack()
   } finally {
     isLoading.value = false
   }
