@@ -119,7 +119,7 @@ const hostRequests = ref<any[]>([])
 
 const selectedFilter = ref<'all' | 'pending' | 'confirmed' | 'rejected'>('all')
 
-const PAGE_SIZE = 1 
+const PAGE_SIZE = 3 
 const currentPage = ref(0)
 const nextPageToken = ref<string>('')
 const pageTokens = ref<string[]>([''])

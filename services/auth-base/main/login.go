@@ -30,14 +30,14 @@ func (service AuthServiceImpl) Login(ctx context.Context, req *proto.LoginReques
 	// Get user with email
 	res, err := service.UserService.GetUser(ctx, &proto.GetUserRequest{Email: email})
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "user not found: %v", err)
+		return nil, status.Errorf(codes.PermissionDenied, "user not found: %v", err)
 	}
 
 	// Compare password with hashed password
 	hashed_password := res.GetUser().GetPassword()
 	err = bcrypt.CompareHashAndPassword([]byte(hashed_password), []byte(password))
 	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-		return nil, status.Error(codes.PermissionDenied, "wrong password")
+		return nil, status.Error(codes.PermissionDenied, "wrong email or password")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "login failure: %v", err)
 	}
