@@ -9,7 +9,8 @@ services/reservation-base/build
 *.pb.gw.go
 # frontend/src/generated/proto
 
-
+# init seeder
+.venv
 
 # todo files
 TODO

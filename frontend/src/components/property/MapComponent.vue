@@ -16,7 +16,6 @@
 
 <script setup lang="ts">
 import { LMap, LTileLayer, LMarker, LIcon, LTooltip } from '@vue-leaflet/vue-leaflet'
-import icon from '@/../public/favicon.ico'
 import { ref } from 'vue'
 
 interface AddressDetails {
@@ -67,9 +66,10 @@ const emit = defineEmits<{
 const zoom = ref(props.initialZoom)
 const marker = ref({ lat: props.initialCenter[0], lng: props.initialCenter[1] })
 
-const iconWidth = 25
-const iconHeight = 40
-const iconUrl = icon
+const iconUrl = '/pin.svg' 
+
+const iconWidth = 32
+const iconHeight = 32
 const iconSize: [number, number] = [iconWidth, iconHeight]
 
 const address = ref<string>('')
