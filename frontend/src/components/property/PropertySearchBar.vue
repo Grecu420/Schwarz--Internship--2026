@@ -246,7 +246,4 @@ const handleSubmit = () => {
   box-shadow: none !important;
 }
 
-
-
-
 </style>
