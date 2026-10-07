@@ -42,6 +42,17 @@ BASE_COORDINATES = [
     (45.4353, 28.0080, "Galați", "Romania"),  
 ]
 
+SAMPLE_PROFILE_IMAGE_URLS = [
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+    "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d",
+]
+
 SAMPLE_IMAGE_URLS = [
     "https://images.unsplash.com/photo-1570129477492-45c003edd2be",  
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",  
@@ -95,6 +106,7 @@ def create_users(num_users):
     for i in range(num_users):  
         email = fake.unique.email()  
         username = fake.unique.user_name()  
+        profile_image = random.choice(SAMPLE_PROFILE_IMAGE_URLS)
 
         payload = {
             "user": {
@@ -103,6 +115,7 @@ def create_users(num_users):
                 "user_name": username,  
                 "email": email,  
                 "password": DEFAULT_USER_PASSWORD,  
+                "profile_image_url": profile_image,
             }
         }
 
@@ -140,11 +153,9 @@ def login_users(users):
             token = data.get("JWT")  
 
             user["token"] = token  
-            print(f"Successfully logged in user ID: {user['id']}, token: {token}")  
+            print(f"Successfully logged in user ID: {user['id']}")  
         else:
-            print(
-                f"Login failed for user ID {user['id']}: {response.status_code} - {response.text}"
-            )  
+            print(f"Login failed for user ID {user['id']}: {response.status_code} - {response.text}")
 
 
 def create_properties(owners):
@@ -165,9 +176,12 @@ def create_properties(owners):
                 base_lat, base_lon, max_km=MAX_LOCATION_RADIUS_KM
             )  
 
-            address = generate_random_address(city_name, country_name)
+            address = generate_random_address(city_name, country_name)  
 
-            num_images = random.randint(MIN_PROPERTY_IMAGES, MAX_PROPERTY_IMAGES)  
+            num_images = random.randint(
+                MIN_PROPERTY_IMAGES, 
+                MAX_PROPERTY_IMAGES
+            )  
             selected_images = random.sample(SAMPLE_IMAGE_URLS, k=num_images)  
 
             price = random.randint(MIN_PROPERTY_PRICE, MAX_PROPERTY_PRICE)  
@@ -205,9 +219,7 @@ def create_properties(owners):
                     }
                 )  
             else:
-                print(
-                    f"Failed to create property for owner {owner['id']}: {response.status_code} - {response.text}"
-                )  
+                print(f"Failed to create property for owner {owner['id']}: {response.status_code} - {response.text}")  
 
     return created_properties
 
@@ -262,9 +274,7 @@ def create_reservations(guests, properties):
                     f"from {payload['reservation']['check_in_date']} to {payload['reservation']['check_out_date']} (ID: {res_id})"
                 )  
             else:
-                print(
-                    f"Failed to create reservation for guest {guest['id']}: {response.status_code} - {response.text}"
-                )  
+                print(f"Failed to create reservation for guest {guest['id']}: {response.status_code} - {response.text}")
 
 
 def main():
