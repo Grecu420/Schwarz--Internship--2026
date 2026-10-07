@@ -37,6 +37,9 @@ services:
       - POSTGRES_DB=database
       - POSTGRES_SERVICE=db
       - POSTGRES_PORT=5432
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - USER-BASE_ENDPOINT=user-base-service:50051
+      - PROPERTY-BASE_ENDPOINT=property-base-service:50051
     depends_on:
       db:
         condition: service_healthy

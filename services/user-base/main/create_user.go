@@ -72,7 +72,7 @@ func (service UserServiceImpl) CreateUser(ctx context.Context, req *proto.Create
 		email := rabbitmq.EmailMessage{
 			To:      user.Email,
 			Subject: "Account created",
-			Body:    fmt.Sprintf("First Name: %s\nLast Name: %s\n", user.FirstName, user.LastName),
+			Body:    fmt.Sprintf("Succesfully created an account.\nFirst Name: %s\nLast Name: %s\n", user.FirstName, user.LastName),
 		}
 		err = service.EmailProd.Publish(ctx, email)
 

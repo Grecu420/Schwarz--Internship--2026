@@ -164,3 +164,22 @@ func SelectPublicUserProfileInDB(ctx context.Context, db *sql.DB, id int64) (*pr
 
 	return &profile, nil
 }
+
+func SelectEmailInDB(ctx context.Context, db *sql.DB, id int64) (string, error) {
+	var email string
+
+	query := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("email").
+		From("users").
+		Where(sq.Eq{"id": id})
+
+	err := query.RunWith(db).QueryRowContext(ctx).Scan(
+		&email,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	return email, nil
+}
