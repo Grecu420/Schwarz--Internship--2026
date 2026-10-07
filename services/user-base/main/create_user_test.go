@@ -23,11 +23,12 @@ func TestCreateUser(t *testing.T) {
 
 	baseUser := func() *proto.User {
 		return &proto.User{
-			FirstName: "John",
-			LastName:  "Doe",
-			UserName:  "johndoe",
-			Email:     "john@example.com",
-			Password:  "supersecret123",
+			FirstName:       "John",
+			LastName:        "Doe",
+			UserName:        "johndoe",
+			Email:           "john@example.com",
+			Password:        "supersecret123",
+			ProfileImageUrl: "img.png",
 		}
 	}
 
@@ -43,7 +44,7 @@ func TestCreateUser(t *testing.T) {
 			getUser: baseUser,
 			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
 				mock.ExpectQuery(`INSERT INTO users`).
-					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), u.ProfileImageUrl, sqlmock.AnyArg()).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
 			},
 			expectedCode: codes.OK,
@@ -59,6 +60,9 @@ func TestCreateUser(t *testing.T) {
 				}
 				if res.User.Email != reqUser.Email {
 					t.Errorf("expected Email %s, got %s", reqUser.Email, res.User.Email)
+				}
+				if res.User.ProfileImageUrl != reqUser.ProfileImageUrl {
+					t.Errorf("expected ProfileImageUrl %s, got %s", reqUser.ProfileImageUrl, res.User.ProfileImageUrl)
 				}
 				if res.User.Id != expectedID {
 					t.Errorf("expected ID %d, got %d", expectedID, res.User.Id)
@@ -80,7 +84,7 @@ func TestCreateUser(t *testing.T) {
 			},
 			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
 				mock.ExpectQuery(`INSERT INTO users`).
-					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), customTime).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), u.ProfileImageUrl, customTime).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
 			},
 			expectedCode: codes.OK,
@@ -95,7 +99,7 @@ func TestCreateUser(t *testing.T) {
 			getUser: baseUser,
 			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
 				mock.ExpectQuery(`INSERT INTO users`).
-					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), u.ProfileImageUrl, sqlmock.AnyArg()).
 					WillReturnError(errors.New("duplicate key value violates unique constraint \"users_username_key\""))
 			},
 			expectedCode: codes.AlreadyExists,
@@ -110,7 +114,7 @@ func TestCreateUser(t *testing.T) {
 			getUser: baseUser,
 			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
 				mock.ExpectQuery(`INSERT INTO users`).
-					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), u.ProfileImageUrl, sqlmock.AnyArg()).
 					WillReturnError(errors.New("duplicate key value violates unique constraint \"users_email_key\""))
 			},
 			expectedCode: codes.AlreadyExists,
@@ -125,7 +129,7 @@ func TestCreateUser(t *testing.T) {
 			getUser: baseUser,
 			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
 				mock.ExpectQuery(`INSERT INTO users`).
-					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), u.ProfileImageUrl, sqlmock.AnyArg()).
 					WillReturnError(errors.New("connection failed"))
 			},
 			expectedCode: codes.Internal,
@@ -150,7 +154,7 @@ func TestCreateUser(t *testing.T) {
 			},
 			setupMock: func(mock sqlmock.Sqlmock, u *proto.User) {
 				mock.ExpectQuery(`INSERT INTO users`).
-					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), sqlmock.AnyArg()).
+					WithArgs(u.FirstName, u.LastName, u.UserName, u.Email, sqlmock.AnyArg(), u.ProfileImageUrl, sqlmock.AnyArg()).
 					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
 			},
 			expectedCode: codes.OK,
