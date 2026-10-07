@@ -66,7 +66,6 @@
           <!-- 5. Clear Button -->
           <OnyxButton
             label="Clear filters"
-            mode="outline"
             class="clear-button"
             @click="handleClear"
           />
@@ -168,9 +167,8 @@ const handleSubmit = () => {
 }
 
 :deep(.submit-btn) {
-  background-color: #1e40af !important;
-  border-radius: 8px !important;
-  padding: 0.6rem 1.5rem !important;
+  border-radius: 10px !important;
+  padding: 0.4rem 1.2rem !important;
   font-weight: 600 !important;
 }
 
@@ -203,10 +201,52 @@ const handleSubmit = () => {
   width: 100%;
 }
 
+:deep(.clear-button){
+  border-radius: 10px;
+}
+
 :deep(.price-slider .onyx-stepper),
 :deep(.price-slider .onyx-input-wrap),
 :deep(.price-slider input) {
   width: 4.5rem !important;
   min-width: 4.5rem !important;
 }
+
+:deep(.onyx-form-element-v2__content) {
+  border-radius: 50px !important;
+  border: 1px solid lightgray !important; 
+  overflow: hidden !important; 
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important; 
+}
+
+:deep(.onyx-form-element-v2__input-container) {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+:deep(.onyx-form-element-v2__input) {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+:deep(.onyx-form-element-v2__slot--trailing) {
+  border: none !important; 
+  background: transparent !important;
+}
+
+:deep(.onyx-form-element-v2__slot--trailing .onyx-form-element-action__button) {
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+
+
+
 </style>

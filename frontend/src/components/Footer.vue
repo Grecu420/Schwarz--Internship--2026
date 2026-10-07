@@ -1,59 +1,55 @@
 <template>
   <footer class="site-footer">
     <div class="footer-content">
-      
       <div class="footer-top">
         <div class="footer-column brand-column">
-          <Logo/>
+          <Logo />
           <p class="brand-description">
-            Discover a warmer, more connected way to travel. From mountain hideaways to seaside lofts, find your next cozy home with us.
+            Discover a warmer, more connected way to travel. From mountain hideaways to seaside
+            lofts, find your next cozy home with us.
           </p>
         </div>
 
         <div class="footer-column">
           <h4>SUPPORT</h4>
           <nav>
-            <router-link to="#">Help Center</router-link>
-            <router-link to="#">Safety Information</router-link>
-            <router-link to="#">Cancellation Options</router-link>
+            <router-link to="help-center">Help Center</router-link>
+            <router-link to="safety-information">Safety Information</router-link>
+            <router-link to="cancellation-options">Cancellation Options</router-link>
           </nav>
         </div>
 
         <div class="footer-column">
-          <h4>COMMUNITY</h4>
+          <h4>MY ACCOUNT</h4>
           <nav>
-            <router-link to="#">StayNest Blog</router-link>
-            <router-link to="#">Cozy Forum</router-link>
-            <router-link to="#">Host Resources</router-link>
+            <router-link to="/profile">Profile Settings</router-link>
+            <router-link to="/reservations">My Reservations</router-link>
+            <router-link to="/conversations">Check messages</router-link>
           </nav>
         </div>
 
         <div class="footer-column">
           <h4>HOSTING</h4>
           <nav>
-            <router-link to="#">Try Hosting</router-link>
-            <router-link to="#">StayCover for Hosts</router-link>
-            <router-link to="#">Hosting Tools</router-link>
+            <router-link to="/properties/create">List a Property</router-link>
+            <router-link to="/properties">Manage Properties</router-link>
           </nav>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <div class="copyright">
-          © 2026 StayNest, Inc. All rights reserved.
-        </div>
+        <div class="copyright">© 2026 StayNest, Inc. All rights reserved.</div>
         <div class="legal-links">
-          <router-link to="#">Privacy Policy</router-link>
-          <router-link to="#">Terms of Service</router-link>
+          <router-link to="privacy-policy">Privacy Policy</router-link>
+          <router-link to="terms-of-service">Terms of Service</router-link>
         </div>
       </div>
-
     </div>
   </footer>
 </template>
 
 <script setup lang="ts">
-import Logo from '@/components/Logo.vue' 
+import Logo from '@/components/Logo.vue'
 </script>
 
 <style scoped>

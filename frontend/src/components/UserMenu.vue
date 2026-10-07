@@ -1,32 +1,48 @@
 <template>
   <div class="profile-menu-container">
-    <button 
-      class="profile-menu-btn" 
+    <button
+      class="profile-menu-btn"
       @click.stop="toggleMenu"
       :aria-expanded="isMenuOpen"
       aria-label="User menu"
     >
       <OnyxIcon :icon="iconMenu" class="hamburger-icon" />
-      
+
       <OnyxAvatar :src="profileImageUrl" :fullName="fullName" size="32px" />
     </button>
 
     <Transition name="dropdown">
       <div v-if="isMenuOpen" class="dropdown-menu">
-        <div v-if="authStore.user" class="user-info">
-          <span class="user-name">{{ fullName }}</span>
-          <span class="user-email">{{ authStore.user.email }}</span>
-        </div>
+        <template v-if="authStore.user">
+          <div class="user-info">
+            <span class="user-name">{{ fullName }}</span>
+            <span class="user-email">{{ authStore.user.email }}</span>
+          </div>
 
-        <hr v-if="authStore.user" class="divider" />
+          <hr class="divider" />
 
-        <router-link to="/profile" class="dropdown-item" @click="isMenuOpen = false">
-          Edit Profile
-        </router-link>
+          <router-link to="/profile" class="dropdown-item" @click="isMenuOpen = false">
+            Edit Profile
+          </router-link>
 
-        <button class="dropdown-item logout-btn" @click="handleLogout">
-          Log out
-        </button>
+          <button class="dropdown-item logout-btn" @click="handleLogout">Log out</button>
+        </template>
+
+        <template v-else>
+          <router-link to="/login" class="dropdown-item login-btn" @click="isMenuOpen = false">
+            Log in
+          </router-link>
+
+          <hr class="divider" />
+
+          <router-link
+            to="/register"
+            class="dropdown-item register-btn"
+            @click="isMenuOpen = false"
+          >
+            Don't have an account?
+          </router-link>
+        </template>
       </div>
     </Transition>
   </div>
@@ -58,7 +74,7 @@ const fullName = computed(() => {
 const profileImageUrl = computed(() => {
   if (!authStore.user) return ''
   return authStore.user.profileImageUrl
-}) 
+})
 
 const closeMenu = (event: MouseEvent) => {
   const target = event.target as HTMLElement
@@ -96,7 +112,9 @@ onUnmounted(() => {
   border: 1px solid #dddddd;
   border-radius: 9999px;
   cursor: pointer;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   color: #555555;
 }
 
@@ -151,6 +169,9 @@ onUnmounted(() => {
 }
 
 .dropdown-item {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   padding: 0.65rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -161,21 +182,36 @@ onUnmounted(() => {
   text-align: left;
   cursor: pointer;
   transition: background-color 0.15s ease;
-  width: 100%;
 }
 
 .dropdown-item:hover {
   background-color: #f7f7f7;
 }
 
+.dropdown-item.login-btn {
+  font-weight: 600;
+  color: #1a41b5;
+}
+
+.dropdown-item.register-btn {
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.dropdown-item.register-btn:hover {
+  color: #111827;
+}
+
 .dropdown-item.logout-btn {
-  color: #d9381e;
+  color: #dc2626;
   font-weight: 600;
 }
 
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .dropdown-enter-from,

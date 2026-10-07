@@ -2,7 +2,6 @@ syntax = "proto3";
 package gateway;
 
 import "user-base/proto/user-api.proto";
-import "friend-request-base/proto/friend-request-api.proto";
 import "auth-base/proto/auth-api.proto";
 import "message-base/proto/message-api.proto";
 import "conversation-base/proto/conversation-api.proto";
@@ -44,27 +43,6 @@ service GatewayService {
   rpc GetUserProfile(userbase.GetUserProfileRequest) returns (userbase.GetUserProfileResponse){
     option (google.api.http) = {
       get: "/user/profile" // query on id
-    };
-  }
-
-  rpc CreateFriendRequest (friendrequestbase.CreateFriendRequestRequest) returns (friendrequestbase.CreateFriendRequestResponse){
-    option (google.api.http) = {
-      post: "/friend-request"
-      body: "*"
-    };
-  }
-
-  rpc UpdateFriendRequest (friendrequestbase.UpdateFriendRequestRequest) returns (friendrequestbase.UpdateFriendRequestResponse){
-    option (google.api.http) = {
-      patch: "/friend-request"
-      body : "*"
-    };
-  }
-
-  rpc ListFriendRequests (friendrequestbase.ListFriendRequestsRequest) returns (friendrequestbase.ListFriendRequestsResponse){
-    option (google.api.http) = {
-      post: "/friend-request-list"
-      body: "*"
     };
   }
 

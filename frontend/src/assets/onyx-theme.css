@@ -1,0 +1,153 @@
+:root,
+html[data-onyx-theme] {
+  --onyx-color-base-primary-100: #e8ecf8 !important;
+  --onyx-color-base-primary-200: #c2d0f2 !important;
+  --onyx-color-base-primary-300: #9cb2ea !important;
+  --onyx-color-base-primary-400: #6a8ce0 !important;
+  --onyx-color-base-primary-500: #1a41b5 !important;
+  --onyx-color-base-primary-600: #143393 !important;
+  --onyx-color-base-primary-700: #0f2671 !important;
+
+  --onyx-color-brand-100: #e8ecf8 !important;
+  --onyx-color-brand-200: #c2d0f2 !important;
+  --onyx-color-brand-300: #9cb2ea !important;
+  --onyx-color-brand-400: #6a8ce0 !important;
+  --onyx-color-brand-500: #1a41b5 !important;
+  --onyx-color-brand-600: #143393 !important;
+  --onyx-color-brand-700: #0f2671 !important;
+
+  --onyx-color-primary-100: #e8ecf8 !important;
+  --onyx-color-primary-200: #c2d0f2 !important;
+  --onyx-color-primary-300: #9cb2ea !important;
+  --onyx-color-primary-400: #6a8ce0 !important;
+  --onyx-color-primary-500: #1a41b5 !important;
+  --onyx-color-primary-600: #143393 !important;
+  --onyx-color-primary-700: #0f2671 !important;
+
+  --onyx-color-base-danger-100: #fef2f2 !important;
+  --onyx-color-base-danger-200: #fee2e2 !important;
+  --onyx-color-base-danger-300: #fca5a5 !important;
+  --onyx-color-base-danger-400: #ef4444 !important;
+  --onyx-color-base-danger-500: #dc2626 !important;
+  --onyx-color-base-danger-600: #b91c1c !important; 
+  --onyx-color-base-danger-700: #991b1b !important; 
+
+  --onyx-color-danger-100: #fef2f2 !important;
+  --onyx-color-danger-200: #fee2e2 !important;
+  --onyx-color-danger-300: #fca5a5 !important;
+  --onyx-color-danger-400: #ef4444 !important;
+  --onyx-color-danger-500: #dc2626 !important;
+  --onyx-color-danger-600: #b91c1c !important;
+  --onyx-color-danger-700: #991b1b !important;
+
+  --onyx-color-component-focus-ring: #1a41b5 !important;
+  --onyx-color-form-border-focus: #1a41b5 !important;
+
+  --onyx-font-family-paragraph: var(--onyx-font-family-base) !important;
+}
+
+.onyx-button::before,
+.onyx-button::after,
+.onyx-button [class*="ripple"],
+.onyx-button [class*="state"] {
+  display: none !important;
+  opacity: 0 !important;
+  animation: none !important;
+  transition: none !important;
+  visibility: hidden !important;
+}
+
+.onyx-button {
+  transition: background-color 0.1s ease !important;
+}
+
+.onyx-button.onyx-button--primary:hover,
+.onyx-button.onyx-button--default:hover {
+  background-color: var(--onyx-color-base-primary-600) !important;
+  border-color: var(--onyx-color-base-primary-600) !important;
+  color: #ffffff !important;
+}
+
+.onyx-button.onyx-button--primary:active,
+.onyx-button.onyx-button--default:active {
+  background-color: var(--onyx-color-base-primary-700) !important;
+  border-color: var(--onyx-color-base-primary-700) !important;
+  color: #ffffff !important;
+}
+
+.onyx-button.onyx-button--danger {
+  background-color: var(--onyx-color-base-danger-500) !important;
+  border-color: var(--onyx-color-base-danger-500) !important;
+  color: #ffffff !important;
+}
+
+.onyx-button.onyx-button--danger:hover {
+  background-color: var(--onyx-color-base-danger-600) !important;
+  border-color: var(--onyx-color-base-danger-600) !important;
+  color: #ffffff !important;
+}
+
+.onyx-button.onyx-button--danger:active {
+  background-color: var(--onyx-color-base-danger-700) !important;
+  border-color: var(--onyx-color-base-danger-700) !important;
+  color: #ffffff !important;
+}
+
+.onyx-button.onyx-button--neutral:hover {
+  background-color: #f9fafb !important;
+  border-color: #e5e7eb !important;
+  color: #111827 !important;
+}
+
+.onyx-button.onyx-button--neutral:active {
+  background-color: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+}
+
+.onyx-toast,
+.onyx-toast-container,
+[data-onyx-toast-container] {
+  top: 5rem !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: 0.5rem !important;
+  transform: none !important;
+}
+
+.onyx-icon--danger {
+  color: var(--onyx-color-base-danger-500) !important;
+  fill: var(--onyx-color-base-danger-500) !important;
+}
+
+.onyx-form-element-v2__input-container {
+  border-radius: 20px;
+  border-color: lightgrey;
+}
+
+.onyx-form-element-v2__slot--trailing {
+  margin-left: 0 !important;
+  border-radius: 0 50px 50px 0;
+  border-color: lightgray;
+}
+
+.onyx-form-element-v2__icons{
+  color: lightgray;
+}
+
+input:focus,
+input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.onyx-form-element-v2__content:focus-within,
+.onyx-form-element-v2__input-container:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.onyx-slider .onyx-form-element-v2__content,
+.onyx-stepper .onyx-form-element-v2__content {
+  border: none !important;
+}
