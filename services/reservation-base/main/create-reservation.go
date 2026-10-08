@@ -48,8 +48,6 @@ func (service *ReservationServiceImpl) CreateReservation(ctx context.Context, re
 	res.CreatedAt = now
 	res.UpdatedAt = now
 
-	fmt.Println("created")
-
 	if service.EmailProd != nil {
 		service.sendReservationNotification(ctx, res)
 	}
@@ -60,25 +58,21 @@ func (service *ReservationServiceImpl) CreateReservation(ctx context.Context, re
 }
 
 func (service *ReservationServiceImpl) sendReservationNotification(ctx context.Context, res *proto.Reservation) {
-	fmt.Println("send reservation")
 	emailResp, err := service.UserService.GetEmail(ctx, &proto.GetEmailRequest{Id: res.GetOwnerId()})
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to get owner email for notification", "reservation_id", res.GetId(), "error", err)
 		return
 	}
-	fmt.Println(emailResp)
 	userResp, err := service.UserService.GetUserProfile(ctx, &proto.GetUserProfileRequest{Id: res.GetUserId()})
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to get user profile for notification", "reservation_id", res.GetId(), "error", err)
 		return
 	}
-	fmt.Println(userResp)
 	propResp, err := service.PropertyService.GetProperty(ctx, &proto.GetPropertyRequest{Id: res.GetPropertyId()})
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to get property details for notification", "reservation_id", res.GetId(), "error", err)
 		return
 	}
-	fmt.Println(propResp)
 	user := userResp.GetUser()
 	prop := propResp.GetProperty()
 
