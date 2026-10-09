@@ -7,86 +7,87 @@ import "google/protobuf/field_mask.proto";
 option go_package = "main/proto";
 
 service UserService {
-    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
-    rpc GetUser(GetUserRequest) returns (GetUserResponse) ;
-    rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
-    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
-    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
-    rpc GetUserProfile (GetUserProfileRequest) returns (GetUserProfileResponse);
-} 
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) ;
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+  rpc GetUserProfile (GetUserProfileRequest) returns (GetUserProfileResponse);
+  rpc GetEmail (GetEmailRequest) returns (GetEmailResponse);
+}
 
 message User {
-    int64 id = 1;
-    string first_name = 2;
-    string last_name = 3;
-    string user_name = 4;
-    string email = 5;
-    string password = 6;
-    string profile_image_url = 7;
-    google.protobuf.Timestamp created_at = 8; 
+  int64                     id                = 1;
+  string                    first_name        = 2;
+  string                    last_name         = 3;
+  string                    user_name         = 4;
+  string                    email             = 5;
+  string                    password          = 6;
+  string                    profile_image_url = 7;
+  google.protobuf.Timestamp created_at        = 8;
 }
 
 message UserProfile {
-    int64 id = 1;
-    string first_name = 2;
-    string last_name = 3;
-    string user_name = 4;
-    string profile_image_url = 5;
+  int64  id                = 1;
+  string first_name        = 2;
+  string last_name         = 3;
+  string user_name         = 4;
+  string profile_image_url = 5;
 }
 
 message CreateUserRequest{
-    User user = 1;
+  User user = 1;
 }
 
 message CreateUserResponse{
-    User user = 1;
+  User user = 1;
 }
 
 message GetUserRequest{
-    string email = 1;
+  string email = 1;
 }
 
 message GetUserResponse{
-    User user = 1;
+  User user = 1;
 }
 
 message ListUsersRequest{
-    string nextPageToken = 1;
-    int64 pageSize = 2;
-    repeated ListUsersFiltersOneOf filters = 3;
+  string                         nextPageToken = 1;
+  int64                          pageSize      = 2;
+  repeated ListUsersFiltersOneOf filters       = 3;
 }
 
-message ListUsersResponse{   
-    string nextPageToken = 1;
-    repeated User users = 2; 
+message ListUsersResponse{
+  string        nextPageToken = 1;
+  repeated User users         = 2;
 }
 
 message ListUsersFiltersOneOf {
-    oneof filter {      
-        FilterByFirstName first_name = 1;
-        FilterByLastName last_name = 2;
-   }
+  oneof filter {
+    FilterByFirstName first_name = 1;
+    FilterByLastName  last_name  = 2;
+  }
 }
 
 message FilterByFirstName {
-    string value = 1;
+  string value = 1;
 }
 
 message FilterByLastName {
-    string value = 1;
+  string value = 1;
 }
 
 message UpdateUserRequest {
-    User user = 1;
-    google.protobuf.FieldMask field_mask = 2;
+  User                      user       = 1;
+  google.protobuf.FieldMask field_mask = 2;
 }
 
 message UpdateUserResponse {
-    User user = 1;
+  User user = 1;
 }
 
 message DeleteUserRequest {
-    int64 id = 1;
+  int64 id = 1;
 }
 
 message DeleteUserResponse {
@@ -94,10 +95,17 @@ message DeleteUserResponse {
 }
 
 message GetUserProfileRequest {
-    int64 id = 1;
+  int64 id = 1;
 }
 
 message GetUserProfileResponse {
-    UserProfile user = 1;
+  UserProfile user = 1;
 }
 
+message GetEmailRequest {
+  int64 id = 1;
+}
+
+message GetEmailResponse {
+  string email = 1;
+}
