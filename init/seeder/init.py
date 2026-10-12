@@ -9,10 +9,10 @@ import requests
 BASE_URL = "http://localhost:50053"  
 
 # User & Role Distribution
-TOTAL_USERS = 120
-OWNER_RATIO = 1 / 10  
-PROPERTIES_PER_OWNER = 5 
-RESERVATIONS_PER_GUEST = 10  
+TOTAL_USERS = 60
+OWNER_RATIO = 1 / 6  
+PROPERTIES_PER_OWNER = 3 
+RESERVATIONS_PER_GUEST = 8  
 DEFAULT_USER_PASSWORD = "Test1212"  
 
 # Property Randomization Parameters
@@ -21,6 +21,7 @@ MIN_PROPERTY_PRICE = 50
 MAX_PROPERTY_PRICE = 500  
 MIN_PROPERTY_IMAGES = 2  
 MAX_PROPERTY_IMAGES = 5  
+PROPERTY_TYPE = ["Pensiunea", "Cabana"]
 
 # Reservation Timing Parameters
 MIN_STAY_DAYS = 2  
@@ -188,7 +189,7 @@ def create_properties(owners):
 
             payload = {
                 "user_id": owner["id"],  
-                "name": f"Pensiunea {fake.word().capitalize()}",  
+                "name": f"{random.choice(PROPERTY_TYPE)} {fake.word().capitalize()}",  
                 "description": fake.paragraph(),  
                 "address": address,
                 "price": price,  
