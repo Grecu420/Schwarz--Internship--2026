@@ -218,6 +218,10 @@ const handleReserveClick = () => {
   margin-bottom: 1rem;
 }
 
+.date-picker-input :deep(th){
+font-size: 0.75rem;
+}
+
 :deep(.reserve-btn) {
   width: 100%;
   border-radius: 8px;

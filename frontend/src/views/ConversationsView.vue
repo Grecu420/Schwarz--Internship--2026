@@ -42,7 +42,7 @@ onMounted(async () => {
 
   pollingTimer = window.setInterval(() => {
     messageStore.pollUpdates()
-  }, 10000)
+  }, 3000)
 })
 
 onUnmounted(() => {
